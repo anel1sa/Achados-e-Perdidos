@@ -1,0 +1,37 @@
+{
+  "usuarios_cadastrados": [
+    {
+      "id": 1,
+      "nome": "Fulano de Tal",
+      "email": "fulano@email.com",
+      "matricula": "20210001",
+      "campusId": 1,
+      "telefone": "(11) 98765-4321",
+      "senha": "senha123",
+      "avatar": "F",
+      "dataCadastro": "2023-06-15"
+    },
+    {
+      "id": 2,
+      "nome": "Ciclana Silva",
+      "email": "ciclana@email.com",
+      "matricula": "20210002",
+      "campusId": 2,
+      "telefone": "(11) 91234-5678",
+      "senha": "senha456",
+      "avatar": "C",
+      "dataCadastro": "2023-07-20"
+    },
+    {
+      "id": 3,
+      "nome": "Beltrano Souza",
+      "email": "beltrano@email.com",
+      "matricula": "20210003",
+      "campusId": 3,
+      "telefone": "(11) 99876-5432",
+      "senha": "senha789",
+      "avatar": "B",
+      "dataCadastro": "2023-08-10"
+    }
+  ]
+}
