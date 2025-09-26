@@ -416,8 +416,8 @@ class _PerdidosPageState extends State<PerdidosPage> {
                                   child: Text(
                                     "Descreva aqui o que você está procurando. Quanto mais detalhes você fornecer (como cor, marca, local e data aproximada da perda), maiores são as chances de alguém reconhecer e devolver.",
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
+                                      fontSize: 13,
+                                      color: Colors.black87,
                                       height: 1.4,
                                     ),
                                   ),

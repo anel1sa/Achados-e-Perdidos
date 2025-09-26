@@ -1,16 +1,27 @@
-# test
+# Achados e Perdidos
 
-A new Flutter project.
+Aplicativo Flutter para sistema de achados e perdidos.
 
-## Getting Started
+## Descrição
 
-This project is a starting point for a Flutter application.
+O Achados e Perdidos é um aplicativo móvel desenvolvido em Flutter que permite aos usuários:
+- Cadastrar itens perdidos
+- Cadastrar itens encontrados
+- Buscar por itens perdidos ou encontrados
+- Comunicar-se com outros usuários via chat
+- Gerenciar perfil e configurações
 
-A few resources to get you started if this is your first Flutter project:
+## Funcionalidades
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Cadastro de usuários**: Sistema de registro com validação
+- **Cadastro de itens**: Interface para cadastrar itens perdidos e encontrados
+- **Busca e filtros**: Pesquisa eficiente por itens com filtros
+- **Chat**: Comunicação entre usuários interessados em itens
+- **Perfil**: Gerenciamento de dados pessoais e configurações
+- **Galeria de fotos**: Upload e visualização de imagens dos itens
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Como executar
+
+1. Certifique-se de ter o Flutter instalado
+2. Execute `flutter pub get` para instalar as dependências
+3. Execute `flutter run` para iniciar o aplicativo
