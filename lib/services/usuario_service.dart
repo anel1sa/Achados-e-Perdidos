@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
+/// Modelo que representa um usuário do sistema
 class UsuarioModel {
   final int? id;
   final String nome;
@@ -55,6 +56,7 @@ class UsuarioModel {
   }
 }
 
+/// Modelo que representa um campus da instituição
 class CampusModel {
   final int id;
   final String nome;
@@ -87,25 +89,36 @@ class CampusModel {
   }
 }
 
+/// Serviço responsável pela gestão de usuários
 class UsuarioService {
+  // Constants
   static const String _usuariosCadastradosAsset =
       'assets/usuarios_cadastrados.json';
+  static const String _databaseAsset = 'assets/db.json';
+  static const String _cadastroSchemaAsset = 'assets/cadastro_usuario.json';
+  static const String _usuariosFileName = 'usuarios_cadastrados.json';
 
-  // Carrega o banco de dados JSON
+  /// Carrega o banco de dados principal
   Future<Map<String, dynamic>> _loadDatabase() async {
-    final String response = await rootBundle.loadString('assets/db.json');
-    return json.decode(response);
+    try {
+      final String response = await rootBundle.loadString(_databaseAsset);
+      return json.decode(response);
+    } catch (e) {
+      throw Exception('Erro ao carregar banco de dados: $e');
+    }
   }
 
-  // Carrega o esquema de cadastro
+  /// Carrega o esquema de validação para cadastro de usuários
   Future<Map<String, dynamic>> _loadCadastroSchema() async {
-    final String response = await rootBundle.loadString(
-      'assets/cadastro_usuario.json',
-    );
-    return json.decode(response);
+    try {
+      final String response = await rootBundle.loadString(_cadastroSchemaAsset);
+      return json.decode(response);
+    } catch (e) {
+      throw Exception('Erro ao carregar esquema de cadastro: $e');
+    }
   }
 
-  // Carrega os usuários cadastrados
+  /// Carrega a lista de usuários cadastrados
   Future<List<UsuarioModel>> _loadUsuariosCadastrados() async {
     try {
       final String response = await rootBundle.loadString(
@@ -120,11 +133,11 @@ class UsuarioService {
     }
   }
 
-  // Salva os usuários cadastrados no arquivo
+  /// Salva a lista de usuários cadastrados no dispositivo
   Future<void> _saveUsuariosCadastrados(List<UsuarioModel> usuarios) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/usuarios_cadastrados.json');
+      final file = File('${directory.path}/$_usuariosFileName');
 
       final Map<String, dynamic> data = {
         'usuarios_cadastrados': usuarios.map((u) => u.toJson()).toList(),
@@ -133,17 +146,16 @@ class UsuarioService {
       await file.writeAsString(json.encode(data));
       print('Usuários salvos com sucesso em: ${file.path}');
     } catch (e) {
-      print('Erro ao salvar usuários: $e');
-      // Em um ambiente de produção, trataria melhor esse erro
+      throw Exception('Erro ao salvar usuários: $e');
     }
   }
 
-  // Busca todos os usuários cadastrados
+  /// Retorna todos os usuários cadastrados
   Future<List<UsuarioModel>> getUsuarios() async {
     return await _loadUsuariosCadastrados();
   }
 
-  // Busca um usuário pelo email e senha (login)
+  /// Autentica um usuário com email e senha
   Future<UsuarioModel?> login(String email, String senha) async {
     final usuarios = await _loadUsuariosCadastrados();
     try {
@@ -155,136 +167,171 @@ class UsuarioService {
     }
   }
 
-  // Verifica se um email já está cadastrado
+  /// Verifica se um email já está cadastrado no sistema
   Future<bool> emailExiste(String email) async {
     final usuarios = await _loadUsuariosCadastrados();
     return usuarios.any((usuario) => usuario.email == email);
   }
 
-  // Verifica se uma matrícula já está cadastrada
+  /// Verifica se uma matrícula já está cadastrada no sistema
   Future<bool> matriculaExiste(String matricula) async {
     final usuarios = await _loadUsuariosCadastrados();
     return usuarios.any((usuario) => usuario.matricula == matricula);
   }
 
-  // Busca todos os campi disponíveis
+  /// Retorna a lista de campi ativos disponíveis para cadastro
   Future<List<CampusModel>> getCampi() async {
     final db = await _loadDatabase();
     final List<dynamic> campiJson = db['campi'];
     return campiJson
         .map((json) => CampusModel.fromJson(json))
-        .where((campus) => campus.ativo) // Filtra apenas os campi ativos
+        .where((campus) => campus.ativo)
         .toList();
   }
 
-  // Valida um usuário de acordo com as regras do esquema
+  /// Valida os dados de um usuário de acordo com as regras de negócio
   Future<Map<String, String?>> validarUsuario(UsuarioModel usuario) async {
     final schema = await _loadCadastroSchema();
     final validacoes = schema['esquemaCadastro']['validacoes'];
     final Map<String, String?> erros = {};
 
-    // Verifica se o email já existe
-    if (await emailExiste(usuario.email)) {
-      erros['email'] = validacoes['email']['mensagemErro'];
-    }
-
-    // Verifica se a matrícula já existe
-    if (await matriculaExiste(usuario.matricula)) {
-      erros['matricula'] = validacoes['matricula']['mensagemErro'];
-    }
-
-    // Verifica o comprimento mínimo da senha
-    if (usuario.senha.length < validacoes['senha']['minLength']) {
-      erros['senha'] = validacoes['senha']['mensagemErro'];
-    }
+    await _validarEmail(usuario.email, validacoes, erros);
+    await _validarMatricula(usuario.matricula, validacoes, erros);
+    _validarSenha(usuario.senha, validacoes, erros);
 
     return erros;
   }
 
-  // Cadastra um novo usuário
-  Future<Map<String, dynamic>> cadastrarUsuario(
-    UsuarioModel novoUsuario,
+  /// Valida o email do usuário
+  Future<void> _validarEmail(
+    String email,
+    Map<String, dynamic> validacoes,
+    Map<String, String?> erros,
   ) async {
-    // Valida o usuário
-    final erros = await validarUsuario(novoUsuario);
-    if (erros.isNotEmpty) {
-      return {
-        'sucesso': false,
-        'mensagem': 'Erro ao cadastrar usuário',
-        'erros': erros,
-      };
-    }
-
-    try {
-      // Obter lista atual de usuários
-      final usuarios = await _loadUsuariosCadastrados();
-
-      // Gerar um novo ID único
-      final int novoId = usuarios.isEmpty
-          ? 1
-          : (usuarios.map((u) => u.id ?? 0).reduce((a, b) => a > b ? a : b) +
-                1);
-
-      // Criar o novo usuário com ID e data de cadastro
-      final novoUsuarioCompleto = UsuarioModel(
-        id: novoId,
-        nome: novoUsuario.nome,
-        email: novoUsuario.email,
-        matricula: novoUsuario.matricula,
-        campusId: novoUsuario.campusId,
-        telefone: novoUsuario.telefone,
-        senha: novoUsuario.senha,
-        avatar: novoUsuario.nome
-            .substring(0, 1)
-            .toUpperCase(), // Primeira letra do nome
-        dataCadastro: DateTime.now().toIso8601String().split(
-          'T',
-        )[0], // Formato YYYY-MM-DD
-      );
-
-      // Adicionar à lista
-      usuarios.add(novoUsuarioCompleto);
-
-      // Salvar a lista atualizada
-      await _saveUsuariosCadastrados(usuarios);
-
-      return {
-        'sucesso': true,
-        'mensagem': 'Usuário cadastrado com sucesso',
-        'dados': {
-          'id': novoId,
-          'nome': novoUsuarioCompleto.nome,
-          'email': novoUsuarioCompleto.email,
-        },
-      };
-    } catch (e) {
-      print('Erro ao cadastrar usuário: $e');
-      return {
-        'sucesso': false,
-        'mensagem': 'Erro ao cadastrar usuário: $e',
-        'erros': {},
-      };
+    if (await emailExiste(email)) {
+      erros['email'] = validacoes['email']['mensagemErro'];
     }
   }
 
-  // Inicializa o arquivo de usuários cadastrados se necessário
+  /// Valida a matrícula do usuário
+  Future<void> _validarMatricula(
+    String matricula,
+    Map<String, dynamic> validacoes,
+    Map<String, String?> erros,
+  ) async {
+    if (await matriculaExiste(matricula)) {
+      erros['matricula'] = validacoes['matricula']['mensagemErro'];
+    }
+  }
+
+  /// Valida a senha do usuário
+  void _validarSenha(
+    String senha,
+    Map<String, dynamic> validacoes,
+    Map<String, String?> erros,
+  ) {
+    if (senha.length < validacoes['senha']['minLength']) {
+      erros['senha'] = validacoes['senha']['mensagemErro'];
+    }
+  }
+
+  /// Cadastra um novo usuário no sistema
+  Future<Map<String, dynamic>> cadastrarUsuario(
+    UsuarioModel novoUsuario,
+  ) async {
+    try {
+      final erros = await validarUsuario(novoUsuario);
+      if (erros.isNotEmpty) {
+        return _buildErrorResponse('Erro ao cadastrar usuário', erros);
+      }
+
+      final usuarios = await _loadUsuariosCadastrados();
+      final novoUsuarioCompleto = _criarUsuarioCompleto(novoUsuario, usuarios);
+
+      usuarios.add(novoUsuarioCompleto);
+      await _saveUsuariosCadastrados(usuarios);
+
+      return _buildSuccessResponse(novoUsuarioCompleto);
+    } catch (e) {
+      print('Erro ao cadastrar usuário: $e');
+      return _buildErrorResponse('Erro ao cadastrar usuário: $e');
+    }
+  }
+
+  /// Cria um usuário com dados completos (ID, avatar, data de cadastro)
+  UsuarioModel _criarUsuarioCompleto(
+    UsuarioModel usuario,
+    List<UsuarioModel> usuariosExistentes,
+  ) {
+    final int novoId = _gerarNovoId(usuariosExistentes);
+    final String avatar = usuario.nome.isNotEmpty
+        ? usuario.nome.substring(0, 1).toUpperCase()
+        : 'U';
+    final String dataCadastro = DateTime.now().toIso8601String().split('T')[0];
+
+    return UsuarioModel(
+      id: novoId,
+      nome: usuario.nome,
+      email: usuario.email,
+      matricula: usuario.matricula,
+      campusId: usuario.campusId,
+      telefone: usuario.telefone,
+      senha: usuario.senha,
+      avatar: avatar,
+      dataCadastro: dataCadastro,
+    );
+  }
+
+  /// Gera um novo ID único para o usuário
+  int _gerarNovoId(List<UsuarioModel> usuarios) {
+    if (usuarios.isEmpty) return 1;
+
+    final maxId = usuarios
+        .map((u) => u.id ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+
+    return maxId + 1;
+  }
+
+  /// Constrói uma resposta de sucesso padronizada
+  Map<String, dynamic> _buildSuccessResponse(UsuarioModel usuario) {
+    return {
+      'sucesso': true,
+      'mensagem': 'Usuário cadastrado com sucesso',
+      'dados': {'id': usuario.id, 'nome': usuario.nome, 'email': usuario.email},
+    };
+  }
+
+  /// Constrói uma resposta de erro padronizada
+  Map<String, dynamic> _buildErrorResponse(
+    String mensagem, [
+    Map<String, String?>? erros,
+  ]) {
+    return {'sucesso': false, 'mensagem': mensagem, 'erros': erros ?? {}};
+  }
+
+  /// Inicializa o arquivo de usuários cadastrados se necessário
   Future<void> inicializarUsuariosCadastrados() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/usuarios_cadastrados.json');
+      final file = File('${directory.path}/$_usuariosFileName');
 
       if (!await file.exists()) {
-        // Se o arquivo não existir, cria um com os usuários padrão
-        final String initialData = await rootBundle.loadString(
-          _usuariosCadastradosAsset,
-        );
-        await file.writeAsString(initialData);
-        print('Arquivo de usuários cadastrados inicializado em: ${file.path}');
+        await _criarArquivoInicial(file);
       } else {
         print('Arquivo de usuários cadastrados já existe em: ${file.path}');
       }
     } catch (e) {
       print('Erro ao inicializar usuários cadastrados: $e');
     }
+  }
+
+  /// Cria o arquivo inicial de usuários cadastrados
+  Future<void> _criarArquivoInicial(File file) async {
+    final String initialData = await rootBundle.loadString(
+      _usuariosCadastradosAsset,
+    );
+    await file.writeAsString(initialData);
+    print('Arquivo de usuários cadastrados inicializado em: ${file.path}');
   }
 }

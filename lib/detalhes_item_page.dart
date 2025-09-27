@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+
+// Services
 import 'services/item_service.dart';
 import 'services/usuario_service.dart';
+
+// Widgets
+import 'widgets/bottom_navigation_achados.dart';
 
 class DetalhesItemPage extends StatefulWidget {
   final ItemAchadoModel item;
@@ -239,55 +244,9 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
           ],
         ),
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 0,
-          backgroundColor: const Color(0xFF17603A),
-          elevation: 8,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/achados',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/perdidos',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/chat',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Achados'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.help_outline),
-              label: 'Perdidos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              label: 'Chat',
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationAchados(
+        usuario: widget.usuarioLogado!,
+        currentIndex: 0, // Default para Achados
       ),
     );
   }

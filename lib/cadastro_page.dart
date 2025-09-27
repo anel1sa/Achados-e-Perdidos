@@ -1,56 +1,73 @@
 import 'package:flutter/material.dart';
 import 'services/usuario_service.dart';
 
+/// Widget reutilizável para campos de texto do cadastro
 class _CadastroTextField extends StatelessWidget {
   final String label;
   final IconData icon;
   final TextEditingController controller;
-  final bool obscure;
+  final bool isObscured;
   final String? errorText;
+  final TextInputType keyboardType;
 
   const _CadastroTextField({
     required this.label,
     required this.icon,
     required this.controller,
-    this.obscure = false,
+    this.isObscured = false,
     this.errorText,
+    this.keyboardType = TextInputType.text,
     Key? key,
   }) : super(key: key);
+
+  static const double fieldWidth = 240.0;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 240, //aumenta a largura da box
+      width: fieldWidth,
       child: TextFormField(
         controller: controller,
-        obscureText: obscure,
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Campo obrigatório';
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 16,
-          ),
-          errorText: errorText,
-        ),
+        obscureText: isObscured,
+        keyboardType: keyboardType,
+        validator: _validateField,
+        decoration: _buildInputDecoration(),
       ),
+    );
+  }
+
+  String? _validateField(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Campo obrigatório';
+    }
+    return null;
+  }
+
+  InputDecoration _buildInputDecoration() {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      errorText: errorText,
     );
   }
 }
 
 class CadastroPage extends StatefulWidget {
+  const CadastroPage({super.key});
+
   @override
   State<CadastroPage> createState() => _CadastroPageState();
 }
 
 class _CadastroPageState extends State<CadastroPage> {
+  // Constants
+  static const Color _primaryColor = Color(0xFF17603A);
+  static const double _buttonWidth = 220.0;
+  static const double _buttonHeight = 44.0;
+
+  // Form and controllers
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
@@ -59,14 +76,13 @@ class _CadastroPageState extends State<CadastroPage> {
   final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
 
+  // Services and state
   final UsuarioService _usuarioService = UsuarioService();
   bool _isLoading = false;
   bool _showValidationError = false;
   List<CampusModel> _campi = [];
   int? _campusIdSelecionado;
-
   Map<String, String?> _errosValidacao = {};
-
   OverlayEntry? _campusMenuEntry;
 
   @override
@@ -99,77 +115,87 @@ class _CadastroPageState extends State<CadastroPage> {
   }
 
   Future<void> _tentarCadastrar() async {
-    _campusMenuEntry?.remove();
-    setState(() {
-      _showValidationError = !_formKey.currentState!.validate();
-      _isLoading = !_showValidationError;
-    });
+    _fecharMenuCampus();
 
-    if (_showValidationError) {
-      return;
-    }
+    if (!_validarFormulario()) return;
 
-    if (_campusIdSelecionado == null) {
-      setState(() {
-        _showValidationError = true;
-        _errosValidacao['campus'] = 'Selecione um campus';
-      });
-      return;
-    }
+    _setLoadingState(true);
 
     try {
-      final novoUsuario = UsuarioModel(
-        nome: _nomeController.text,
-        email: _emailController.text,
-        matricula: _matriculaController.text,
-        campusId: _campusIdSelecionado!,
-        telefone: _telefoneController.text,
-        senha: _senhaController.text,
-      );
-
+      final novoUsuario = _criarUsuarioModel();
       final resposta = await _usuarioService.cadastrarUsuario(novoUsuario);
 
-      setState(() {
-        _isLoading = false;
-      });
+      _setLoadingState(false);
 
       if (resposta['sucesso']) {
-        // Exibe mensagem de sucesso
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(resposta['mensagem']),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Retorna para a tela de login
-        Navigator.pop(context);
+        await _handleCadastroSucesso(resposta['mensagem']);
       } else {
-        // Exibe mensagem de erro
-        setState(() {
-          _errosValidacao = resposta['erros'] ?? {};
-          _showValidationError = true;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(resposta['mensagem']),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _handleCadastroErro(resposta);
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao cadastrar: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _setLoadingState(false);
+      _showErrorSnackBar('Erro ao cadastrar: $e');
     }
+  }
+
+  void _fecharMenuCampus() {
+    _campusMenuEntry?.remove();
+  }
+
+  bool _validarFormulario() {
+    final isFormValid = _formKey.currentState?.validate() ?? false;
+    final isCampusSelected = _campusIdSelecionado != null;
+
+    setState(() {
+      _showValidationError = !isFormValid || !isCampusSelected;
+      if (!isCampusSelected) {
+        _errosValidacao['campus'] = 'Selecione um campus';
+      }
+    });
+
+    return isFormValid && isCampusSelected;
+  }
+
+  void _setLoadingState(bool loading) {
+    setState(() {
+      _isLoading = loading;
+    });
+  }
+
+  UsuarioModel _criarUsuarioModel() {
+    return UsuarioModel(
+      nome: _nomeController.text.trim(),
+      email: _emailController.text.trim(),
+      matricula: _matriculaController.text.trim(),
+      campusId: _campusIdSelecionado!,
+      telefone: _telefoneController.text.trim(),
+      senha: _senhaController.text,
+    );
+  }
+
+  Future<void> _handleCadastroSucesso(String mensagem) async {
+    _showSuccessSnackBar(mensagem);
+    Navigator.pop(context);
+  }
+
+  void _handleCadastroErro(Map<String, dynamic> resposta) {
+    setState(() {
+      _errosValidacao = resposta['erros'] ?? {};
+      _showValidationError = true;
+    });
+    _showErrorSnackBar(resposta['mensagem']);
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -401,7 +427,7 @@ class _CadastroPageState extends State<CadastroPage> {
                                                       null ||
                                                   _campusIdSelecionado == 0,
                                               decoration: InputDecoration(
-                                                labelText: 'Campus',
+                                                labelText: '',
                                                 prefixIcon: const Icon(
                                                   Icons.location_city_outlined,
                                                 ),
@@ -515,26 +541,27 @@ class _CadastroPageState extends State<CadastroPage> {
                           label: 'Telefone',
                           icon: Icons.phone_outlined,
                           controller: _telefoneController,
+                          keyboardType: TextInputType.phone,
                           errorText: _errosValidacao['telefone'],
                         ),
                         const SizedBox(height: 12),
                         _CadastroTextField(
                           label: 'Senha',
                           icon: Icons.lock_outline,
-                          obscure: true,
+                          isObscured: true,
                           controller: _senhaController,
                           errorText: _errosValidacao['senha'],
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
-                          width: 220,
-                          height: 44,
+                          width: _buttonWidth,
+                          height: _buttonHeight,
                           child: _isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : ElevatedButton(
                                   onPressed: _tentarCadastrar,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF17603A),
+                                    backgroundColor: _primaryColor,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),

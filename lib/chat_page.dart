@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+
+// Services
 import 'services/usuario_service.dart';
+
+// Widgets
+import 'widgets/user_header.dart';
+import 'widgets/bottom_navigation_achados.dart';
+import 'widgets/chat_info_widget.dart';
 
 class ChatPage extends StatefulWidget {
   final UsuarioModel? usuarioLogado;
@@ -11,27 +18,44 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  // User data
   late String _nomeUsuario;
   late String _iniciaisUsuario;
+
+  // State
   final List<ChatMessage> _messages = [];
 
   @override
   void initState() {
     super.initState();
+    _initializeUserData();
+    _loadInitialData();
+  }
+
+  /// Inicializa os dados do usuário
+  void _initializeUserData() {
     if (widget.usuarioLogado != null) {
-      _nomeUsuario = widget.usuarioLogado!.nome.split(' ')[0];
       final nomes = widget.usuarioLogado!.nome.split(' ');
-      if (nomes.length > 1) {
-        _iniciaisUsuario = nomes[0][0] + nomes[1][0];
-      } else {
-        _iniciaisUsuario = nomes[0].substring(0, nomes[0].length > 1 ? 2 : 1);
-      }
-      _iniciaisUsuario = _iniciaisUsuario.toUpperCase();
+      _nomeUsuario = nomes[0];
+      _iniciaisUsuario = _generateInitials(nomes);
     } else {
       _nomeUsuario = 'Usuário';
       _iniciaisUsuario = 'U';
     }
+  }
 
+  /// Gera as iniciais do usuário
+  String _generateInitials(List<String> nomes) {
+    if (nomes.length > 1) {
+      return (nomes[0][0] + nomes[1][0]).toUpperCase();
+    } else {
+      final nome = nomes[0];
+      return nome.substring(0, nome.length > 1 ? 2 : 1).toUpperCase();
+    }
+  }
+
+  /// Carrega dados iniciais da página
+  void _loadInitialData() {
     // Adicionar mensagens de exemplo
     _messages.addAll([
       ChatMessage(
@@ -53,220 +77,68 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Verificar se há um usuário logado válido
+    if (widget.usuarioLogado == null ||
+        widget.usuarioLogado!.id == null ||
+        widget.usuarioLogado!.nome.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF17603A),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.white,
-              child: Text(
-                _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Olá, $_nomeUsuario! :)',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            offset: const Offset(0, 50),
-            onSelected: (String value) {
-              switch (value) {
-                case 'perfil':
-                  Navigator.pushNamed(
-                    context,
-                    '/perfil',
-                    arguments: widget.usuarioLogado,
-                  );
-                  break;
-                case 'configuracoes':
-                  Navigator.pushNamed(
-                    context,
-                    '/configuracoes',
-                    arguments: widget.usuarioLogado,
-                  );
-                  break;
-                case 'ajuda':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ajuda em desenvolvimento')),
-                  );
-                  break;
-                case 'sobre':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sobre nós em desenvolvimento'),
-                    ),
-                  );
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'perfil',
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Perfil',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'configuracoes',
-                child: Row(
-                  children: [
-                    Icon(Icons.settings_outlined, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Configurações',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'ajuda',
-                child: Row(
-                  children: [
-                    Icon(Icons.help_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Ajuda',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'sobre',
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Sobre nós',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
       body: Column(
         children: [
-          // Header com informações
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: const Text(
-              'Fique de olho nas respostas e atualizações.\nEsperamos que seu item seja encontrado em breve!',
-              style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.4),
-              textAlign: TextAlign.center,
-            ),
+          // Cabeçalho do usuário
+          UserHeader(
+            usuario: widget.usuarioLogado!,
+            nomeUsuario: _nomeUsuario,
+            iniciaisUsuario: _iniciaisUsuario,
+          ),
+          const SizedBox(height: 3),
+
+          // Widget de informação
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: ChatInfoWidget(),
           ),
 
-          // Lista de mensagens
+          // Conteúdo principal - Lista de mensagens
           Expanded(
-            child: _messages.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Nenhuma conversa ainda.\nQuando alguém responder sobre seus itens,\nas mensagens aparecerão aqui!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                        height: 1.5,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _messages.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Nenhuma conversa ainda.\\nQuando alguém responder sobre seus itens,\\nas mensagens aparecerão aqui!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                          height: 1.5,
+                        ),
                       ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(
+                        bottom: 16,
+                        left: 3,
+                        right: 3,
+                      ),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        return _buildMessageCard(_messages[index]);
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      return _buildMessageCard(_messages[index]);
-                    },
-                  ),
+            ),
           ),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 2, // Chat tab ativo
-          backgroundColor: const Color(0xFF17603A),
-          elevation: 8,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/achados',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/perdidos',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 2:
-                // Já está na página de chat
-                break;
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Achados'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_search),
-              label: 'Perdidos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              label: 'Chat',
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationAchados(
+        usuario: widget.usuarioLogado!,
+        currentIndex: 2, // Chat tab ativo
       ),
     );
   }
