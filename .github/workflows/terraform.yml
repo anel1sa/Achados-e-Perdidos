@@ -11,8 +11,8 @@ on:
       - dev
 
 env:
-  FLUTTER_VERSION: '3.24.3'
-  JAVA_VERSION: '21'
+  FLUTTER_VERSION: '3.35.5'
+  JAVA_VERSION: '25'
   TERRAFORM_VERSION: '1.6.0'
   AWS_REGION: 'sa-east-1'
 
