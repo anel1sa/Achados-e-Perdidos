@@ -4,7 +4,7 @@ import 'services/usuario_service.dart';
 class ConfiguracoesPage extends StatefulWidget {
   final UsuarioModel? usuarioLogado;
 
-  const ConfiguracoesPage({Key? key, this.usuarioLogado}) : super(key: key);
+  const ConfiguracoesPage({super.key, required this.usuarioLogado});
 
   @override
   State<ConfiguracoesPage> createState() => _ConfiguracoesPageState();
@@ -361,10 +361,10 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             Switch(
               value: value,
               onChanged: enabled ? onChanged : null,
-              activeColor: Colors.white,
-              activeTrackColor: Colors.white.withOpacity(0.3),
+              thumbColor: WidgetStateProperty.all(Colors.white),
+              activeTrackColor: Colors.white.withValues(alpha: 0.3),
               inactiveThumbColor: Colors.white70,
-              inactiveTrackColor: Colors.white.withOpacity(0.2),
+              inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
             ),
           ],
         ),
@@ -391,7 +391,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   });
                   Navigator.pop(context);
                 },
-                activeColor: const Color(0xFF17603A),
               ),
               RadioListTile<bool>(
                 title: const Text('Desativado'),
@@ -403,7 +402,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   });
                   Navigator.pop(context);
                 },
-                activeColor: const Color(0xFF17603A),
               ),
             ],
           ),
@@ -431,7 +429,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   });
                   Navigator.pop(context);
                 },
-                activeColor: const Color(0xFF17603A),
               );
             }).toList(),
           ),
@@ -459,7 +456,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                   });
                   Navigator.pop(context);
                 },
-                activeColor: const Color(0xFF17603A),
               );
             }).toList(),
           ),

@@ -74,7 +74,7 @@ class ItemService {
 
       return await _enrichWithUserNames(itens);
     } catch (e) {
-      print('Erro ao carregar itens achados: $e');
+      // Erro ao carregar itens
       return [];
     }
   }

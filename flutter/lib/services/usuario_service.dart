@@ -128,7 +128,7 @@ class UsuarioService {
       final List<dynamic> usuariosJson = data['usuarios_cadastrados'];
       return usuariosJson.map((json) => UsuarioModel.fromJson(json)).toList();
     } catch (e) {
-      print('Erro ao carregar usuários cadastrados: $e');
+      // Erro ao carregar usuários cadastrados
       return [];
     }
   }
@@ -144,7 +144,7 @@ class UsuarioService {
       };
 
       await file.writeAsString(json.encode(data));
-      print('Usuários salvos com sucesso em: ${file.path}');
+      // Usuários salvos com sucesso
     } catch (e) {
       throw Exception('Erro ao salvar usuários: $e');
     }
@@ -253,7 +253,7 @@ class UsuarioService {
 
       return _buildSuccessResponse(novoUsuarioCompleto);
     } catch (e) {
-      print('Erro ao cadastrar usuário: $e');
+      // Erro ao cadastrar usuário
       return _buildErrorResponse('Erro ao cadastrar usuário: $e');
     }
   }
@@ -319,10 +319,10 @@ class UsuarioService {
       if (!await file.exists()) {
         await _criarArquivoInicial(file);
       } else {
-        print('Arquivo de usuários cadastrados já existe em: ${file.path}');
+        // Arquivo de usuários cadastrados já existe
       }
     } catch (e) {
-      print('Erro ao inicializar usuários cadastrados: $e');
+      // Erro ao inicializar usuários cadastrados
     }
   }
 
@@ -332,6 +332,6 @@ class UsuarioService {
       _usuariosCadastradosAsset,
     );
     await file.writeAsString(initialData);
-    print('Arquivo de usuários cadastrados inicializado em: ${file.path}');
+    // Arquivo de usuários cadastrados inicializado
   }
 }

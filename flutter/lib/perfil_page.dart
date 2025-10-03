@@ -6,7 +6,7 @@ import 'services/usuario_service.dart';
 class PerfilPage extends StatefulWidget {
   final UsuarioModel? usuarioLogado;
 
-  const PerfilPage({Key? key, this.usuarioLogado}) : super(key: key);
+  const PerfilPage({super.key, required this.usuarioLogado});
 
   @override
   State<PerfilPage> createState() => _PerfilPageState();

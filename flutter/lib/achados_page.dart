@@ -84,7 +84,7 @@ class _AchadosPageState extends State<AchadosPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Erro ao carregar itens achados: $e');
+      // Erro ao carregar itens achados
       setState(() {
         _isLoading = false;
       });
@@ -101,7 +101,7 @@ class _AchadosPageState extends State<AchadosPage> {
         _campusSelecionado = campi.isNotEmpty ? campi.first : null;
       });
     } catch (e) {
-      print('Erro ao carregar campi: $e');
+      // Erro ao carregar campi
     }
   }
 

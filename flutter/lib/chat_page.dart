@@ -11,7 +11,7 @@ import 'widgets/chat_info_widget.dart';
 class ChatPage extends StatefulWidget {
   final UsuarioModel? usuarioLogado;
 
-  const ChatPage({Key? key, this.usuarioLogado}) : super(key: key);
+  const ChatPage({super.key, required this.usuarioLogado});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -231,11 +231,11 @@ class IndividualChatPage extends StatefulWidget {
   final String? mensagemInicial;
 
   const IndividualChatPage({
-    Key? key,
+    super.key,
     required this.contact,
     this.usuarioLogado,
     this.mensagemInicial,
-  }) : super(key: key);
+  });
 
   @override
   State<IndividualChatPage> createState() => _IndividualChatPageState();

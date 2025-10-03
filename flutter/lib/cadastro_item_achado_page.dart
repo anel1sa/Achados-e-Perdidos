@@ -6,8 +6,7 @@ import 'services/usuario_service.dart';
 class CadastroItemAchadoPage extends StatefulWidget {
   final UsuarioModel? usuarioLogado;
 
-  const CadastroItemAchadoPage({Key? key, this.usuarioLogado})
-    : super(key: key);
+  const CadastroItemAchadoPage({super.key, this.usuarioLogado});
 
   @override
   State<CadastroItemAchadoPage> createState() => _CadastroItemAchadoPageState();
@@ -23,7 +22,7 @@ class _CadastroItemAchadoPageState extends State<CadastroItemAchadoPage> {
 
   bool _isLoading = false;
   bool _showValidationError = false;
-  List<File> _imagensSelecionadas = [];
+  final List<File> _imagensSelecionadas = [];
   bool _uploading = false;
   double _uploadProgress = 0.0;
 
@@ -76,21 +75,25 @@ class _CadastroItemAchadoPageState extends State<CadastroItemAchadoPage> {
         await _simularUpload();
       } else {
         // Usuário cancelou a seleção
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Seleção de imagem cancelada'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Seleção de imagem cancelada'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     } catch (e) {
       // Erro ao acessar galeria
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao acessar galeria: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao acessar galeria: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -153,25 +156,29 @@ class _CadastroItemAchadoPageState extends State<CadastroItemAchadoPage> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Item cadastrado com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Item cadastrado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      Navigator.pop(context);
+        Navigator.pop(context);
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao cadastrar item: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao cadastrar item: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

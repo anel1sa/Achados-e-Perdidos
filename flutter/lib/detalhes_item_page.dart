@@ -11,8 +11,7 @@ class DetalhesItemPage extends StatefulWidget {
   final ItemAchadoModel item;
   final UsuarioModel? usuarioLogado;
 
-  const DetalhesItemPage({Key? key, required this.item, this.usuarioLogado})
-    : super(key: key);
+  const DetalhesItemPage({super.key, required this.item, this.usuarioLogado});
 
   @override
   State<DetalhesItemPage> createState() => _DetalhesItemPageState();

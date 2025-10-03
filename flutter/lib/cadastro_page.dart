@@ -17,8 +17,7 @@ class _CadastroTextField extends StatelessWidget {
     this.isObscured = false,
     this.errorText,
     this.keyboardType = TextInputType.text,
-    Key? key,
-  }) : super(key: key);
+  });
 
   static const double fieldWidth = 240.0;
 
@@ -98,7 +97,7 @@ class _CadastroPageState extends State<CadastroPage> {
         _campi = campi;
       });
     } catch (e) {
-      print('Erro ao carregar campi: $e');
+      // Erro ao carregar campi
     }
   }
 

@@ -212,13 +212,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _navegarParaCadastro() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CadastroPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -84,7 +84,7 @@ class _PerdidosPageState extends State<PerdidosPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Erro ao carregar itens perdidos: $e');
+      // Erro ao carregar itens perdidos
       setState(() {
         _isLoading = false;
       });
@@ -101,7 +101,7 @@ class _PerdidosPageState extends State<PerdidosPage> {
         _campusSelecionado = campi.isNotEmpty ? campi.first : null;
       });
     } catch (e) {
-      print('Erro ao carregar campi: $e');
+      // Erro ao carregar campi
     }
   }
 
