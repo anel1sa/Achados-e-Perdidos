@@ -64,7 +64,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/Logo.png
+    - assets/logo.png
     - assets/db.json
     - assets/cadastro_usuario.json
     - assets/usuarios_cadastrados.json
