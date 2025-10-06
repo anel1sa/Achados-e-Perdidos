@@ -6,9 +6,7 @@ import 'chat_page.dart';
 class ItemAchadoPage extends StatefulWidget {
   final ItemAchadoModel item;
   final UsuarioModel? usuarioLogado;
-
   const ItemAchadoPage({super.key, required this.item, this.usuarioLogado});
-
   @override
   State<ItemAchadoPage> createState() => _ItemAchadoPageState();
 }
