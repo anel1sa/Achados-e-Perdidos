@@ -18,51 +18,51 @@ env:
 
 jobs:
   # Job 1: Build e Test do Frontend Flutter
-  build-frontend:
-    name: "Build Frontend Flutter"
-    runs-on: ubuntu-latest
+  # build-frontend:
+  #   name: "Build Frontend Flutter"
+  #   runs-on: ubuntu-latest
     
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+  #         channel: 'stable'
 
-      - name: Flutter Doctor
-        run: flutter doctor -v
-        working-directory: ./flutter
+  #     - name: Flutter Doctor
+  #       run: flutter doctor -v
+  #       working-directory: ./flutter
 
-      - name: Get Flutter Dependencies
-        run: flutter pub get
-        working-directory: ./flutter
+  #     - name: Get Flutter Dependencies
+  #       run: flutter pub get
+  #       working-directory: ./flutter
 
-      - name: Run Flutter Analyzer
-        run: flutter analyze
-        working-directory: ./flutter
+  #     - name: Run Flutter Analyzer
+  #       run: flutter analyze
+  #       working-directory: ./flutter
 
-      - name: Run Flutter Tests
-        run: flutter test
-        working-directory: ./flutter
+  #     - name: Run Flutter Tests
+  #       run: flutter test
+  #       working-directory: ./flutter
 
-      - name: Build Flutter Web
-        run: flutter build web --release
-        working-directory: ./flutter
+  #     - name: Build Flutter Web
+  #       run: flutter build web --release
+  #       working-directory: ./flutter
 
-      - name: Build Flutter APK
-        run: flutter build apk --release
-        working-directory: ./flutter
+  #     - name: Build Flutter APK
+  #       run: flutter build apk --release
+  #       working-directory: ./flutter
 
-      - name: Upload Flutter Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: flutter-builds
-          path: |
-            flutter/build/web/
-            flutter/build/app/outputs/flutter-apk/
+  #     - name: Upload Flutter Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: flutter-builds
+  #         path: |
+  #           flutter/build/web/
+  #           flutter/build/app/outputs/flutter-apk/
 
   # Job 2: Build do Backend Java Spring Boot
 #   build-backend:
@@ -134,7 +134,7 @@ jobs:
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    needs: [build-frontend ] #, build-backend]
+    #needs: [build-frontend ] #, build-backend]
     if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
     
     steps:
@@ -226,7 +226,7 @@ jobs:
   deploy-dev:
     name: "Deploy to Development"
     runs-on: ubuntu-latest
-    needs: [build-frontend ] #, build-backend]
+    #needs: [build-frontend ] #, build-backend]
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     
     steps:
