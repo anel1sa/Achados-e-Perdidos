@@ -17,124 +17,10 @@ env:
   AWS_REGION: 'sa-east-1'
 
 jobs:
-  # Job 1: Build e Test do Frontend Flutter
-  # build-frontend:
-  #   name: "Build Frontend Flutter"
-  #   runs-on: ubuntu-latest
-    
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: ${{ env.FLUTTER_VERSION }}
-  #         channel: 'stable'
-
-  #     - name: Flutter Doctor
-  #       run: flutter doctor -v
-  #       working-directory: ./flutter
-
-  #     - name: Get Flutter Dependencies
-  #       run: flutter pub get
-  #       working-directory: ./flutter
-
-  #     - name: Run Flutter Analyzer
-  #       run: flutter analyze
-  #       working-directory: ./flutter
-
-  #     - name: Run Flutter Tests
-  #       run: flutter test
-  #       working-directory: ./flutter
-
-  #     - name: Build Flutter Web
-  #       run: flutter build web --release
-  #       working-directory: ./flutter
-
-  #     - name: Build Flutter APK
-  #       run: flutter build apk --release
-  #       working-directory: ./flutter
-
-  #     - name: Upload Flutter Artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: flutter-builds
-  #         path: |
-  #           flutter/build/web/
-  #           flutter/build/app/outputs/flutter-apk/
-
-  # Job 2: Build do Backend Java Spring Boot
-#   build-backend:
-#     name: "Build Backend Java Spring Boot"
-#     runs-on: ubuntu-latest
-    
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v4
-
-#       - name: Setup Java 21
-#         uses: actions/setup-java@v4
-#         with:
-#           java-version: ${{ env.JAVA_VERSION }}
-#           distribution: 'temurin'
-
-#       - name: Check for Backend Structure
-#         id: backend-check
-#         run: |
-#           if [ -f "backend/pom.xml" ]; then
-#             echo "backend-path=backend" >> $GITHUB_OUTPUT
-#             echo "backend-found=true" >> $GITHUB_OUTPUT
-#           elif [ -f "api/pom.xml" ]; then
-#             echo "backend-path=api" >> $GITHUB_OUTPUT
-#             echo "backend-found=true" >> $GITHUB_OUTPUT
-#           elif [ -f "pom.xml" ]; then
-#             echo "backend-path=." >> $GITHUB_OUTPUT
-#             echo "backend-found=true" >> $GITHUB_OUTPUT
-#           else
-#             echo "backend-path=none" >> $GITHUB_OUTPUT
-#             echo "backend-found=false" >> $GITHUB_OUTPUT
-#             echo "⚠️ Backend Java não encontrado. Pulando build do backend."
-#           fi
-
-#       - name: Build Java Backend (Maven)
-#         if: steps.backend-check.outputs.backend-found == 'true'
-#         run: |
-#           cd ${{ steps.backend-check.outputs.backend-path }}
-#           if [ -f "pom.xml" ]; then
-#             if [ -f "mvnw" ]; then
-#               ./mvnw clean compile test package
-#             else
-#               mvn clean compile test package
-#             fi
-#           fi
-
-#       - name: Build Java Backend (Gradle)
-#         if: steps.backend-check.outputs.backend-found == 'true'
-#         run: |
-#           cd ${{ steps.backend-check.outputs.backend-path }}
-#           if [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
-#             if [ -f "gradlew" ]; then
-#               ./gradlew clean build test
-#             else
-#               gradle clean build test
-#             fi
-#           fi
-
-#       - name: Upload Backend Artifacts
-#         if: steps.backend-check.outputs.backend-found == 'true'
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: backend-jar
-#           path: |
-#             ${{ steps.backend-check.outputs.backend-path }}/target/*.jar
-#             ${{ steps.backend-check.outputs.backend-path }}/build/libs/*.jar
-
-  # Job 3: Terraform Plan
+  # Job 3: Terraform Plan (PRs e Dev)
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    #needs: [build-frontend ] #, build-backend]
     if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
     
     steps:
@@ -164,6 +50,22 @@ jobs:
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
 
+      - name: Unlock orphaned locks for branch
+        run: |
+          LOCKS=$(aws dynamodb scan \
+            --table-name state-sa-east-1-github-aep \
+            --query "Items[?contains(LockID.S, '${{ steps.env-setup.outputs.environment }}')].LockID.S" \
+            --output text)
+          if [ -n "$LOCKS" ]; then
+            for LOCK in $LOCKS; do
+              echo "Liberando lock órfão $LOCK..."
+              terraform force-unlock -force $LOCK || echo "Não foi possível liberar $LOCK"
+            done
+          else
+            echo "Nenhum lock órfão encontrado para ${{ steps.env-setup.outputs.environment }}."
+          fi
+        working-directory: ./terraform
+
       - name: Terraform Init
         run: terraform init -backend-config="envs/${{ steps.env-setup.outputs.environment }}/backend.tfvars"
         working-directory: ./terraform
@@ -185,7 +87,7 @@ jobs:
           name: terraform-plan-${{ steps.env-setup.outputs.environment }}
           path: terraform/tfplan-${{ steps.env-setup.outputs.environment }}
 
-  # Job 4: Terraform Apply (apenas para main e com aprovação manual)
+  # Job 4: Terraform Apply (apenas main / produção)
   terraform-apply:
     name: "Terraform Apply Production"
     runs-on: ubuntu-latest
@@ -226,7 +128,6 @@ jobs:
   deploy-dev:
     name: "Deploy to Development"
     runs-on: ubuntu-latest
-    #needs: [build-frontend ] #, build-backend]
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     
     steps:
@@ -244,6 +145,22 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Unlock orphaned locks for dev branch
+        run: |
+          LOCKS=$(aws dynamodb scan \
+            --table-name state-sa-east-1-github-aep \
+            --query "Items[?contains(LockID.S, 'dev')].LockID.S" \
+            --output text)
+          if [ -n "$LOCKS" ]; then
+            for LOCK in $LOCKS; do
+              echo "Liberando lock órfão $LOCK..."
+              terraform force-unlock -force $LOCK || echo "Não foi possível liberar $LOCK"
+            done
+          else
+            echo "Nenhum lock órfão encontrado para dev."
+          fi
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: terraform init -backend-config="envs/dev/backend.tfvars"
@@ -268,7 +185,6 @@ jobs:
 
       - name: Deploy to S3 (Dev)
         run: |
-          # Obter nome do bucket do Terraform output
           BUCKET_NAME=$(terraform output -raw frontend_bucket_name)
           aws s3 sync ./builds/web/ s3://$BUCKET_NAME/ --delete
           echo "🚀 Frontend deployed to Development environment: $BUCKET_NAME"
