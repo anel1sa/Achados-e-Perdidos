@@ -177,11 +177,11 @@ jobs:
         run: terraform apply -auto-approve tfplan-dev
         working-directory: ./terraform
 
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: flutter-builds
-          path: ./builds/
+      # - name: Download Build Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: flutter-builds
+      #     path: ./builds/
 
       - name: Deploy to S3 (Dev)
         run: |
