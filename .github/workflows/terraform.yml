@@ -49,7 +49,8 @@ jobs:
         working-directory: ./flutter
 
       - name: Build Flutter Web
-        run: flutter build web --release
+        run: |
+          flutter build web --release
         working-directory: ./flutter
 
       - name: Build Flutter APK
@@ -198,6 +199,6 @@ jobs:
       - name: Deploy to S3 (Dev)
         run: |
           BUCKET_NAME=$(terraform output -raw frontend_bucket_name)
-          aws s3 sync ./builds/flutter/build/web/ s3://$BUCKET_NAME/ --delete
+          aws s3 sync ../builds/flutter/build/web/ s3://$BUCKET_NAME/ --delete
           echo "🚀 Frontend deployed to Development environment: $BUCKET_NAME"
         working-directory: ./terraform
