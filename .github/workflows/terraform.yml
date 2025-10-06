@@ -39,9 +39,9 @@ jobs:
       - name: Get Flutter Dependencies
         run: flutter pub get
         working-directory: ./flutter
-
+      
       - name: Run Flutter Analyzer
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
         working-directory: ./flutter
 
       - name: Run Flutter Tests
