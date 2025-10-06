@@ -17,12 +17,60 @@ env:
   AWS_REGION: 'sa-east-1'
 
 jobs:
+  # Job 1: Build e Test do Frontend Flutter
+  build-frontend:
+    name: "Build Frontend Flutter"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+        working-directory: ./flutter
+
+      - name: Get Flutter Dependencies
+        run: flutter pub get
+        working-directory: ./flutter
+
+      - name: Run Flutter Analyzer
+        run: flutter analyze
+        working-directory: ./flutter
+
+      - name: Run Flutter Tests
+        run: flutter test
+        working-directory: ./flutter
+
+      - name: Build Flutter Web
+        run: flutter build web --release
+        working-directory: ./flutter
+
+      - name: Build Flutter APK
+        run: flutter build apk --release
+        working-directory: ./flutter
+
+      - name: Upload Flutter Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-builds
+          path: |
+            flutter/build/web/
+            flutter/build/app/outputs/flutter-apk/
+
   # Job 3: Terraform Plan (PRs e Dev)
   terraform-plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
+    needs: [build-frontend]   # Agora depende do build do Flutter
     if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -48,7 +96,6 @@ jobs:
             echo "environment=dev" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
-          fi
 
       - name: Unlock orphaned locks for branch
         run: |
@@ -59,7 +106,7 @@ jobs:
           if [ -n "$LOCKS" ]; then
             for LOCK in $LOCKS; do
               echo "Liberando lock órfão $LOCK..."
-              terraform force-unlock -force $LOCK || echo "Não foi possível liberar $LOCK"
+              terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
             done
           else
             echo "Nenhum lock órfão encontrado para ${{ steps.env-setup.outputs.environment }}."
@@ -87,49 +134,13 @@ jobs:
           name: terraform-plan-${{ steps.env-setup.outputs.environment }}
           path: terraform/tfplan-${{ steps.env-setup.outputs.environment }}
 
-  # Job 4: Terraform Apply (apenas main / produção)
-  terraform-apply:
-    name: "Terraform Apply Production"
-    runs-on: ubuntu-latest
-    needs: [terraform-plan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init -backend-config="envs/prd/backend.tfvars"
-        working-directory: ./terraform
-
-      - name: Download Terraform Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-plan-prd
-          path: terraform/
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan-prd
-        working-directory: ./terraform
-
   # Job 5: Deploy para Dev (automático)
   deploy-dev:
     name: "Deploy to Development"
     runs-on: ubuntu-latest
+    needs: [build-frontend, terraform-plan]   # Depende do build do Flutter e do plan do Terraform
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -155,7 +166,7 @@ jobs:
           if [ -n "$LOCKS" ]; then
             for LOCK in $LOCKS; do
               echo "Liberando lock órfão $LOCK..."
-              terraform force-unlock -force $LOCK || echo "Não foi possível liberar $LOCK"
+              terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
             done
           else
             echo "Nenhum lock órfão encontrado para dev."
@@ -177,15 +188,15 @@ jobs:
         run: terraform apply -auto-approve tfplan-dev
         working-directory: ./terraform
 
-      # - name: Download Build Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: flutter-builds
-      #     path: ./builds/
+      - name: Download Flutter Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: flutter-builds
+          path: ./builds/
 
       - name: Deploy to S3 (Dev)
         run: |
           BUCKET_NAME=$(terraform output -raw frontend_bucket_name)
-          aws s3 sync ./builds/web/ s3://$BUCKET_NAME/ --delete
+          aws s3 sync ./builds/flutter/build/web/ s3://$BUCKET_NAME/ --delete
           echo "🚀 Frontend deployed to Development environment: $BUCKET_NAME"
         working-directory: ./terraform
