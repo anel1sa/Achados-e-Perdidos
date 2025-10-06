@@ -96,6 +96,7 @@ jobs:
             echo "environment=dev" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
 
       - name: Unlock orphaned locks for branch
         run: |
