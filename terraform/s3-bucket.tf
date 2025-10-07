@@ -1,9 +1,9 @@
 # Bucket para imagens
 resource "aws_s3_bucket" "images" {
-    bucket = "${var.project_name}-${var.env}-images-bucket"
+    bucket = "${var.base_name}-${var.env}-images-bucket"
     
     tags = merge(var.tags, {
-        Name = "${var.project_name}-${var.env}-images-bucket"
+        Name = "${var.base_name}-${var.env}-images-bucket"
         Type = "images"
     })
 }
@@ -17,10 +17,10 @@ resource "aws_s3_bucket_versioning" "images_versioning" {
 
 # Bucket para frontend (Flutter Web)
 resource "aws_s3_bucket" "frontend" {
-    bucket = "${var.project_name}-${var.env}-frontend"
+    bucket = "${var.base_name}-${var.env}-frontend"
     
     tags = merge(var.tags, {
-        Name = "${var.project_name}-${var.env}-frontend"
+        Name = "${var.base_name}-${var.env}-frontend"
         Type = "frontend"
     })
 }
@@ -72,4 +72,20 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 
   depends_on = [aws_s3_bucket_public_access_block.frontend_pab]
+}
+
+resource "aws_s3_bucket" "backend" {
+    bucket = "${var.base_name}-${var.env}-backend"
+    
+    tags = merge(var.tags, {
+        Name = "${var.base_name}-${var.env}-backend"
+        Type = "backend"
+    })
+}
+
+resource "aws_s3_bucket_versioning" "backend_versioning" {
+  bucket = aws_s3_bucket.backend.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }

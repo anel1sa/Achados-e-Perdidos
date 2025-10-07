@@ -10,6 +10,11 @@ variable "project_name" {
     default     = "aep"
 }
 
+variable "base_name" {
+    type = string
+    description = "Base para o nome dos servicos"
+}
+
 variable "env" {
     type        = string
     description = "Ambiente (dev, prd)"

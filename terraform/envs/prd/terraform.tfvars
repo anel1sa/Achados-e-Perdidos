@@ -1,4 +1,5 @@
-project_name = "aep"
+project_name = "achados_e_perdidos"
+base_name = "achados-e-perdidos"
 region = "sa-east-1"
 env = "prd"
 
