@@ -1,0 +1,71 @@
+// App Runner para a API Achados-e-Perdidos
+
+resource "aws_ecr_repository" "achados_api" {
+  name = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-api"
+  tags = var.tags
+}
+
+resource "aws_iam_role" "apprunner_role" {
+  name = "${var.base_name != "" ? var.base_name : "achados-achados"}-apprunner-role-${var.env}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "build.apprunner.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
+  role       = aws_iam_role.apprunner_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
+}
+
+resource "aws_apprunner_service" "achados_api_service" {
+  service_name = "${var.base_name != "" ? var.base_name : "achados-api"}-${var.env}"
+
+  source_configuration {
+    image_repository {
+      image_identifier      = "${aws_ecr_repository.achados_api.repository_url}:latest"
+      image_repository_type = "ECR"
+
+      image_configuration {
+        port = "8080"
+
+        runtime_environment_variables = {
+          # Variáveis sensíveis devem preferencialmente vir do Secrets Manager ou do Parameter Store
+          SPRING_DATASOURCE_URL      = ""
+          SPRING_DATASOURCE_USERNAME = ""
+          SPRING_DATASOURCE_PASSWORD = ""
+          MONGODB_URI                = ""
+          AWS_REGION                 = var.region
+          STORAGE_BUCKET             = "${var.base_name}-${var.env}-backend"
+        }
+      }
+    }
+
+    authentication_configuration {
+      access_role_arn = aws_iam_role.apprunner_role.arn
+    }
+
+    auto_deployments_enabled = true
+  }
+
+  instance_configuration {
+    cpu    = "1024"
+    memory = "2048"
+  }
+
+  tags = var.tags
+}
+
+output "app_runner_url" {
+  description = "URL pública do App Runner"
+  value       = aws_apprunner_service.achados_api_service.service_url
+}

@@ -202,3 +202,64 @@ jobs:
           aws s3 sync ../builds/web/ s3://$BUCKET_NAME/ --delete
           echo "🚀 Frontend deployed to Development environment: $BUCKET_NAME"
         working-directory: ./terraform
+
+  # Job 6: Build e Deploy da API no App Runner
+  app-runner-deploy:
+    name: "Build & Deploy API to App Runner"
+    runs-on: ubuntu-latest
+    needs: [deploy-dev]
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: (Info) Using default repo name
+        run: |
+          echo "Using ECR repository name: achados-e-perdidos-api"
+
+      - name: Build Docker image
+        run: |
+          cd fonte/api
+          docker build -t achados-api:latest .
+
+      - name: Get AWS Account ID
+        id: account
+        run: |
+          echo "account=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_OUTPUT
+
+      - name: Login to ECR
+        run: |
+          REGION=${{ env.AWS_REGION }}
+          ACCOUNT=${{ steps.account.outputs.account }}
+          REPO_NAME=${{ github.event.repository.name }}-api
+          aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin ${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com
+
+      - name: Tag and Push image to ECR
+        run: |
+          REGION=${{ env.AWS_REGION }}
+          ACCOUNT=${{ steps.account.outputs.account }}
+          REPO=${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/achados-e-perdidos-api
+          docker tag achados-api:latest ${REPO}:latest
+          docker push ${REPO}:latest
+
+      - name: Start App Runner deployment
+        run: |
+          # encontra o ARN do serviço App Runner pelo nome padrão
+          SERVICE_ARN=$(aws apprunner list-services --region ${{ env.AWS_REGION }} --query "ServiceSummaryList[?starts_with(ServiceName, 'achados')].ServiceArn | [0]" --output text)
+          if [ -z "$SERVICE_ARN" ] || [ "$SERVICE_ARN" == "None" ]; then
+            echo "Nenhum serviço App Runner encontrado que comece com 'achados'"
+            exit 0
+          fi
+          aws apprunner start-deployment --service-arn $SERVICE_ARN --region ${{ env.AWS_REGION }}
+        shell: bash
