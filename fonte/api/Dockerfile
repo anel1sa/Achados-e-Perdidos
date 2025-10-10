@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM maven:3.9.8-eclipse-temurin-25 AS build
+FROM eclipse-temurin:25-jdk AS build
+RUN apt-get update && apt-get install -y maven
 WORKDIR /workspace
 
 # Cache dependencies first
@@ -20,5 +21,3 @@ COPY --from=build /workspace/target/API-0.0.1-SNAPSHOT.jar /app/app.jar
 EXPOSE 8080
 
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
-
-
