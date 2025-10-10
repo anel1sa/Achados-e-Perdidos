@@ -144,6 +144,9 @@ jobs:
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
 
     steps:
+      - name: Configure AWS region
+        run: aws configure set region us-east-1
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 

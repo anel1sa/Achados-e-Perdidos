@@ -1,4 +1,4 @@
-project_name = "achados_e_perdidos"
+project_name = "achados-e-perdidos"
 base_name = "achados-e-perdidos"
 region = "us-east-1"
 env = "dev"

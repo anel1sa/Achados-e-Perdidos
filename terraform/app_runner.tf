@@ -6,7 +6,7 @@ resource "aws_ecr_repository" "achados_api" {
 }
 
 resource "aws_iam_role" "apprunner_role" {
-  name = "${var.base_name != "" ? var.base_name : "achados-achados"}-apprunner-role-${var.env}"
+  name = "${var.base_name != "" ? var.base_name : "achados-achados"}-apprunner-${var.env}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
