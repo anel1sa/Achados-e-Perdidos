@@ -34,7 +34,7 @@ output "aws_region" {
   value       = var.region
 }
 
-output "app_runner_url" {
-  description = "URL pública do App Runner (API)"
-  value       = try(aws_apprunner_service.achados_api_service.service_url, "")
-}
+# output "app_runner_url" {
+#   description = "URL pública do App Runner (API)"
+#   value       = try(aws_apprunner_service.achados_api_service.service_url, "")
+# }
