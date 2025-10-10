@@ -14,7 +14,7 @@ Após análise completa dos arquivos Terraform, a configuração está **funcion
 
 ### ✅ 2. `provider.tf`
 - **Status**: OK ✅
-- **Região**: `sa-east-1` (São Paulo)
+- **Região**: `us-east-1` (São Paulo)
 - **Configuração**: Compatível com pipeline
 
 ### ✅ 3. `variables.tf` 
@@ -71,8 +71,8 @@ Após análise completa dos arquivos Terraform, a configuração está **funcion
 
 ### 1. Buckets para Terraform State (Criar manualmente):
 ```bash
-aws s3 mb s3://achados-perdidos-terraform-state-dev --region sa-east-1
-aws s3 mb s3://achados-perdidos-terraform-state-prd --region sa-east-1
+aws s3 mb s3://achados-perdidos-terraform-state-dev --region us-east-1
+aws s3 mb s3://achados-perdidos-terraform-state-prd --region us-east-1
 ```
 
 ### 2. Tabelas DynamoDB para State Lock:
@@ -82,14 +82,14 @@ aws dynamodb create-table \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-    --region sa-east-1
+    --region us-east-1
 
 aws dynamodb create-table \
     --table-name terraform-state-lock-prd \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-    --region sa-east-1
+    --region us-east-1
 ```
 
 ## 🎯 **Pipeline Flow Validado:**

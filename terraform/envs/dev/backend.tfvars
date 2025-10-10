@@ -1,8 +1,8 @@
-bucket = "state-sa-east-1-github-aep"
+bucket = "state-us-east-1-github-aep"
 key    = "dev/terraform.tfstate"
-region = "sa-east-1"
+region = "us-east-1"
 encrypt = true
-dynamodb_table = "state-sa-east-1-github-aep"
+dynamodb_table = "state-us-east-1-github-aep"
 
 # Configurações adicionais para evitar warnings
 skip_credentials_validation = false

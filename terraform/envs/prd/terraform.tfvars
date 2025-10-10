@@ -1,6 +1,6 @@
 project_name = "achados_e_perdidos"
 base_name = "achados-e-perdidos"
-region = "sa-east-1"
+region = "us-east-1"
 env = "prd"
 
 # Tags para recursos

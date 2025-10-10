@@ -58,7 +58,7 @@ Para cada secret necessário:
                 "dynamodb:PutItem",
                 "dynamodb:DeleteItem"
             ],
-            "Resource": "arn:aws:dynamodb:sa-east-1:*:table/terraform-state-lock-*"
+            "Resource": "arn:aws:dynamodb:us-east-1:*:table/terraform-state-lock-*"
         }
     ]
 }
@@ -71,22 +71,22 @@ Crie manualmente os seguintes buckets (ou use Terraform para criá-los):
 
 ```bash
 # Buckets para armazenar o state do Terraform
-aws s3 mb s3://achados-perdidos-terraform-state-dev --region sa-east-1
-aws s3 mb s3://achados-perdidos-terraform-state-prd --region sa-east-1
+aws s3 mb s3://achados-perdidos-terraform-state-dev --region us-east-1
+aws s3 mb s3://achados-perdidos-terraform-state-prd --region us-east-1
 ```
 
 ### Tabelas DynamoDB para State Lock
 ```bash
 # Tabela para lock do state (ATUALIZADO)
 aws dynamodb create-table \
-    --table-name state-sa-east-1-github-aep \
+    --table-name state-us-east-1-github-aep \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-    --region sa-east-1
+    --region us-east-1
 
 # OU se preferir usar a mesma tabela para ambos ambientes (recomendado)
-# A tabela "state-sa-east-1-github-aep" já foi criada ✅
+# A tabela "state-us-east-1-github-aep" já foi criada ✅
 ```
 
 ## ✅ Verificar Configuração

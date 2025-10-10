@@ -14,7 +14,7 @@ env:
   FLUTTER_VERSION: '3.35.5'
   JAVA_VERSION: '25'
   TERRAFORM_VERSION: '1.6.0'
-  AWS_REGION: 'sa-east-1'
+  AWS_REGION: 'us-east-1'
 
 jobs:
   # Job 1: Build e Test do Frontend Flutter
@@ -102,7 +102,7 @@ jobs:
       - name: Unlock orphaned locks for branch
         run: |
           LOCKS=$(aws dynamodb scan \
-            --table-name state-sa-east-1-github-aep \
+            --table-name state-us-east-1-github-aep \
             --query "Items[?contains(LockID.S, '${{ steps.env-setup.outputs.environment }}')].LockID.S" \
             --output text)
           if [ -n "$LOCKS" ]; then
@@ -162,7 +162,7 @@ jobs:
       - name: Unlock orphaned locks for dev branch
         run: |
           LOCKS=$(aws dynamodb scan \
-            --table-name state-sa-east-1-github-aep \
+            --table-name state-us-east-1-github-aep \
             --query "Items[?contains(LockID.S, 'dev')].LockID.S" \
             --output text)
           if [ -n "$LOCKS" ]; then

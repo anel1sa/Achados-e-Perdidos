@@ -24,7 +24,7 @@ The parameter "dynamodb_table" is deprecated. Use parameter "use_lockfile" inste
 # backend.tfvars (nova sintaxe)
 bucket = "achados-perdidos-terraform-state-dev"
 key    = "dev/terraform.tfstate"
-region = "sa-east-1"
+region = "us-east-1"
 encrypt = true
 use_lockfile = true
 # Não especificar dynamodb_table diretamente
@@ -52,7 +52,7 @@ Error: failed to refresh cached credentials, no EC2 IMDS role found
    ```bash
    export AWS_ACCESS_KEY_ID="AKIA..."
    export AWS_SECRET_ACCESS_KEY="..."
-   export AWS_DEFAULT_REGION="sa-east-1"
+   export AWS_DEFAULT_REGION="us-east-1"
    ```
 
 3. **Pular backend remoto para testes locais:**

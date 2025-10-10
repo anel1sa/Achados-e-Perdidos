@@ -5,14 +5,14 @@
 ### ✅ **Recursos AWS Criados e Configurados:**
 
 #### **S3 Bucket:**
-- **Nome**: `state-sa-east-1-github-aep` ✅
+- **Nome**: `state-us-east-1-github-aep` ✅
 - **Uso**: Armazenamento do Terraform state para dev e prd
 - **Keys**:
   - Dev: `dev/terraform.tfstate`
   - Prd: `prd/terraform.tfstate`
 
 #### **DynamoDB Table:**
-- **Nome**: `state-sa-east-1-github-aep` ✅
+- **Nome**: `state-us-east-1-github-aep` ✅
 - **Uso**: Lock do Terraform state
 - **Partição**: `LockID`
 
@@ -20,18 +20,18 @@
 
 ```hcl
 # envs/dev/backend.tfvars
-bucket = "state-sa-east-1-github-aep"
+bucket = "state-us-east-1-github-aep"
 key    = "dev/terraform.tfstate"
-region = "sa-east-1"
+region = "us-east-1"
 encrypt = true
-dynamodb_table = "state-sa-east-1-github-aep"
+dynamodb_table = "state-us-east-1-github-aep"
 
 # envs/prd/backend.tfvars  
-bucket = "state-sa-east-1-github-aep"
+bucket = "state-us-east-1-github-aep"
 key    = "prd/terraform.tfstate"
-region = "sa-east-1"
+region = "us-east-1"
 encrypt = true
-dynamodb_table = "state-sa-east-1-github-aep"
+dynamodb_table = "state-us-east-1-github-aep"
 ```
 
 ### ✅ **Teste de Validação:**
@@ -52,8 +52,8 @@ A pipeline funcionará perfeitamente porque:
 ### 📋 **Recursos Consolidados:**
 
 **Uma abordagem muito inteligente!** Você usou:
-- **1 bucket S3**: `state-sa-east-1-github-aep`
-- **1 tabela DynamoDB**: `state-sa-east-1-github-aep`
+- **1 bucket S3**: `state-us-east-1-github-aep`
+- **1 tabela DynamoDB**: `state-us-east-1-github-aep`
 - **Separação por keys**: `dev/` e `prd/` no mesmo bucket
 
 **Vantagens:**

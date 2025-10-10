@@ -11,9 +11,9 @@ terraform {
     # Backend S3 para estado remoto
     # Configurado via arquivo backend.tfvars durante terraform init
     backend "s3" {
-        bucket         = "state-sa-east-1-github-aep"
+        bucket         = "state-us-east-1-github-aep"
         key            = "dev/terraform.tfstate"
-        region         = "sa-east-1"
+        region         = "us-east-1"
         use_lockfile  = true
         encrypt        = true
     }
