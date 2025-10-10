@@ -2,13 +2,11 @@
 
 resource "aws_ecr_repository" "achados_api" {
   name = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-api"
-  provider = aws.us_east_1
   tags = var.tags
 }
 
 resource "aws_iam_role" "apprunner_role" {
   name = "${var.base_name != "" ? var.base_name : "achados-achados"}-apprunner-${var.env}"
-  provider = aws.us_east_1
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -27,12 +25,10 @@ resource "aws_iam_role" "apprunner_role" {
 resource "aws_iam_role_policy_attachment" "apprunner_ecr" {
   role       = aws_iam_role.apprunner_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
-  provider = aws.us_east_1
 }
 
 resource "aws_apprunner_service" "achados_api_service" {
   service_name = "${var.base_name != "" ? var.base_name : "achados-api"}-${var.env}"
-  provider = aws.us_east_1
 
   source_configuration {
     image_repository {

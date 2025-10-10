@@ -99,21 +99,21 @@ jobs:
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
 
-      # - name: Unlock orphaned locks for branch
-      #   run: |
-      #     LOCKS=$(aws dynamodb scan \
-      #       --table-name state-us-east-1-github-aep \
-      #       --query "Items[?contains(LockID.S, '${{ steps.env-setup.outputs.environment }}')].LockID.S" \
-      #       --output text)
-      #     if [ -n "$LOCKS" ]; then
-      #       for LOCK in $LOCKS; do
-      #         echo "Liberando lock órfão $LOCK..."
-      #         terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
-      #       done
-      #     else
-      #       echo "Nenhum lock órfão encontrado para ${{ steps.env-setup.outputs.environment }}."
-      #     fi
-      #   working-directory: ./terraform
+      - name: Unlock orphaned locks for branch
+        run: |
+          LOCKS=$(aws dynamodb scan \
+            --table-name state-us-east-1-github-aep \
+            --query "Items[?contains(LockID.S, '${{ steps.env-setup.outputs.environment }}')].LockID.S" \
+            --output text)
+          if [ -n "$LOCKS" ]; then
+            for LOCK in $LOCKS; do
+              echo "Liberando lock órfão $LOCK..."
+              terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
+            done
+          else
+            echo "Nenhum lock órfão encontrado para ${{ steps.env-setup.outputs.environment }}."
+          fi
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: terraform init -reconfigure -backend-config="envs/${{ steps.env-setup.outputs.environment }}/backend.tfvars"
@@ -159,21 +159,21 @@ jobs:
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
-      # - name: Unlock orphaned locks for dev branch
-      #   run: |
-      #     LOCKS=$(aws dynamodb scan \
-      #       --table-name state-us-east-1-github-aep \
-      #       --query "Items[?contains(LockID.S, 'dev')].LockID.S" \
-      #       --output text)
-      #     if [ -n "$LOCKS" ]; then
-      #       for LOCK in $LOCKS; do
-      #         echo "Liberando lock órfão $LOCK..."
-      #         terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
-      #       done
-      #     else
-      #       echo "Nenhum lock órfão encontrado para dev."
-      #     fi
-      #   working-directory: ./terraform
+      - name: Unlock orphaned locks for dev branch
+        run: |
+          LOCKS=$(aws dynamodb scan \
+            --table-name state-us-east-1-github-aep \
+            --query "Items[?contains(LockID.S, 'dev')].LockID.S" \
+            --output text)
+          if [ -n "$LOCKS" ]; then
+            for LOCK in $LOCKS; do
+              echo "Liberando lock órfão $LOCK..."
+              terraform force-unlock -force $LOCK || echo "Lock já removido ou não existe"
+            done
+          else
+            echo "Nenhum lock órfão encontrado para dev."
+          fi
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: terraform init -reconfigure -backend-config="envs/dev/backend.tfvars"
