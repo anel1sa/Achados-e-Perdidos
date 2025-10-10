@@ -2,6 +2,7 @@
 resource "aws_iam_policy" "ecr_policy" {
   name        = "ECRRepositoryPolicy"
   description = "Política que permite criar e gerenciar repositórios ECR"
+  provider    = aws.us_east_1
   
   policy = jsonencode({
     Version = "2012-10-17",
@@ -35,4 +36,5 @@ resource "aws_iam_policy" "ecr_policy" {
 resource "aws_iam_user_policy_attachment" "pipeline_ecr_access" {
   user       = "pipeline-github"
   policy_arn = aws_iam_policy.ecr_policy.arn
+  provider   = aws.us_east_1
 }
