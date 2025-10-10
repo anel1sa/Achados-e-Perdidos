@@ -1,4 +1,4 @@
-bucket = "state-us-east-1-github-aep"
+bucket = "state-us-east-1-github"
 key    = "dev/terraform.tfstate"
 region = "us-east-1"
 encrypt = true
