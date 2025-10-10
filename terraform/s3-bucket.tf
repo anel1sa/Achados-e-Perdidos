@@ -1,5 +1,6 @@
 # Bucket para imagens
 resource "aws_s3_bucket" "images" {
+    provider = aws
     bucket = "${var.base_name}-${var.env}-images-bucket"
     
     tags = merge(var.tags, {
@@ -17,6 +18,7 @@ resource "aws_s3_bucket_versioning" "images_versioning" {
 
 # Bucket para frontend (Flutter Web)
 resource "aws_s3_bucket" "frontend" {
+    provider = aws
     bucket = "${var.base_name}-${var.env}-frontend"
     
     tags = merge(var.tags, {
@@ -75,6 +77,7 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
 }
 
 resource "aws_s3_bucket" "backend" {
+    provider = aws
     bucket = "${var.base_name}-${var.env}-backend"
     
     tags = merge(var.tags, {
