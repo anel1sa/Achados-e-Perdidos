@@ -90,10 +90,16 @@ resource "aws_iam_policy" "ecr_access" {
   })
 }
 
-// Anexar política à role
+// Anexar políticas à role
 resource "aws_iam_role_policy_attachment" "ec2_ecr" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.ecr_access.arn
+}
+
+// Adicionar política SSM para permitir gerenciamento remoto via SSM
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 // Profile de instância para EC2
@@ -133,8 +139,8 @@ resource "aws_instance" "api_server" {
     systemctl start docker
     systemctl enable docker
 
-    # Instalar AWS CLI para interagir com ECR
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    # Instalar AWS CLI para interagir com ECR (versão ARM64)
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
     unzip awscliv2.zip
     ./aws/install
     

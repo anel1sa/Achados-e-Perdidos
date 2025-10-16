@@ -203,9 +203,9 @@ jobs:
           echo "🚀 Frontend deployed to Development environment: $BUCKET_NAME"
         working-directory: ./terraform
 
-  # Job 6: Build e Deploy da API no App Runner
-  app-runner-deploy:
-    name: "Build & Deploy API to App Runner"
+  # Job 6: Build e Deploy da API na EC2
+  ec2-api-deploy:
+    name: "Build & Deploy API to EC2"
     runs-on: ubuntu-latest
     needs: [deploy-dev]
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
@@ -253,13 +253,37 @@ jobs:
           docker tag achados-api:latest ${REPO}:latest
           docker push ${REPO}:latest
 
-      - name: Start App Runner deployment
+      - name: Get EC2 Instance ID
+        id: ec2-instance
         run: |
-          # encontra o ARN do serviço App Runner pelo nome padrão
-          SERVICE_ARN=$(aws apprunner list-services --region ${{ env.AWS_REGION }} --query "ServiceSummaryList[?starts_with(ServiceName, 'achados')].ServiceArn | [0]" --output text)
-          if [ -z "$SERVICE_ARN" ] || [ "$SERVICE_ARN" == "None" ]; then
-            echo "Nenhum serviço App Runner encontrado que comece com 'achados'"
+          # Obtém o ID da instância EC2 pela tag Name
+          EC2_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=achados-api-dev" "Name=instance-state-name,Values=running" \
+            --query "Reservations[*].Instances[*].InstanceId" \
+            --output text)
+          
+          if [ -z "$EC2_ID" ]; then
+            echo "Nenhuma instância EC2 encontrada com a tag 'Name=achados-api-dev'"
             exit 0
           fi
-          aws apprunner start-deployment --service-arn $SERVICE_ARN --region ${{ env.AWS_REGION }}
-        shell: bash
+          
+          echo "instance_id=$EC2_ID" >> $GITHUB_OUTPUT
+          echo "Instância EC2 encontrada: $EC2_ID"
+
+      - name: Trigger Docker container update on EC2
+        run: |
+          EC2_ID=${{ steps.ec2-instance.outputs.instance_id }}
+          
+          if [ -z "$EC2_ID" ]; then
+            echo "Não foi possível encontrar a instância EC2."
+            exit 0
+          fi
+          
+          # Executa o script de atualização do container na instância EC2
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceids,Values=$EC2_ID" \
+            --parameters "commands=['/home/ec2-user/start-app.sh']" \
+            --comment "Atualizar container da API"
+          
+          echo "Comando enviado para atualizar o container da API na instância EC2"
