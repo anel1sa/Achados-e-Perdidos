@@ -16,7 +16,7 @@ resource "aws_security_group" "ec2_api" {
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Porta da aplicação"
+    description = "Application port"
   }
 
   ingress {
@@ -32,7 +32,7 @@ resource "aws_security_group" "ec2_api" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Tráfego de saída"
+    description = "All outbound traffic"
   }
 
   tags = var.tags
