@@ -109,7 +109,7 @@ data "aws_ami" "amazon_linux" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["amzn2-ami-hvm-*-arm64-gp2"]
   }
 
   filter {
@@ -118,10 +118,9 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-// EC2 para executar a API
 resource "aws_instance" "api_server" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.micro"
+  instance_type          = "t4g.micro" # compatível com Free Tier em muitas regiões
   vpc_security_group_ids = [aws_security_group.ec2_api.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
