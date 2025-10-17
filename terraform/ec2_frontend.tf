@@ -2,7 +2,7 @@
 
 // Security Group para a instância EC2 do front-end
 resource "aws_security_group" "ec2_frontend" {
-  name        = "${var.base_name != "" ? var.base_name : "achados-frontend"}-sg-${var.env}"
+  name        = "${var.base_name != "" ? var.base_name : "achados-frontend"}-frontend-sg-${var.env}"
   description = "Security Group para Frontend (nginx)"
 
   ingress {
@@ -42,7 +42,7 @@ resource "aws_security_group" "ec2_frontend" {
 
 // IAM Role para EC2 acessar S3 e SSM (sync do build e gerenciamento)
 resource "aws_iam_role" "ec2_frontend_role" {
-  name = "${var.base_name != "" ? var.base_name : "achados-frontend"}-ec2-${var.env}"
+  name = "${var.base_name != "" ? var.base_name : "achados-frontend"}-ec2-frontend-${var.env}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -60,7 +60,7 @@ resource "aws_iam_role" "ec2_frontend_role" {
 
 // Política para permitir leitura do bucket S3 que contém o build web
 resource "aws_iam_policy" "frontend_s3_read" {
-  name        = "${var.base_name != "" ? var.base_name : "achados-frontend"}-s3-read-${var.env}"
+  name        = "${var.base_name != "" ? var.base_name : "achados-frontend"}-frontend-s3-read-${var.env}"
   description = "Permite EC2 sincronizar os arquivos do frontend a partir do S3"
 
   policy = jsonencode({
@@ -95,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "ec2_frontend_ssm" {
 
 // Instance profile
 resource "aws_iam_instance_profile" "ec2_frontend_profile" {
-  name = "${var.base_name != "" ? var.base_name : "achados-frontend"}-ec2-profile-${var.env}"
+  name = "${var.base_name != "" ? var.base_name : "achados-frontend"}-ec2-frontend-profile-${var.env}"
   role = aws_iam_role.ec2_frontend_role.name
 }
 
