@@ -32,3 +32,9 @@ variable "tags" {
         ManagedBy = "terraform"
     }
 }
+
+variable "pipeline_user" {
+    type        = string
+    description = "Nome do usuário IAM usado pela pipeline (para anexar permissões SSM)"
+    default     = "pipeline-github"
+}
