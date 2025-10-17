@@ -38,3 +38,4 @@ variable "pipeline_user" {
     description = "Nome do usuário IAM usado pela pipeline (para anexar permissões SSM)"
     default     = "pipeline-github"
 }
+
