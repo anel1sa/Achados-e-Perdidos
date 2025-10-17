@@ -89,3 +89,19 @@ resource "aws_s3_bucket_versioning" "backend_versioning" {
     status = "Enabled"
   }
 }
+
+resource "aws_s3_bucket" "web" {
+    bucket = "${var.base_name}-${var.env}-web"
+    
+    tags = merge(var.tags, {
+        Name = "${var.base_name}-${var.env}-web"
+        Type = "web"
+    })
+}
+
+resource "aws_s3_bucket_versioning" "web_versioning" {
+  bucket = aws_s3_bucket.web.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
