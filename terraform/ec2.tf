@@ -8,7 +8,7 @@ resource "aws_ecr_repository" "achados_api" {
 
 // Security Group para a instância EC2
 resource "aws_security_group" "ec2_api" {
-  name        = "${var.base_name != "" ? var.base_name : "achados-api"}-sg-${var.env}"
+  name        = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-api-sg-${var.env}"
   description = "Security Group para API Achados e Perdidos"
 
   ingress {
@@ -40,7 +40,7 @@ resource "aws_security_group" "ec2_api" {
 
 // IAM Role para o EC2 acessar o ECR
 resource "aws_iam_role" "ec2_role" {
-  name = "${var.base_name != "" ? var.base_name : "achados-api"}-ec2-${var.env}"
+  name = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-ec2-api-${var.env}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -58,7 +58,7 @@ resource "aws_iam_role" "ec2_role" {
 
 // Política para acessar o ECR
 resource "aws_iam_policy" "ecr_access" {
-  name        = "${var.base_name != "" ? var.base_name : "achados-api"}-ecr-access-${var.env}"
+  name        = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-ecr-access-api-${var.env}"
   description = "Permite EC2 acessar o ECR"
 
   policy = jsonencode({
@@ -104,7 +104,7 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm" {
 
 // Profile de instância para EC2
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.base_name != "" ? var.base_name : "achados-api"}-ec2-profile-${var.env}"
+  name = "${var.base_name != "" ? var.base_name : "achados-e-perdidos"}-ec2-api-profile-${var.env}"
   role = aws_iam_role.ec2_role.name
 }
 
@@ -179,7 +179,7 @@ resource "aws_instance" "api_server" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.base_name != "" ? var.base_name : "achados-api"}-ec2-${var.env}"
+      Name = "achados-api-${var.env}"
     }
   )
 

@@ -147,7 +147,7 @@ resource "aws_instance" "frontend_server" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.base_name != "" ? var.base_name : "achados-frontend"}-ec2-${var.env}"
+      Name = "achados-frontend-${var.env}"
     }
   )
 
