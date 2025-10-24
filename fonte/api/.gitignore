@@ -2,6 +2,10 @@ HELP.md
 target/
 !target/*.jar
 .mvn/wrapper/maven-wrapper.jar
+
+# Allow committing the requested build artifacts (target and jars)
+!target/
+!target/**
 !**/src/main/**/target/
 !**/src/test/**/target/
 
