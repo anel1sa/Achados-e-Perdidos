@@ -1,131 +1,197 @@
 package com.AchadosPerdidos.API.Application.Services;
 
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosDTO;
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosListDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosCreateDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosListDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosUpdateDTO;
 import com.AchadosPerdidos.API.Application.Mapper.UsuariosModelMapper;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IUsuariosService;
 import com.AchadosPerdidos.API.Domain.Entity.Usuarios;
-import com.AchadosPerdidos.API.Domain.Repository.Interfaces.IUsuariosRepository;
+import com.AchadosPerdidos.API.Domain.Repository.UsuariosRepository;
+import com.AchadosPerdidos.API.Domain.Repository.CampusRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * Implementação do Service de Usuários
- * Contém as regras de negócio para operações com usuários
- */
 @Service
 public class UsuariosService implements IUsuariosService {
-    
-    private final UsuariosModelMapper usuariosMapper;
-    private final IUsuariosRepository usuariosRepository;
-    
-    public UsuariosService(UsuariosModelMapper usuariosMapper, IUsuariosRepository usuariosRepository) {
-        this.usuariosMapper = usuariosMapper;
-        this.usuariosRepository = usuariosRepository;
-    }
-    
-    @Override
-    public UsuariosListDTO criarUsuario(UsuariosDTO dto) {
 
-        Usuarios entity = usuariosMapper.toEntity(dto);
-        if (entity.getData_Cadastro() == null) {
-            entity.setData_Cadastro(new Date());
-        }
-        if (entity.getFlg_Inativo() == null) {
-            entity.setFlg_Inativo(false);
-        }
-        int idGerado = usuariosRepository.inserir(entity);
-        entity.setId_Usuario(idGerado);
-        return usuariosMapper.toListDTO(entity);
-    }
-    
-    @Override
-    public UsuariosListDTO buscarPorId(int id) {
-        Usuarios entity = usuariosRepository.buscarPorId(id);
-        return entity != null ? usuariosMapper.toListDTO(entity) : null;
-    }
-    
-    
-    @Override
-    public List<UsuariosListDTO> listarTodos() {
-        return usuariosRepository.listarTodos().stream()
-            .map(usuariosMapper::toListDTO)
-            .collect(Collectors.toList());
-    }
-    
-    
-    @Override
-    public UsuariosListDTO atualizarUsuario(int id, UsuariosDTO dto) {
-        // Buscar usuário existente
-        Usuarios entityExistente = usuariosRepository.buscarPorId(id);
-        
-        if (entityExistente == null) {
-            throw new RuntimeException("Usuário não encontrado com ID: " + id);
-        }
-        
-        // Converter DTO para Entity
-        Usuarios entityAtualizada = usuariosMapper.toEntity(dto);
-        
-        // Manter dados que não devem ser alterados
-        entityAtualizada.setId_Usuario(id);
-        entityAtualizada.setData_Cadastro(entityExistente.getData_Cadastro());
+    @Autowired
+    private UsuariosRepository usuariosRepository;
 
-        if (entityAtualizada.getNome_Usuario() == null) {
-            entityAtualizada.setNome_Usuario(entityExistente.getNome_Usuario());
-        }
-        if (entityAtualizada.getCPF_Usuario() == null) {
-            entityAtualizada.setCPF_Usuario(entityExistente.getCPF_Usuario());
-        }
-        if (entityAtualizada.getEmail_Usuario() == null) {
-            entityAtualizada.setEmail_Usuario(entityExistente.getEmail_Usuario());
-        }
-        if (entityAtualizada.getSenha_Usuario() == null) {
-            entityAtualizada.setSenha_Usuario(entityExistente.getSenha_Usuario());
-        }
-        if (entityAtualizada.getMatricula_Usuario() == null) {
-            entityAtualizada.setMatricula_Usuario(entityExistente.getMatricula_Usuario());
-        }
-        if (entityAtualizada.getTelefone_Usuario() == null) {
-            entityAtualizada.setTelefone_Usuario(entityExistente.getTelefone_Usuario());
-        }
-        if (entityAtualizada.getTipo_Role_Id() <= 0) {
-            entityAtualizada.setTipo_Role_Id(entityExistente.getTipo_Role_Id());
-        }
-        if (entityAtualizada.getFoto_item_id() == null) {
-            entityAtualizada.setFoto_item_id(entityExistente.getFoto_item_id());
-        }
-        if (entityAtualizada.getFoto_perfil_usuario() == null) {
-            entityAtualizada.setFoto_perfil_usuario(entityExistente.getFoto_perfil_usuario());
-        }
-        if (entityAtualizada.getFlg_Inativo() == null) {
-            entityAtualizada.setFlg_Inativo(entityExistente.getFlg_Inativo());
-        }
-        if (entityAtualizada.getId_Instituicao() == null) {
-            entityAtualizada.setId_Instituicao(entityExistente.getId_Instituicao());
-        }
-        if (entityAtualizada.getId_Empresa() == null) {
-            entityAtualizada.setId_Empresa(entityExistente.getId_Empresa());
-        }
-        if (entityAtualizada.getId_Campus() == null) {
-            entityAtualizada.setId_Campus(entityExistente.getId_Campus());
+    @Autowired
+    private UsuariosModelMapper usuariosModelMapper;
+    
+    @Autowired
+    private CampusRepository campusRepository;
+
+    @Override
+    public UsuariosListDTO getAllUsuarios() {
+        List<Usuarios> usuarios = usuariosRepository.findAll();
+        return usuariosModelMapper.toListDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosDTO getUsuarioById(int id) {
+        Usuarios usuarios = usuariosRepository.findById(id);
+        return usuariosModelMapper.toDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosDTO getUsuarioByEmail(String email) {
+        Usuarios usuarios = usuariosRepository.findByEmail(email);
+        return usuariosModelMapper.toDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosDTO createUsuario(UsuariosDTO usuariosDTO) {
+        Usuarios usuarios = usuariosModelMapper.toEntity(usuariosDTO);
+        usuarios.setData_Cadastro(new Date());
+        usuarios.setFlg_Inativo(false);
+        
+        Usuarios savedUsuarios = usuariosRepository.save(usuarios);
+        return usuariosModelMapper.toDTO(savedUsuarios);
+    }
+
+    @Override
+    public UsuariosDTO updateUsuario(int id, UsuariosDTO usuariosDTO) {
+        Usuarios existingUsuarios = usuariosRepository.findById(id);
+        if (existingUsuarios == null) {
+            return null;
         }
         
-        // Atualizar no banco usando repository
-        boolean sucesso = usuariosRepository.atualizar(entityAtualizada);
+        existingUsuarios.setNome_Usuario(usuariosDTO.getNome_Usuario());
+        existingUsuarios.setCPF_Usuario(usuariosDTO.getCPF_Usuario());
+        existingUsuarios.setEmail_Usuario(usuariosDTO.getEmail_Usuario());
+        existingUsuarios.setSenha_Usuario(usuariosDTO.getSenha_Usuario());
+        existingUsuarios.setMatricula_Usuario(usuariosDTO.getMatricula_Usuario());
+        existingUsuarios.setTelefone_Usuario(usuariosDTO.getTelefone_Usuario());
+        existingUsuarios.setTipo_Role_Id(usuariosDTO.getTipo_Role_Id());
+        existingUsuarios.setFoto_item_id(usuariosDTO.getFoto_item_id());
+        existingUsuarios.setFoto_perfil_usuario(usuariosDTO.getFoto_perfil_usuario());
+        existingUsuarios.setFlg_Inativo(usuariosDTO.getFlg_Inativo());
+        existingUsuarios.setId_Instituicao(usuariosDTO.getId_Instituicao());
+        existingUsuarios.setId_Empresa(usuariosDTO.getId_Empresa());
+        existingUsuarios.setId_Campus(usuariosDTO.getId_Campus());
         
-        if (!sucesso) {
-            throw new RuntimeException("Erro ao atualizar usuário");
+        Usuarios updatedUsuarios = usuariosRepository.save(existingUsuarios);
+        return usuariosModelMapper.toDTO(updatedUsuarios);
+    }
+
+    @Override
+    public boolean deleteUsuario(int id) {
+        Usuarios usuarios = usuariosRepository.findById(id);
+        if (usuarios == null) {
+            return false;
         }
         
-        // Converter Entity para DTO
-        return usuariosMapper.toListDTO(entityAtualizada);
+        return usuariosRepository.deleteById(id);
+    }
+
+    @Override
+    public UsuariosListDTO getActiveUsuarios() {
+        List<Usuarios> activeUsuarios = usuariosRepository.findActive();
+        return usuariosModelMapper.toListDTO(activeUsuarios);
+    }
+
+    @Override
+    public UsuariosListDTO getUsuariosByRole(int tipoRoleId) {
+        List<Usuarios> usuarios = usuariosRepository.findByRole(tipoRoleId);
+        return usuariosModelMapper.toListDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosListDTO getUsuariosByInstitution(int instituicaoId) {
+        List<Usuarios> usuarios = usuariosRepository.findByInstitution(instituicaoId);
+        return usuariosModelMapper.toListDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosListDTO getUsuariosByCampus(int campusId) {
+        List<Usuarios> usuarios = usuariosRepository.findByCampus(campusId);
+        return usuariosModelMapper.toListDTO(usuarios);
+    }
+
+    @Override
+    public UsuariosDTO authenticateUsuario(String email, String senha) {
+        Usuarios usuarios = usuariosRepository.findByEmailAndPassword(email, senha);
+        return usuariosModelMapper.toDTO(usuarios);
     }
     
     @Override
-    public boolean deletarUsuario(int id) {
-        return usuariosRepository.deletar(id);
+    public UsuariosDTO createUsuarioFromDTO(UsuariosCreateDTO createDTO) {
+        Usuarios usuarios = new Usuarios();
+        usuarios.setNome_Usuario(createDTO.getNome_Usuario());
+        usuarios.setCPF_Usuario(createDTO.getCPF_Usuario());
+        usuarios.setEmail_Usuario(createDTO.getEmail_Usuario());
+        usuarios.setSenha_Usuario(createDTO.getSenha_Usuario());
+        usuarios.setMatricula_Usuario(createDTO.getMatricula_Usuario());
+        usuarios.setTelefone_Usuario(createDTO.getTelefone_Usuario());
+        usuarios.setTipo_Role_Id(createDTO.getTipo_Role_Id());
+        usuarios.setId_Campus(createDTO.getId_Campus());
+        usuarios.setId_Empresa(createDTO.getId_Empresa());
+        usuarios.setData_Cadastro(new Date());
+        usuarios.setFlg_Inativo(false);
+        
+        // Preencher automaticamente a instituição baseada no campus
+        if (createDTO.getId_Campus() != null) {
+            var campus = campusRepository.findById(createDTO.getId_Campus());
+            if (campus != null) {
+                usuarios.setId_Instituicao(campus.getId_Instituicao());
+            }
+        }
+        
+        Usuarios savedUsuarios = usuariosRepository.save(usuarios);
+        return usuariosModelMapper.toDTO(savedUsuarios);
+    }
+    
+    @Override
+    public UsuariosDTO updateUsuarioFromDTO(int id, UsuariosUpdateDTO updateDTO) {
+        Usuarios existingUsuarios = usuariosRepository.findById(id);
+        if (existingUsuarios == null) {
+            return null;
+        }
+        
+        // Atualizar apenas os campos fornecidos
+        if (updateDTO.getNome_Usuario() != null) {
+            existingUsuarios.setNome_Usuario(updateDTO.getNome_Usuario());
+        }
+        if (updateDTO.getCPF_Usuario() != null) {
+            existingUsuarios.setCPF_Usuario(updateDTO.getCPF_Usuario());
+        }
+        if (updateDTO.getEmail_Usuario() != null) {
+            existingUsuarios.setEmail_Usuario(updateDTO.getEmail_Usuario());
+        }
+        if (updateDTO.getSenha_Usuario() != null) {
+            existingUsuarios.setSenha_Usuario(updateDTO.getSenha_Usuario());
+        }
+        if (updateDTO.getMatricula_Usuario() != null) {
+            existingUsuarios.setMatricula_Usuario(updateDTO.getMatricula_Usuario());
+        }
+        if (updateDTO.getTelefone_Usuario() != null) {
+            existingUsuarios.setTelefone_Usuario(updateDTO.getTelefone_Usuario());
+        }
+        if (updateDTO.getTipo_Role_Id() > 0) {
+            existingUsuarios.setTipo_Role_Id(updateDTO.getTipo_Role_Id());
+        }
+        if (updateDTO.getId_Campus() != null) {
+            existingUsuarios.setId_Campus(updateDTO.getId_Campus());
+            // Atualizar instituição baseada no novo campus
+            var campus = campusRepository.findById(updateDTO.getId_Campus());
+            if (campus != null) {
+                existingUsuarios.setId_Instituicao(campus.getId_Instituicao());
+            }
+        }
+        if (updateDTO.getId_Empresa() != null) {
+            existingUsuarios.setId_Empresa(updateDTO.getId_Empresa());
+        }
+        if (updateDTO.getFlg_Inativo() != null) {
+            existingUsuarios.setFlg_Inativo(updateDTO.getFlg_Inativo());
+        }
+        
+        Usuarios updatedUsuarios = usuariosRepository.save(existingUsuarios);
+        return usuariosModelMapper.toDTO(updatedUsuarios);
     }
 }

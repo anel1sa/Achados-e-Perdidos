@@ -1,39 +1,17 @@
 services:
   mongodb:
     image: mongo:7
-    container_name: mongodb
+    container_name: mongodb-achados-perdidos
     restart: always
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: achadosperdidos
     volumes:
-      - mongo_data:/data/db
-
-  mongo-express:
-    image: mongo-express:1.0.2
-    container_name: mongo-express
-    restart: always
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: admin123
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    depends_on:
-      - mongodb
-
-  app:
-    build: .
-    container_name: api-achados-perdidos
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongodb
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - mongodb_data:/data/db
+    command: mongod --auth
 
 volumes:
-  mongo_data:
+  mongodb_data:

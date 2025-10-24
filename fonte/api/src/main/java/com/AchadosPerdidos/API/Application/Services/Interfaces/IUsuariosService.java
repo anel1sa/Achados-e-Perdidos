@@ -1,37 +1,22 @@
 package com.AchadosPerdidos.API.Application.Services.Interfaces;
 
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosDTO;
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosListDTO;
-import java.util.List;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosListDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosCreateDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosUpdateDTO;
 
-/**
- * Interface do Service de Usuários
- * Define os contratos para operações de negócio relacionadas a usuários
- */
 public interface IUsuariosService {
-    
-    /**
-     * Criar um novo usuário
-     */
-    UsuariosListDTO criarUsuario(UsuariosDTO dto);
-    
-    /**
-     * Buscar usuário por ID
-     */
-    UsuariosListDTO buscarPorId(int id);
-    
-    /**
-     * Listar todos os usuários
-     */
-    List<UsuariosListDTO> listarTodos();
-    
-    /**
-     * Atualizar usuário
-     */
-    UsuariosListDTO atualizarUsuario(int id, UsuariosDTO dto);
-    
-    /**
-     * Deletar usuário permanentemente
-     */
-    boolean deletarUsuario(int id);
+    UsuariosListDTO getAllUsuarios();
+    UsuariosDTO getUsuarioById(int id);
+    UsuariosDTO getUsuarioByEmail(String email);
+    UsuariosDTO createUsuario(UsuariosDTO usuariosDTO);
+    UsuariosDTO updateUsuario(int id, UsuariosDTO usuariosDTO);
+    boolean deleteUsuario(int id);
+    UsuariosListDTO getActiveUsuarios();
+    UsuariosListDTO getUsuariosByRole(int tipoRoleId);
+    UsuariosListDTO getUsuariosByInstitution(int instituicaoId);
+    UsuariosListDTO getUsuariosByCampus(int campusId);
+    UsuariosDTO authenticateUsuario(String email, String senha);
+    UsuariosDTO createUsuarioFromDTO(UsuariosCreateDTO createDTO);
+    UsuariosDTO updateUsuarioFromDTO(int id, UsuariosUpdateDTO updateDTO);
 }

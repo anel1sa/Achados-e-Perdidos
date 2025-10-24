@@ -1,147 +1,115 @@
 package com.AchadosPerdidos.API.Presentation.Controller;
 
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosDTO;
-import com.AchadosPerdidos.API.Application.DTOs.UsuariosListDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosCreateDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosListDTO;
+import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosUpdateDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IUsuariosService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*") // Permitir CORS para desenvolvimento
+@CrossOrigin(origins = "*")
+@Tag(name = "Usuários", description = "API para gerenciamento de usuários")
 public class UsuariosController {
-    
-    private final IUsuariosService usuariosService;
-    
-    public UsuariosController(IUsuariosService usuariosService) {
-        this.usuariosService = usuariosService;
-    }
-    
-    /**
-     * Criar novo usuário
-     * @param dto Dados do usuário a ser criado
-     * @return Usuário criado com ID gerado
-     */
-    @PostMapping("/criar")  
-    public ResponseEntity<UsuariosListDTO> criarUsuario(@Valid @RequestBody UsuariosDTO dto) {
-        try {
-            // validações mínimas (CRUD): campos essenciais
-            if (dto == null)
-            {
-                throw new IllegalArgumentException("Corpo da requisição ausente");
-            }
-            if (dto.Nome_Usuario() == null || dto.Nome_Usuario().trim().isEmpty()) {
-                throw new IllegalArgumentException("Nome_Usuario é obrigatório");
-            }
-            if (dto.Email_Usuario() == null || dto.Email_Usuario().trim().isEmpty()) {
-                throw new IllegalArgumentException("Email_Usuario é obrigatório");
-            }
-            if (dto.Senha_Usuario() == null || dto.Senha_Usuario().trim().isEmpty()) {
-                throw new IllegalArgumentException("Senha_Usuario é obrigatória");
-            }
-            if (dto.Telefone_Usuario() == null || dto.Telefone_Usuario().trim().isEmpty()) {
-                throw new IllegalArgumentException("Telefone_Usuario é obrigatório");
-            }
-            if (dto.Tipo_Role_Id() <= 0) {
-                throw new IllegalArgumentException("Tipo_Role_Id deve ser maior que zero");
-            }
-            UsuariosListDTO usuarioCriado = usuariosService.criarUsuario(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCriado);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(String.format("Erro ao criar usuário: %s", e.getMessage()));
-        }
-    }
-    
-    /**
-     * Buscar usuário por ID
-     * @param id ID do usuário
-     * @return Dados do usuário encontrado
-     */
-    @GetMapping("/listar/{id}")
-    public ResponseEntity<UsuariosListDTO> buscarUsuario(@PathVariable int id) {
-        try
-        {
-            if (id <= 0) {
-                throw new IllegalArgumentException("Id do Usuario não encontrado");
-            }
 
-            UsuariosListDTO usuario = usuariosService.buscarPorId(id);
-            if (usuario != null) {
-                return ResponseEntity.ok(usuario);
-            }
+    @Autowired
+    private IUsuariosService usuariosService;
+
+    @GetMapping
+    @Operation(summary = "Listar todos os usuários", description = "Retorna uma lista de todos os usuários cadastrados")
+    public ResponseEntity<UsuariosListDTO> getAllUsuarios() {
+        UsuariosListDTO usuarios = usuariosService.getAllUsuarios();
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuariosDTO> getUsuarioById(@PathVariable int id) {
+        UsuariosDTO usuario = usuariosService.getUsuarioById(id);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
             return ResponseEntity.notFound().build();
         }
-        catch (Exception e)
-        {
-            throw new RuntimeException(String.format("Erro ao buscar usuário por ID: %s", e.getMessage()));
-        }
     }
-    
-    /**
-     * Listar todos os usuários
-     * @return Lista de todos os usuários cadastrados
-     */
-    @GetMapping("/listar")
-    public ResponseEntity<List<UsuariosListDTO>> listarTodos() {
-        try 
-        {
-            List<UsuariosListDTO> usuarios = usuariosService.listarTodos();
-            return ResponseEntity.ok(usuarios);
-        } 
-        catch (Exception e) 
-        {
-            throw new RuntimeException(String.format("Erro ao listar usuários: %s", e.getMessage()));
-        }
-    }
-    
-    /**
-     * Atualizar usuário existente
-     * @param id ID do usuário a ser atualizado
-     * @param dto Novos dados do usuário
-     * @return Dados do usuário atualizado
-     */
-    @PutMapping("/atualizar/{id}")
-    public ResponseEntity<UsuariosListDTO> atualizarUsuario(@PathVariable int id, @Valid @RequestBody UsuariosDTO dto) {
-        if (id <= 0) 
-        {
-            throw new IllegalArgumentException("Id do Usuario não encontrado");
-        }
-            try 
-            {
-                UsuariosListDTO usuarioAtualizado = usuariosService.atualizarUsuario(id, dto);
-                return ResponseEntity.ok(usuarioAtualizado);
-            } 
-            catch (IllegalArgumentException e)
-            {
-                throw new RuntimeException(String.format("Erro ao atualizar usuário: %s", e.getMessage()));
-            }
-    }
-    
-    /**
-     * Deletar usuário permanentemente
-     * @param id ID do usuário a ser deletado
-     * @return Status da operação
-     */
-    @DeleteMapping("/deletar/{id}")
-    public ResponseEntity<Void> deletarUsuario(@PathVariable int id) {
-        if (id <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-        
-        try {
-            boolean sucesso = usuariosService.deletarUsuario(id);
-            if (sucesso) {
-                return ResponseEntity.ok().build();
-            }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UsuariosDTO> getUsuarioByEmail(@PathVariable String email) {
+        UsuariosDTO usuario = usuariosService.getUsuarioByEmail(email);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
             return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping
+    @Operation(summary = "Criar novo usuário", description = "Cria um novo usuário no sistema. A instituição será preenchida automaticamente baseada no campus selecionado.")
+    public ResponseEntity<UsuariosDTO> createUsuario(@RequestBody UsuariosCreateDTO usuariosCreateDTO) {
+        UsuariosDTO createdUsuario = usuariosService.createUsuarioFromDTO(usuariosCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUsuario);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
+    public ResponseEntity<UsuariosDTO> updateUsuario(
+            @Parameter(description = "ID do usuário a ser atualizado") @PathVariable int id, 
+            @RequestBody UsuariosUpdateDTO usuariosUpdateDTO) {
+        UsuariosDTO updatedUsuario = usuariosService.updateUsuarioFromDTO(id, usuariosUpdateDTO);
+        if (updatedUsuario != null) {
+            return ResponseEntity.ok(updatedUsuario);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUsuario(@PathVariable int id) {
+        boolean deleted = usuariosService.deleteUsuario(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<UsuariosListDTO> getActiveUsuarios() {
+        UsuariosListDTO activeUsuarios = usuariosService.getActiveUsuarios();
+        return ResponseEntity.ok(activeUsuarios);
+    }
+
+    @GetMapping("/role/{tipoRoleId}")
+    public ResponseEntity<UsuariosListDTO> getUsuariosByRole(@PathVariable int tipoRoleId) {
+        UsuariosListDTO usuarios = usuariosService.getUsuariosByRole(tipoRoleId);
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/institution/{instituicaoId}")
+    public ResponseEntity<UsuariosListDTO> getUsuariosByInstitution(@PathVariable int instituicaoId) {
+        UsuariosListDTO usuarios = usuariosService.getUsuariosByInstitution(instituicaoId);
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/campus/{campusId}")
+    public ResponseEntity<UsuariosListDTO> getUsuariosByCampus(@PathVariable int campusId) {
+        UsuariosListDTO usuarios = usuariosService.getUsuariosByCampus(campusId);
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<UsuariosDTO> authenticateUsuario(@RequestParam String email, @RequestParam String senha) {
+        UsuariosDTO usuario = usuariosService.authenticateUsuario(email, senha);
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

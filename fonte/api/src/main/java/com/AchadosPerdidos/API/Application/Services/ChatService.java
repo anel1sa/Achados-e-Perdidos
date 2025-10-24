@@ -22,106 +22,61 @@ public class ChatService implements IChatService {
     @Autowired
     private IChatQuery chatQuery;
 
-    /**
-     * Salva uma mensagem no MongoDB
-     * @param message A mensagem a ser salva
-     * @return A mensagem salva
-     */
+    @Override
     public ChatMessage saveMessage(ChatMessage message) {
         return chatMessageRepository.save(message);
     }
 
-    /**
-     * Busca mensagens por chatId
-     * @param chatId ID do chat
-     * @return Lista de mensagens do chat
-     */
+    @Override
     public List<ChatMessage> getMessagesByChatId(String chatId) {
         return chatQuery.findMessagesByChatId(chatId);
     }
 
-    /**
-     * Busca mensagens entre dois usuários
-     * @param userId1 ID do primeiro usuário
-     * @param userId2 ID do segundo usuário
-     * @return Lista de mensagens entre os usuários
-     */
+    @Override
     public List<ChatMessage> getMessagesBetweenUsers(String userId1, String userId2) {
         return chatQuery.findMessagesBetweenUsers(userId1, userId2);
     }
 
-    /**
-     * Busca as últimas N mensagens de um chat
-     * @param chatId ID do chat
-     * @param limit Número de mensagens a retornar
-     * @return Lista das últimas mensagens
-     */
+    @Override
     public List<ChatMessage> getRecentMessages(String chatId, int limit) {
         return chatQuery.findRecentMessages(chatId, limit);
     }
 
-    /**
-     * Busca mensagens por período
-     * @param chatId ID do chat
-     * @param startTime Data/hora inicial
-     * @param endTime Data/hora final
-     * @return Lista de mensagens no período
-     */
+    @Override
     public List<ChatMessage> getMessagesByPeriod(String chatId, LocalDateTime startTime, LocalDateTime endTime) {
         return chatQuery.findMessagesByPeriod(chatId, startTime, endTime);
     }
 
-    /**
-     * Busca mensagens não lidas de um usuário
-     * @param receiverId ID do receptor
-     * @return Lista de mensagens não lidas
-     */
+    @Override
     public List<ChatMessage> getUnreadMessages(String receiverId) {
         return chatQuery.findUnreadMessages(receiverId);
     }
 
-    /**
-     * Marca mensagens como entregues
-     * @param messageIds Lista de IDs das mensagens
-     */
+    @Override
     public void markMessagesAsDelivered(List<String> messageIds) {
         List<ChatMessage> messages = chatMessageRepository.findAllById(messageIds);
         messages.forEach(message -> message.setStatus(com.AchadosPerdidos.API.Domain.Enum.Status_Menssagem.DELIVERED));
         chatMessageRepository.saveAll(messages);
     }
 
-    /**
-     * Marca mensagens como lidas
-     * @param messageIds Lista de IDs das mensagens
-     */
+    @Override
     public void markMessagesAsRead(List<String> messageIds) {
         List<ChatMessage> messages = chatMessageRepository.findAllById(messageIds);
         messages.forEach(message -> message.setStatus(com.AchadosPerdidos.API.Domain.Enum.Status_Menssagem.READ));
         chatMessageRepository.saveAll(messages);
     }
 
-    /**
-     * Conta mensagens por chat
-     * @param chatId ID do chat
-     * @return Número de mensagens
-     */
+    @Override
     public long getMessageCountByChat(String chatId) {
         return chatQuery.countMessagesByChat(chatId);
     }
 
-    /**
-     * Busca uma mensagem por ID
-     * @param messageId ID da mensagem
-     * @return Mensagem encontrada ou Optional.empty()
-     */
+    @Override
     public Optional<ChatMessage> getMessageById(String messageId) {
         return chatMessageRepository.findById(messageId);
     }
 
-    /**
-     * Deleta uma mensagem
-     * @param messageId ID da mensagem
-     */
+    @Override
     public void deleteMessage(String messageId) {
         chatMessageRepository.deleteById(messageId);
     }
