@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
+		<!-- Garante bytecode compatível com Java 21 para rodar em containers -->
+		<maven.compiler.release>21</maven.compiler.release>
 	</properties>
 	<dependencies>
         <dependency>

@@ -1,15 +1,18 @@
-FROM maven:3.10.1-eclipse-temurin-17 AS builder
-WORKDIR /workspace
+# Dockerfile para API Spring Boot com Java 25
+# Estratégia: Como Java 25 ainda não tem imagens oficiais Docker disponíveis,
+# este Dockerfile espera que o JAR seja compilado LOCALMENTE com Java 25.
+# A imagem runtime usa Java 21 (compatível com bytecode Java 25 com --release).
 
-COPY pom.xml ./
-COPY src ./src
+# Compile localmente ANTES de fazer build da imagem:
+#   mvnw.cmd clean package -DskipTests   (Windows)
+# ou:
+#   ./mvnw clean package -DskipTests     (Linux/Mac)
 
-RUN mvn -B -DskipTests package
-
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-COPY --from=builder /workspace/target/*.jar /app/app.jar
+# Copia o JAR já compilado da pasta target local
+COPY target/*.jar /app/app.jar
 
 EXPOSE 8080
 
