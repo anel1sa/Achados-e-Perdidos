@@ -1,25 +1,27 @@
-# Multi-stage build: compila com Maven Java 25 e roda com OpenJDK 25
-FROM maven:3.9-openjdk-25-slim AS builder
-WORKDIR /workspace
+# Fase de compilação
+FROM maven:3.9-openjdk-25 AS builder
+WORKDIR /app
 
-# Copia arquivos do projeto
-COPY pom.xml ./
+# Baixa as dependências primeiro (melhor cache)
+COPY pom.xml .
+RUN mvn dependency:resolve
+
+# Copia o código-fonte e compila
 COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Compila o projeto (pula testes para build mais rápido)
-RUN mvn -B -DskipTests package
-
-# Stage final: usa OpenJDK 25 para rodar a aplicação
-FROM openjdk:25-jdk-alpine
+# Fase de produção - usa a mesma imagem base para garantir compatibilidade
+FROM openjdk:25-jdk
 WORKDIR /app
 
 # Copia o JAR compilado do stage anterior
-COPY --from=builder /workspace/target/*.jar /app/app.jar
+COPY --from=builder /app/target/*.jar app.jar
 
 # Expõe a porta padrão do Spring Boot
 EXPOSE 8080
 
 # Comando para iniciar a aplicação
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
 
 
