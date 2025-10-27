@@ -26,7 +26,7 @@ public class AuxLocalItemService implements IAuxLocalItemService {
     }
     
     @Override
-    public AuxLocalItemListDTO criarAuxLocalItem(AuxLocalItemDTO dto) {
+    public AuxLocalItemListDTO CriarAuxLocalItem(AuxLocalItemDTO dto) {
         Aux_Local_Item entity = auxLocalItemMapper.toEntity(dto);
         if (entity.getData_Cadastro_Local_Item() == null) 
         {
@@ -45,26 +45,20 @@ public class AuxLocalItemService implements IAuxLocalItemService {
     }
     
     @Override
-    public AuxLocalItemListDTO buscarPorId(int id) {
+    public AuxLocalItemListDTO BuscarPorId(int id) {
         Aux_Local_Item entity = auxLocalItemRepository.buscarPorId(id);
         return entity != null ? auxLocalItemMapper.toListDTO(entity) : null;
     }
     
     @Override
-    public AuxLocalItemListDTO buscarPorNome(String nome) {
-        Aux_Local_Item entity = auxLocalItemRepository.buscarPorNome(nome);
-        return entity != null ? auxLocalItemMapper.toListDTO(entity) : null;
-    }
-    
-    @Override
-    public List<AuxLocalItemListDTO> listarTodos() {
+    public List<AuxLocalItemListDTO> ListarTodos() {
         return auxLocalItemRepository.listarTodos().stream()
             .map(auxLocalItemMapper::toListDTO)
             .collect(Collectors.toList());
     }
     
     @Override
-    public AuxLocalItemListDTO atualizarAuxLocalItem(int id, AuxLocalItemDTO dto) {
+    public AuxLocalItemListDTO AtualizarAuxLocalItem(int id, AuxLocalItemDTO dto) {
         // Buscar local de item existente
         Aux_Local_Item entityExistente = auxLocalItemRepository.buscarPorId(id);
         
@@ -101,7 +95,7 @@ public class AuxLocalItemService implements IAuxLocalItemService {
     }
     
     @Override
-    public boolean deletarAuxLocalItem(int id) {
+    public boolean DeletarAuxLocalItem(int id) {
         return auxLocalItemRepository.deletar(id);
     }
 }

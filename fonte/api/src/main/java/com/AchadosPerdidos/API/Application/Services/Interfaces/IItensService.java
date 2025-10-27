@@ -4,6 +4,7 @@ import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensListDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensCreateDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensUpdateDTO;
+import java.util.List;
 
 public interface IItensService {
     ItensListDTO getAllItens();
@@ -20,4 +21,10 @@ public interface IItensService {
     ItensListDTO searchItens(String searchTerm);
     ItensDTO createItemFromDTO(ItensCreateDTO createDTO);
     ItensDTO updateItemFromDTO(int id, ItensUpdateDTO updateDTO);
+    
+    // Métodos para sistema de notificações e controle de prazos
+    List<com.AchadosPerdidos.API.Domain.Entity.Itens> getItemsNearDonationDeadline(int daysFromNow);
+    List<com.AchadosPerdidos.API.Domain.Entity.Itens> getExpiredItems(int daysExpired);
+    boolean markItemAsDonated(int itemId);
+    com.AchadosPerdidos.API.Domain.Entity.Itens getItemEntityById(int id);
 }

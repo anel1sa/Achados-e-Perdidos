@@ -134,4 +134,24 @@ public class ItensQueries implements IItensQueries {
         String searchPattern = "%" + searchTerm + "%";
         return jdbcTemplate.query(sql, rowMapper, searchPattern, searchPattern);
     }
+
+    @Override
+    public List<Itens> findItemsNearDonationDeadline(int daysFromNow) {
+        String sql = "SELECT * FROM Itens WHERE " +
+                     "Flg_Inativo = false AND " +
+                     "Status_Item_Id = 1 AND " + // Status "Ativo"
+                     "Data_Cadastro <= (CURRENT_DATE - INTERVAL '" + daysFromNow + " days') " +
+                     "ORDER BY Data_Cadastro ASC";
+        return jdbcTemplate.query(sql, rowMapper);
+    }
+
+    @Override
+    public List<Itens> findExpiredItems(int daysExpired) {
+        String sql = "SELECT * FROM Itens WHERE " +
+                     "Flg_Inativo = false AND " +
+                     "Status_Item_Id = 1 AND " + // Status "Ativo"
+                     "Data_Cadastro <= (CURRENT_DATE - INTERVAL '" + daysExpired + " days') " +
+                     "ORDER BY Data_Cadastro ASC";
+        return jdbcTemplate.query(sql, rowMapper);
+    }
 }

@@ -8,15 +8,13 @@ import java.util.List;
 
 public interface IAuxLocalItemService {
     
-    AuxLocalItemListDTO criarAuxLocalItem(AuxLocalItemDTO dto);
+    AuxLocalItemListDTO CriarAuxLocalItem(AuxLocalItemDTO dto);
     
-    AuxLocalItemListDTO buscarPorId(int id);
+    AuxLocalItemListDTO BuscarPorId(int id);
     
-    AuxLocalItemListDTO buscarPorNome(String nome);
+    List<AuxLocalItemListDTO> ListarTodos();
     
-    List<AuxLocalItemListDTO> listarTodos();
+    AuxLocalItemListDTO AtualizarAuxLocalItem(int id, AuxLocalItemDTO dto);
     
-    AuxLocalItemListDTO atualizarAuxLocalItem(int id, AuxLocalItemDTO dto);
-    
-    boolean deletarAuxLocalItem(int id);
+    boolean DeletarAuxLocalItem(int id);
 }

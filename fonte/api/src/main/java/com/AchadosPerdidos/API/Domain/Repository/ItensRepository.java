@@ -72,4 +72,14 @@ public class ItensRepository implements IItensRepository {
     public List<Itens> searchByTerm(String searchTerm) {
         return itensQueries.searchByTerm(searchTerm);
     }
+
+    @Override
+    public List<Itens> findItemsNearDonationDeadline(int daysFromNow) {
+        return itensQueries.findItemsNearDonationDeadline(daysFromNow);
+    }
+
+    @Override
+    public List<Itens> findExpiredItems(int daysExpired) {
+        return itensQueries.findExpiredItems(daysExpired);
+    }
 }

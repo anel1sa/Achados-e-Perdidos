@@ -5,6 +5,7 @@ import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensListDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensCreateDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensUpdateDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IItensService;
+import com.AchadosPerdidos.API.Application.Services.Interfaces.INotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ public class ItensController {
 
     @Autowired
     private IItensService itensService;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @GetMapping
     public ResponseEntity<ItensListDTO> getAllItens() {
@@ -37,6 +41,12 @@ public class ItensController {
     @PostMapping
     public ResponseEntity<ItensDTO> createItem(@RequestBody ItensCreateDTO itensCreateDTO) {
         ItensDTO createdItem = itensService.createItemFromDTO(itensCreateDTO);
+        
+        // Envia notificação automática quando item é encontrado
+        if (createdItem != null) {
+            notificationService.notifyItemFound(createdItem.getId_Item(), createdItem.getUsuario_Id());
+        }
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
     }
 

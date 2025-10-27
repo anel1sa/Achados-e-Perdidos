@@ -15,4 +15,8 @@ public interface IItensRepository {
     List<Itens> findByLocal(int localId);
     List<Itens> findByEmpresa(int empresaId);
     List<Itens> searchByTerm(String searchTerm);
+    
+    // Métodos para sistema de notificações e controle de prazos
+    List<Itens> findItemsNearDonationDeadline(int daysFromNow);
+    List<Itens> findExpiredItems(int daysExpired);
 }
