@@ -1,20 +1,25 @@
-# Dockerfile para API Spring Boot com Java 25
-# Estratégia: Como Java 25 ainda não tem imagens oficiais Docker disponíveis,
-# este Dockerfile espera que o JAR seja compilado LOCALMENTE com Java 25.
-# A imagem runtime usa Java 21 (compatível com bytecode Java 25 com --release).
+# Multi-stage build: compila com Maven Java 25 e roda com OpenJDK 25
+FROM maven:3.9-openjdk-25-slim AS builder
+WORKDIR /workspace
 
-# Compile localmente ANTES de fazer build da imagem:
-#   mvnw.cmd clean package -DskipTests   (Windows)
-# ou:
-#   ./mvnw clean package -DskipTests     (Linux/Mac)
+# Copia arquivos do projeto
+COPY pom.xml ./
+COPY src ./src
 
-FROM eclipse-temurin:21-jre
+# Compila o projeto (pula testes para build mais rápido)
+RUN mvn -B -DskipTests package
+
+# Stage final: usa OpenJDK 25 para rodar a aplicação
+FROM openjdk:25-jdk-alpine
 WORKDIR /app
 
-# Copia o JAR já compilado da pasta target local
-COPY target/*.jar /app/app.jar
+# Copia o JAR compilado do stage anterior
+COPY --from=builder /workspace/target/*.jar /app/app.jar
 
+# Expõe a porta padrão do Spring Boot
 EXPOSE 8080
 
+# Comando para iniciar a aplicação
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
 
