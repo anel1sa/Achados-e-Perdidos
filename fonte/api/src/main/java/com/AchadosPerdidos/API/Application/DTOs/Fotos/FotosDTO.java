@@ -1,15 +1,7 @@
 package com.AchadosPerdidos.API.Application.DTOs.Fotos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO completo de foto")
 public class FotosDTO {
     
@@ -33,4 +25,26 @@ public class FotosDTO {
     
     @Schema(description = "ID do usuário que fez upload", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer Id_Usuario;
+
+    // Getters e Setters
+    public int getId_Foto() { return Id_Foto; }
+    public void setId_Foto(int id_Foto) { Id_Foto = id_Foto; }
+
+    public String getNome_Arquivo() { return Nome_Arquivo; }
+    public void setNome_Arquivo(String nome_Arquivo) { Nome_Arquivo = nome_Arquivo; }
+
+    public String getURL_Foto() { return URL_Foto; }
+    public void setURL_Foto(String URL_Foto) { this.URL_Foto = URL_Foto; }
+
+    public Long getTamanho_Arquivo() { return Tamanho_Arquivo; }
+    public void setTamanho_Arquivo(Long tamanho_Arquivo) { Tamanho_Arquivo = tamanho_Arquivo; }
+
+    public String getTipo_MIME() { return Tipo_MIME; }
+    public void setTipo_MIME(String tipo_MIME) { Tipo_MIME = tipo_MIME; }
+
+    public Integer getId_Item() { return Id_Item; }
+    public void setId_Item(Integer id_Item) { Id_Item = id_Item; }
+
+    public Integer getId_Usuario() { return Id_Usuario; }
+    public void setId_Usuario(Integer id_Usuario) { Id_Usuario = id_Usuario; }
 }

@@ -1,15 +1,7 @@
 package com.AchadosPerdidos.API.Application.DTOs.Auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO de resposta de autenticação")
 public class AuthResponseDTO {
     
@@ -25,10 +17,19 @@ public class AuthResponseDTO {
     @Schema(description = "Informações do usuário autenticado")
     private UserInfoDTO user;
     
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    // Getters e Setters
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+
+    public String getTokenType() { return tokenType; }
+    public void setTokenType(String tokenType) { this.tokenType = tokenType; }
+
+    public long getExpiresIn() { return expiresIn; }
+    public void setExpiresIn(long expiresIn) { this.expiresIn = expiresIn; }
+
+    public UserInfoDTO getUser() { return user; }
+    public void setUser(UserInfoDTO user) { this.user = user; }
+
     @Schema(description = "Informações do usuário")
     public static class UserInfoDTO {
         
@@ -46,5 +47,21 @@ public class AuthResponseDTO {
         
         @Schema(description = "Nome do campus", example = "IFPR - Sede Curitiba")
         private String campus;
+
+        // Getters e Setters
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+
+        public String getNome() { return nome; }
+        public void setNome(String nome) { this.nome = nome; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+
+        public String getCampus() { return campus; }
+        public void setCampus(String campus) { this.campus = campus; }
     }
 }

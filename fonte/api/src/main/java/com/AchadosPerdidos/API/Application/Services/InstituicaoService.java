@@ -11,7 +11,7 @@ import com.AchadosPerdidos.API.Domain.Repository.InstituicaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,7 +38,7 @@ public class InstituicaoService implements IInstituicaoService {
     @Override
     public InstituicaoDTO createInstituicao(InstituicaoDTO instituicaoDTO) {
         Instituicao instituicao = instituicaoModelMapper.toEntity(instituicaoDTO);
-        instituicao.setData_Cadastro(new Date());
+        instituicao.setData_Cadastro(LocalDateTime.now());
         instituicao.setFlg_Inativo(false);
         
         Instituicao savedInstituicao = instituicaoRepository.save(instituicao);
@@ -51,7 +51,7 @@ public class InstituicaoService implements IInstituicaoService {
         instituicao.setTipo_Instituicao(createDTO.getTipo_Instituicao());
         instituicao.setNome_Instituicao(createDTO.getNome_Instituicao());
         instituicao.setCNPJ_Filial(createDTO.getCNPJ_Filial());
-        instituicao.setData_Cadastro(new Date());
+        instituicao.setData_Cadastro(LocalDateTime.now());
         instituicao.setFlg_Inativo(false);
         
         Instituicao savedInstituicao = instituicaoRepository.save(instituicao);

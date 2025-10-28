@@ -8,8 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -18,28 +16,25 @@ public class FotosQueries implements IFotosQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Fotos> rowMapper = new RowMapper<Fotos>() {
-        @Override
-        public Fotos mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Fotos fotos = new Fotos();
-            fotos.setId_Foto(rs.getInt("Id_Foto"));
-            fotos.setUsuario_Id(rs.getInt("Usuario_Id"));
-            fotos.setItem_Id(rs.getInt("Item_Id"));
-            fotos.setProvedor_Armazenamento(Provedor_Armazenamento.valueOf(rs.getString("Provedor_Armazenamento")));
-            fotos.setNome_Bucket(rs.getString("Nome_Bucket"));
-            fotos.setChave_Objeto(rs.getString("Chave_Objeto"));
-            fotos.setUrl_Arquivo(rs.getString("Url_Arquivo"));
-            fotos.setNome_Original(rs.getString("Nome_Original"));
-            fotos.setLargura(rs.getInt("Largura"));
-            fotos.setAltura(rs.getInt("Altura"));
-            fotos.setPerfil_Usuario(rs.getBoolean("Perfil_Usuario"));
-            fotos.setFoto_Item(rs.getBoolean("Foto_Item"));
-            fotos.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
-            fotos.setData_Envio(rs.getDate("Data_Envio"));
-            fotos.setData_Exclusao(rs.getDate("Data_Exclusao"));
-            fotos.setData_Atualizacao(rs.getDate("Data_Atualizacao"));
-            return fotos;
-        }
+    private final RowMapper<Fotos> rowMapper = (rs, rowNum) -> {
+        Fotos fotos = new Fotos();
+        fotos.setId_Foto(rs.getInt("Id_Foto"));
+        fotos.setUsuario_Id(rs.getInt("Usuario_Id"));
+        fotos.setItem_Id(rs.getInt("Item_Id"));
+        fotos.setProvedor_Armazenamento(Provedor_Armazenamento.valueOf(rs.getString("Provedor_Armazenamento")));
+        fotos.setNome_Bucket(rs.getString("Nome_Bucket"));
+        fotos.setChave_Objeto(rs.getString("Chave_Objeto"));
+        fotos.setUrl_Arquivo(rs.getString("Url_Arquivo"));
+        fotos.setNome_Original(rs.getString("Nome_Original"));
+        fotos.setLargura(rs.getInt("Largura"));
+        fotos.setAltura(rs.getInt("Altura"));
+        fotos.setPerfil_Usuario(rs.getBoolean("Perfil_Usuario"));
+        fotos.setFoto_Item(rs.getBoolean("Foto_Item"));
+        fotos.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
+        fotos.setData_Envio(rs.getTimestamp("Data_Envio") != null ? rs.getTimestamp("Data_Envio").toLocalDateTime() : null);
+        fotos.setData_Exclusao(rs.getTimestamp("Data_Exclusao") != null ? rs.getTimestamp("Data_Exclusao").toLocalDateTime() : null);
+        fotos.setData_Atualizacao(rs.getTimestamp("Data_Atualizacao") != null ? rs.getTimestamp("Data_Atualizacao").toLocalDateTime() : null);
+        return fotos;
     };
 
     @Override

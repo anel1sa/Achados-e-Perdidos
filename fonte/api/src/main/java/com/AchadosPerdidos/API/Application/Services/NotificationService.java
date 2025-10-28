@@ -46,15 +46,19 @@ public class NotificationService implements INotificationService {
             
             if (item != null && finder != null) {
                 // Cria mensagem de notificação
+                String localInfo = item.getCampus_Id() > 0 ? 
+                    "Campus ID: " + item.getCampus_Id() : 
+                    "Local não especificado";
+                
                 String message = String.format(
                     "Novo item encontrado: %s. Local: %s. Encontrado por: %s",
                     item.getNome_Item(),
-                    "Campus", // TODO: Implementar busca do local
+                    localInfo,
                     finder.getNome_Usuario()
                 );
                 
                 // Envia notificação para todos os usuários ativos
-                sendNotificationToAllUsers(message, "ITEM_ENCONTRADO");
+                sendNotificationToAllUsers(message);
                 
                 System.out.println("Notificação enviada: Item encontrado - " + item.getNome_Item());
             }
@@ -85,7 +89,7 @@ public class NotificationService implements INotificationService {
                     claimant.getNome_Usuario()
                 );
                 
-                sendNotificationToUser(ownerId, ownerMessage, "ITEM_REIVINDICADO");
+                sendNotificationToUser(ownerId, ownerMessage);
                 
                 // Notifica o reivindicador
                 String claimantMessage = String.format(
@@ -93,7 +97,7 @@ public class NotificationService implements INotificationService {
                     item.getNome_Item()
                 );
                 
-                sendNotificationToUser(claimantId, claimantMessage, "REIVINDICACAO_REGISTRADA");
+                sendNotificationToUser(claimantId, claimantMessage);
                 
                 System.out.println("Notificações enviadas: Item reivindicado - " + item.getNome_Item());
             }
@@ -123,7 +127,7 @@ public class NotificationService implements INotificationService {
                     item.getNome_Item()
                 );
                 
-                sendNotificationToUser(ownerId, ownerMessage, "ITEM_DEVOLVIDO");
+                sendNotificationToUser(ownerId, ownerMessage);
                 
                 // Notifica quem encontrou
                 String finderMessage = String.format(
@@ -131,7 +135,7 @@ public class NotificationService implements INotificationService {
                     item.getNome_Item()
                 );
                 
-                sendNotificationToUser(finderId, finderMessage, "ITEM_DEVOLVIDO");
+                sendNotificationToUser(finderId, finderMessage);
                 
                 System.out.println("Notificações enviadas: Item devolvido - " + item.getNome_Item());
             }
@@ -158,7 +162,7 @@ public class NotificationService implements INotificationService {
                     item.getNome_Item()
                 );
                 
-                sendNotificationToUser(item.getUsuario_Id(), message, "PRAZO_DOACAO");
+                sendNotificationToUser(item.getUsuario_Id(), message);
                 
                 System.out.println("Notificação de prazo enviada para item: " + item.getNome_Item());
             }
@@ -188,7 +192,7 @@ public class NotificationService implements INotificationService {
                     item.getNome_Item()
                 );
                 
-                sendNotificationToUser(item.getUsuario_Id(), message, "ITEM_DOADO");
+                sendNotificationToUser(item.getUsuario_Id(), message);
                 
                 System.out.println("Item marcado como doado: " + item.getNome_Item());
             }
@@ -200,7 +204,7 @@ public class NotificationService implements INotificationService {
     /**
      * Envia notificação para um usuário específico
      */
-    private void sendNotificationToUser(int userId, String message, String type) {
+    private void sendNotificationToUser(int userId, String message) {
         try {
             // Cria mensagem de chat para notificação
             ChatMessage notification = new ChatMessage(
@@ -215,7 +219,7 @@ public class NotificationService implements INotificationService {
             // Salva no MongoDB
             chatService.saveMessage(notification);
             
-            // TODO: Implementar notificação push para dispositivos móveis
+            // Notificação push para dispositivos móveis será implementada em versão futura
             
         } catch (Exception e) {
             System.err.println("Erro ao enviar notificação para usuário " + userId + ": " + e.getMessage());
@@ -225,11 +229,14 @@ public class NotificationService implements INotificationService {
     /**
      * Envia notificação para todos os usuários ativos
      */
-    private void sendNotificationToAllUsers(String message, String type) {
+    private void sendNotificationToAllUsers(String message) {
         try {
-            // TODO: Implementar busca de todos os usuários ativos
-            // Por enquanto, apenas log da notificação
-            System.out.println("Notificação geral: " + message);
+            // Busca todos os usuários ativos e envia notificação
+            com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosListDTO usuariosAtivos = usuariosService.getAllUsuarios();
+            for (var usuario : usuariosAtivos.getUsuarios()) {
+                sendNotificationToUser(usuario.getId_Usuario(), message);
+            }
+            System.out.println("Notificação geral enviada para " + usuariosAtivos.getUsuarios().size() + " usuários: " + message);
             
         } catch (Exception e) {
             System.err.println("Erro ao enviar notificação geral: " + e.getMessage());

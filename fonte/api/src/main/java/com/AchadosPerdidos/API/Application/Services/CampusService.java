@@ -11,7 +11,7 @@ import com.AchadosPerdidos.API.Domain.Repository.CampusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,7 +38,7 @@ public class CampusService implements ICampusService {
     @Override
     public CampusDTO createCampus(CampusDTO campusDTO) {
         Campus campus = campusModelMapper.toEntity(campusDTO);
-        campus.setData_Cadastro(new Date());
+        campus.setData_Cadastro(LocalDateTime.now());
         campus.setFlg_Ativo(true);
         
         Campus savedCampus = campusRepository.save(campus);
@@ -54,7 +54,7 @@ public class CampusService implements ICampusService {
         campus.setEndereco(createDTO.getEndereco());
         campus.setCEP(createDTO.getCEP());
         campus.setId_Instituicao(createDTO.getId_Instituicao());
-        campus.setData_Cadastro(new Date());
+        campus.setData_Cadastro(LocalDateTime.now());
         campus.setFlg_Ativo(true);
         
         Campus savedCampus = campusRepository.save(campus);

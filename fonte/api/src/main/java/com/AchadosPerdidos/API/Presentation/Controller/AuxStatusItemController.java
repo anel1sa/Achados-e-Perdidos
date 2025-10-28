@@ -49,9 +49,13 @@ public class AuxStatusItemController {
             AuxStatusItemListDTO auxStatusItemCriado = auxStatusItemService.criarAuxStatusItem(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(auxStatusItemCriado);
         }
-        catch (Exception e)
+        catch (IllegalArgumentException e)
         {
             throw new RuntimeException(String.format("Erro ao criar status de item: %s", e.getMessage()));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(String.format("Erro interno ao criar status de item: %s", e.getMessage()));
         }
     }
     
@@ -69,9 +73,13 @@ public class AuxStatusItemController {
             }
             return ResponseEntity.notFound().build();
         }
-        catch (Exception e)
+        catch (IllegalArgumentException e)
         {
             throw new RuntimeException(String.format("Erro ao buscar status de item por ID: %s", e.getMessage()));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(String.format("Erro interno ao buscar status de item por ID: %s", e.getMessage()));
         }
     }
     
@@ -84,7 +92,7 @@ public class AuxStatusItemController {
         } 
         catch (Exception e) 
         {
-            throw new RuntimeException(String.format("Erro ao listar status de item: %s", e.getMessage()));
+            throw new RuntimeException(String.format("Erro interno ao listar status de item: %s", e.getMessage()));
         }
     }
     
@@ -102,6 +110,10 @@ public class AuxStatusItemController {
             catch (IllegalArgumentException e)
             {
                 throw new RuntimeException(String.format("Erro ao atualizar status de item: %s", e.getMessage()));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(String.format("Erro interno ao atualizar status de item: %s", e.getMessage()));
             }
     }
 

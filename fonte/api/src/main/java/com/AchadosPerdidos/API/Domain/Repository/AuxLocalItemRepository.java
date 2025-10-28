@@ -23,12 +23,12 @@ public class AuxLocalItemRepository implements IAuxLocalItemRepository {
     @Autowired
     private IAuxLocalItemQueries auxLocalItemQueries;
     
-    private final RowMapper<Aux_Local_Item> auxLocalItemRowMapper = (rs, _) -> {
+    private final RowMapper<Aux_Local_Item> auxLocalItemRowMapper = (rs, rowNum) -> {
         Aux_Local_Item auxLocalItem = new Aux_Local_Item();
         auxLocalItem.setId_Aux_Local_Item(rs.getInt("Id_Aux_Local_Item"));
         auxLocalItem.setNome_Local_Item(rs.getString("Nome_Local_Item"));
         auxLocalItem.setDescricao_Local_Item(rs.getString("Descricao_Local_Item"));
-        auxLocalItem.setData_Cadastro_Local_Item(rs.getTimestamp("Data_Cadastro_Local_Item"));
+        auxLocalItem.setData_Cadastro_Local_Item(rs.getTimestamp("Data_Cadastro_Local_Item").toLocalDateTime());
         auxLocalItem.setFlg_Inativo_Local_Item(rs.getBoolean("Flg_Inativo_Local_Item"));
         return auxLocalItem;
     };
@@ -41,7 +41,7 @@ public class AuxLocalItemRepository implements IAuxLocalItemRepository {
             PreparedStatement ps = connection.prepareStatement(auxLocalItemQueries.getInsertAuxLocalItem(), Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, auxLocalItem.getNome_Local_Item());
             ps.setString(2, auxLocalItem.getDescricao_Local_Item());
-            ps.setTimestamp(3, new java.sql.Timestamp(auxLocalItem.getData_Cadastro_Local_Item().getTime()));
+            ps.setTimestamp(3, java.sql.Timestamp.valueOf(auxLocalItem.getData_Cadastro_Local_Item()));
             ps.setBoolean(4, Boolean.TRUE.equals(auxLocalItem.getFlg_Inativo_Local_Item()));
             return ps;
         }, keyHolder);

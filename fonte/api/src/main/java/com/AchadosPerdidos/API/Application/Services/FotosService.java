@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -42,8 +42,8 @@ public class FotosService implements IFotosService {
     @Override
     public FotosDTO createFoto(FotosDTO fotosDTO) {
         Fotos fotos = fotosModelMapper.toEntity(fotosDTO);
-        fotos.setData_Envio(new Date());
-        fotos.setData_Atualizacao(new Date());
+        fotos.setData_Envio(LocalDateTime.now());
+        fotos.setData_Atualizacao(LocalDateTime.now());
         fotos.setFlg_Inativo(false);
         
         Fotos savedFotos = fotosRepository.save(fotos);
@@ -77,7 +77,7 @@ public class FotosService implements IFotosService {
             // O tipo MIME pode ser usado para validação, mas não há campo específico na entidade
             // Pode ser armazenado em um campo de metadados se necessário
         }
-        existingFotos.setData_Atualizacao(new Date());
+        existingFotos.setData_Atualizacao(LocalDateTime.now());
         
         Fotos updatedFotos = fotosRepository.save(existingFotos);
         return fotosModelMapper.toDTO(updatedFotos);
@@ -185,8 +185,8 @@ public class FotosService implements IFotosService {
             fotos.setPerfil_Usuario(isProfilePhoto);
             fotos.setFoto_Item(!isProfilePhoto);
             fotos.setFlg_Inativo(false);
-            fotos.setData_Envio(new Date());
-            fotos.setData_Atualizacao(new Date());
+            fotos.setData_Envio(LocalDateTime.now());
+            fotos.setData_Atualizacao(LocalDateTime.now());
 
             // Salvar no banco de dados
             Fotos savedFotos = fotosRepository.save(fotos);

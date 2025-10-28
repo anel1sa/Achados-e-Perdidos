@@ -7,15 +7,16 @@ import com.AchadosPerdidos.API.Application.Services.Interfaces.IAuxLocalItemServ
 import com.AchadosPerdidos.API.Domain.Entity.Aux_Local_Item;
 import com.AchadosPerdidos.API.Domain.Repository.Interfaces.IAuxLocalItemRepository;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class AuxLocalItemService implements IAuxLocalItemService {
+    
+    private static final Logger log = LoggerFactory.getLogger(AuxLocalItemService.class);
     
     private final AuxLocalItemModelMapper auxLocalItemMapper;
     private final IAuxLocalItemRepository auxLocalItemRepository;
@@ -30,7 +31,7 @@ public class AuxLocalItemService implements IAuxLocalItemService {
         Aux_Local_Item entity = auxLocalItemMapper.toEntity(dto);
         if (entity.getData_Cadastro_Local_Item() == null) 
         {
-            entity.setData_Cadastro_Local_Item(new Date());
+            entity.setData_Cadastro_Local_Item(LocalDateTime.now());
             log.info("Criando a data do local do item");
         }
 

@@ -1,16 +1,8 @@
 package com.AchadosPerdidos.API.Application.DTOs.Auxiliares;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO para lista de tipos de role")
 public class AuxTipoRoleListDTO {
     
@@ -19,4 +11,11 @@ public class AuxTipoRoleListDTO {
     
     @Schema(description = "Total de tipos de role na lista")
     private int totalCount;
+
+    // Getters e Setters
+    public List<AuxTipoRoleDTO> getTiposRole() { return tiposRole; }
+    public void setTiposRole(List<AuxTipoRoleDTO> tiposRole) { this.tiposRole = tiposRole; }
+
+    public int getTotalCount() { return totalCount; }
+    public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
 }

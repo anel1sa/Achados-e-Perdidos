@@ -9,7 +9,7 @@ import com.AchadosPerdidos.API.Domain.Repository.AuxTipoRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,7 +36,7 @@ public class AuxTipoRoleService implements IAuxTipoRoleService {
     @Override
     public AuxTipoRoleDTO createAuxTipoRole(AuxTipoRoleDTO auxTipoRoleDTO) {
         Aux_Tipo_Role auxTipoRole = auxTipoRoleModelMapper.toEntity(auxTipoRoleDTO);
-        auxTipoRole.setData_Cadastro(new Date());
+        auxTipoRole.setData_Cadastro(LocalDateTime.now());
         auxTipoRole.setFlg_Inativo(false);
         
         Aux_Tipo_Role savedAuxTipoRole = auxTipoRoleRepository.save(auxTipoRole);

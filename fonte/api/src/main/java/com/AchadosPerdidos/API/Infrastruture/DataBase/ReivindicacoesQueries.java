@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -17,18 +15,15 @@ public class ReivindicacoesQueries implements IReivindicacoesQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Reivindicacoes> rowMapper = new RowMapper<Reivindicacoes>() {
-        @Override
-        public Reivindicacoes mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Reivindicacoes reivindicacoes = new Reivindicacoes();
-            reivindicacoes.setId_Reivindicacao(rs.getInt("Id_Reivindicacao"));
-            reivindicacoes.setId_Item(rs.getInt("Id_Item"));
-            reivindicacoes.setId_Usuario_Post(rs.getInt("Id_Usuario_Post"));
-            reivindicacoes.setId_Usuario_Proprietario(rs.getInt("Id_Usuario_Proprietario"));
-            reivindicacoes.setData_Reivindicacao(rs.getDate("Data_Reivindicacao"));
-            reivindicacoes.setObservacao(rs.getString("Observacao"));
-            return reivindicacoes;
-        }
+    private final RowMapper<Reivindicacoes> rowMapper = (rs, rowNum) -> {
+        Reivindicacoes reivindicacoes = new Reivindicacoes();
+        reivindicacoes.setId_Reivindicacao(rs.getInt("Id_Reivindicacao"));
+        reivindicacoes.setId_Item(rs.getInt("Id_Item"));
+        reivindicacoes.setId_Usuario_Post(rs.getInt("Id_Usuario_Post"));
+        reivindicacoes.setId_Usuario_Proprietario(rs.getInt("Id_Usuario_Proprietario"));
+        reivindicacoes.setData_Reivindicacao(rs.getTimestamp("Data_Reivindicacao").toLocalDateTime());
+        reivindicacoes.setObservacao(rs.getString("Observacao"));
+        return reivindicacoes;
     };
 
     @Override
@@ -51,7 +46,7 @@ public class ReivindicacoesQueries implements IReivindicacoesQueries {
             reivindicacoes.getId_Item(),
             reivindicacoes.getId_Usuario_Post(),
             reivindicacoes.getId_Usuario_Proprietario(),
-            reivindicacoes.getData_Reivindicacao(),
+            java.sql.Timestamp.valueOf(reivindicacoes.getData_Reivindicacao()),
             reivindicacoes.getObservacao());
         
         // Buscar o registro inserido para retornar com o ID
@@ -59,7 +54,7 @@ public class ReivindicacoesQueries implements IReivindicacoesQueries {
         List<Reivindicacoes> inserted = jdbcTemplate.query(selectSql, rowMapper, 
             reivindicacoes.getId_Item(),
             reivindicacoes.getId_Usuario_Post(),
-            reivindicacoes.getData_Reivindicacao());
+            java.sql.Timestamp.valueOf(reivindicacoes.getData_Reivindicacao()));
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }

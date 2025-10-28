@@ -12,7 +12,7 @@ import com.AchadosPerdidos.API.Domain.Repository.CampusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -48,7 +48,7 @@ public class UsuariosService implements IUsuariosService {
     @Override
     public UsuariosDTO createUsuario(UsuariosDTO usuariosDTO) {
         Usuarios usuarios = usuariosModelMapper.toEntity(usuariosDTO);
-        usuarios.setData_Cadastro(new Date());
+        usuarios.setData_Cadastro(LocalDateTime.now());
         usuarios.setFlg_Inativo(false);
         
         Usuarios savedUsuarios = usuariosRepository.save(usuarios);
@@ -132,7 +132,7 @@ public class UsuariosService implements IUsuariosService {
         usuarios.setTipo_Role_Id(createDTO.getTipo_Role_Id());
         usuarios.setId_Campus(createDTO.getId_Campus());
         usuarios.setId_Empresa(createDTO.getId_Empresa());
-        usuarios.setData_Cadastro(new Date());
+        usuarios.setData_Cadastro(LocalDateTime.now());
         usuarios.setFlg_Inativo(false);
         
         // Preencher automaticamente a instituição baseada no campus

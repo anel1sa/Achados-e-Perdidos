@@ -1,15 +1,7 @@
 package com.AchadosPerdidos.API.Application.DTOs.Campus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO para atualização de campus")
 public class CampusUpdateDTO {
     
@@ -30,4 +22,23 @@ public class CampusUpdateDTO {
     
     @Schema(description = "Status ativo/inativo do campus", example = "true")
     private Boolean Flg_Ativo;
+
+    // Getters e Setters
+    public String getNome_Campus() { return Nome_Campus; }
+    public void setNome_Campus(String nome_Campus) { Nome_Campus = nome_Campus; }
+
+    public String getCidade() { return Cidade; }
+    public void setCidade(String cidade) { Cidade = cidade; }
+
+    public String getEstado() { return Estado; }
+    public void setEstado(String estado) { Estado = estado; }
+
+    public String getEndereco() { return Endereco; }
+    public void setEndereco(String endereco) { Endereco = endereco; }
+
+    public String getCEP() { return CEP; }
+    public void setCEP(String CEP) { this.CEP = CEP; }
+
+    public Boolean getFlg_Ativo() { return Flg_Ativo; }
+    public void setFlg_Ativo(Boolean flg_Ativo) { Flg_Ativo = flg_Ativo; }
 }

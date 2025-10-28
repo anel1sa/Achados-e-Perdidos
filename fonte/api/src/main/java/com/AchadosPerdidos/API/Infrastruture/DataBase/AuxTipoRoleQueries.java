@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -17,16 +15,13 @@ public class AuxTipoRoleQueries implements IAuxTipoRoleQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Aux_Tipo_Role> rowMapper = new RowMapper<Aux_Tipo_Role>() {
-        @Override
-        public Aux_Tipo_Role mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Aux_Tipo_Role auxTipoRole = new Aux_Tipo_Role();
-            auxTipoRole.setId_Tipo_Role(rs.getInt("Id_Tipo_Role"));
-            auxTipoRole.setNome_Tipo_Role(rs.getString("Nome_Tipo_Role"));
-            auxTipoRole.setData_Cadastro(rs.getDate("Data_Cadastro"));
-            auxTipoRole.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
-            return auxTipoRole;
-        }
+    private final RowMapper<Aux_Tipo_Role> rowMapper = (rs, rowNum) -> {
+        Aux_Tipo_Role auxTipoRole = new Aux_Tipo_Role();
+        auxTipoRole.setId_Tipo_Role(rs.getInt("Id_Tipo_Role"));
+        auxTipoRole.setNome_Tipo_Role(rs.getString("Nome_Tipo_Role"));
+        auxTipoRole.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        auxTipoRole.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
+        return auxTipoRole;
     };
 
     @Override
@@ -47,14 +42,14 @@ public class AuxTipoRoleQueries implements IAuxTipoRoleQueries {
         String sql = "INSERT INTO Aux_Tipo_Role (Nome_Tipo_Role, Data_Cadastro, Flg_Inativo) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, 
             auxTipoRole.getNome_Tipo_Role(), 
-            auxTipoRole.getData_Cadastro(), 
+            java.sql.Timestamp.valueOf(auxTipoRole.getData_Cadastro()), 
             auxTipoRole.getFlg_Inativo());
         
         // Buscar o registro inserido para retornar com o ID
         String selectSql = "SELECT * FROM Aux_Tipo_Role WHERE Nome_Tipo_Role = ? AND Data_Cadastro = ? ORDER BY Id_Tipo_Role DESC LIMIT 1";
         List<Aux_Tipo_Role> inserted = jdbcTemplate.query(selectSql, rowMapper, 
             auxTipoRole.getNome_Tipo_Role(), 
-            auxTipoRole.getData_Cadastro());
+            java.sql.Timestamp.valueOf(auxTipoRole.getData_Cadastro()));
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }

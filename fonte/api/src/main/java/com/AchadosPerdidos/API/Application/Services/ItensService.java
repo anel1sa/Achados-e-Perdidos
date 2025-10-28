@@ -13,7 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,8 +43,8 @@ public class ItensService implements IItensService {
     @CacheEvict(value = "itens", allEntries = true)
     public ItensDTO createItem(ItensDTO itensDTO) {
         Itens itens = itensModelMapper.toEntity(itensDTO);
-        itens.setData_Cadastro(new Date());
-        itens.setData_Hora_Item(new Date());
+        itens.setData_Cadastro(LocalDateTime.now());
+        itens.setData_Hora_Item(LocalDateTime.now());
         itens.setFlg_Inativo(false);
         
         Itens savedItens = itensRepository.save(itens);
@@ -60,8 +60,8 @@ public class ItensService implements IItensService {
         itens.setStatus_Item_Id(createDTO.getStatus_Item_Id());
         itens.setLocal_Id(createDTO.getLocal_Id());
         itens.setCampus_Id(createDTO.getCampus_Id());
-        itens.setData_Cadastro(new Date());
-        itens.setData_Hora_Item(new Date());
+        itens.setData_Cadastro(LocalDateTime.now());
+        itens.setData_Hora_Item(LocalDateTime.now());
         itens.setFlg_Inativo(false);
         
         Itens savedItens = itensRepository.save(itens);

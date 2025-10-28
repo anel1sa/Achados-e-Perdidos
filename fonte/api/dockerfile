@@ -1,5 +1,5 @@
 # Fase de compilação
-FROM maven:3.9-openjdk-21 AS builder
+FROM maven:3.9-openjdk-21-slim AS builder
 WORKDIR /app
 
 # Baixa as dependências primeiro (melhor cache)
@@ -10,9 +10,13 @@ RUN mvn dependency:resolve
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Fase de produção - usa a mesma imagem base para garantir compatibilidade
-FROM openjdk:21-jdk
+# Fase de produção - usa imagem mais leve
+FROM openjdk:21-jre-slim
 WORKDIR /app
+
+# Cria usuário não-root para segurança
+RUN addgroup --system spring && adduser --system spring --ingroup spring
+USER spring:spring
 
 # Copia o JAR compilado do stage anterior
 COPY --from=builder /app/target/*.jar app.jar
@@ -20,8 +24,8 @@ COPY --from=builder /app/target/*.jar app.jar
 # Expõe a porta padrão do Spring Boot
 EXPOSE 8080
 
-# Comando para iniciar a aplicação
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Comando para iniciar a aplicação com otimizações JVM
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
 
 
 

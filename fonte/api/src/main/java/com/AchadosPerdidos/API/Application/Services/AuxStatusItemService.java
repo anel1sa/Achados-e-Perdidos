@@ -8,7 +8,7 @@ import com.AchadosPerdidos.API.Domain.Entity.Aux_Status_Item;
 import com.AchadosPerdidos.API.Domain.Repository.Interfaces.IAuxStatusItemRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +27,7 @@ public class AuxStatusItemService implements IAuxStatusItemService {
     public AuxStatusItemListDTO criarAuxStatusItem(AuxStatusItemDTO dto) {
         Aux_Status_Item entity = auxStatusItemMapper.toEntity(dto);
         if (entity.getData_Cadastro() == null) {
-            entity.setData_Cadastro(new Date());
+            entity.setData_Cadastro(LocalDateTime.now());
         }
         if (entity.getFlg_Inativo() == null) {
             entity.setFlg_Inativo(false);

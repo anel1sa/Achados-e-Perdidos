@@ -1,15 +1,7 @@
 package com.AchadosPerdidos.API.Application.DTOs.Itens;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO para criação de item")
 public class ItensCreateDTO {
     
@@ -27,4 +19,20 @@ public class ItensCreateDTO {
     
     @Schema(description = "ID do campus onde o item foi encontrado", example = "1", required = true)
     private int Campus_Id;
+
+    // Getters e Setters
+    public String getNome_Item() { return Nome_Item; }
+    public void setNome_Item(String nome_Item) { Nome_Item = nome_Item; }
+
+    public String getDescricao_Item() { return Descricao_Item; }
+    public void setDescricao_Item(String descricao_Item) { Descricao_Item = descricao_Item; }
+
+    public int getStatus_Item_Id() { return Status_Item_Id; }
+    public void setStatus_Item_Id(int status_Item_Id) { Status_Item_Id = status_Item_Id; }
+
+    public int getLocal_Id() { return Local_Id; }
+    public void setLocal_Id(int local_Id) { Local_Id = local_Id; }
+
+    public int getCampus_Id() { return Campus_Id; }
+    public void setCampus_Id(int campus_Id) { Campus_Id = campus_Id; }
 }

@@ -9,7 +9,7 @@ import com.AchadosPerdidos.API.Domain.Repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,7 +36,7 @@ public class EmpresaService implements IEmpresaService {
     @Override
     public EmpresaDTO createEmpresa(EmpresaDTO empresaDTO) {
         Empresa empresa = empresaModelMapper.toEntity(empresaDTO);
-        empresa.setData_Cadastro(new Date());
+        empresa.setData_Cadastro(LocalDateTime.now());
         empresa.setFlg_Ativo(true);
         
         Empresa savedEmpresa = empresaRepository.save(empresa);

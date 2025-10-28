@@ -15,7 +15,7 @@ public class UsuariosQueries implements IUsuariosQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Usuarios> rowMapper = (rs, _) -> {
+    private final RowMapper<Usuarios> rowMapper = (rs, rowNum) -> {
         Usuarios usuarios = new Usuarios();
         usuarios.setId_Usuario(rs.getInt("id_usuario"));
         usuarios.setNome_Usuario(rs.getString("nome_usuario"));
@@ -24,7 +24,7 @@ public class UsuariosQueries implements IUsuariosQueries {
         usuarios.setSenha_Usuario(rs.getString("senha_usuario"));
         usuarios.setMatricula_Usuario(rs.getString("matricula_usuario"));
         usuarios.setTelefone_Usuario(rs.getString("telefone_usuario"));
-        usuarios.setData_Cadastro(rs.getDate("data_cadastro"));
+        usuarios.setData_Cadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
         usuarios.setTipo_Role_Id(rs.getInt("tipo_role_id"));
         usuarios.setFoto_item_id(rs.getInt("foto_item_id"));
         usuarios.setFoto_perfil_usuario(rs.getInt("foto_perfil_usuario"));
@@ -72,7 +72,7 @@ public class UsuariosQueries implements IUsuariosQueries {
             usuarios.getSenha_Usuario(),
             usuarios.getMatricula_Usuario(),
             usuarios.getTelefone_Usuario(),
-            usuarios.getData_Cadastro(),
+            java.sql.Timestamp.valueOf(usuarios.getData_Cadastro()),
             usuarios.getTipo_Role_Id(),
             usuarios.getFoto_item_id(),
             usuarios.getFoto_perfil_usuario(),
@@ -85,7 +85,7 @@ public class UsuariosQueries implements IUsuariosQueries {
         String selectSql = "SELECT * FROM ap.usuarios WHERE email_usuario = ? AND data_cadastro = ? ORDER BY id_usuario DESC LIMIT 1";
         List<Usuarios> inserted = jdbcTemplate.query(selectSql, rowMapper, 
             usuarios.getEmail_Usuario(), 
-            usuarios.getData_Cadastro());
+            java.sql.Timestamp.valueOf(usuarios.getData_Cadastro()));
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }

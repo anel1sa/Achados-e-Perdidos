@@ -1,16 +1,8 @@
 package com.AchadosPerdidos.API.Application.DTOs.Instituicao;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO para lista de instituições")
 public class InstituicaoListDTO {
     
@@ -19,4 +11,11 @@ public class InstituicaoListDTO {
     
     @Schema(description = "Total de instituições na lista")
     private int totalCount;
+
+    // Getters e Setters
+    public List<InstituicaoDTO> getInstituicoes() { return instituicoes; }
+    public void setInstituicoes(List<InstituicaoDTO> instituicoes) { this.instituicoes = instituicoes; }
+
+    public int getTotalCount() { return totalCount; }
+    public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
 }

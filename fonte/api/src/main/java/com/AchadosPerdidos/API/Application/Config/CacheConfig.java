@@ -66,11 +66,6 @@ public class CacheConfig {
     }
 
     @Bean
-    public CacheManager fallbackCacheManager() {
-        return createFallbackCacheManager();
-    }
-
-    @Bean
     @Profile("test")
     public CacheManager testCacheManager() {
         logger.info("Configurando cache para ambiente de teste");

@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -17,20 +15,17 @@ public class EmpresaQueries implements IEmpresaQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Empresa> rowMapper = new RowMapper<Empresa>() {
-        @Override
-        public Empresa mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Empresa empresa = new Empresa();
-            empresa.setId_Empresa(rs.getInt("Id_Empresa"));
-            empresa.setNome_Empresa(rs.getString("Nome_Empresa"));
-            empresa.setCNPJ_Matriz(rs.getString("CNPJ_Matriz"));
-            empresa.setPais_Sede(rs.getString("Pais_Sede"));
-            empresa.setWebsite(rs.getString("Website"));
-            empresa.setContato_Principal(rs.getString("Contato_Principal"));
-            empresa.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
-            empresa.setData_Cadastro(rs.getDate("Data_Cadastro"));
-            return empresa;
-        }
+    private final RowMapper<Empresa> rowMapper = (rs, rowNum) -> {
+        Empresa empresa = new Empresa();
+        empresa.setId_Empresa(rs.getInt("Id_Empresa"));
+        empresa.setNome_Empresa(rs.getString("Nome_Empresa"));
+        empresa.setCNPJ_Matriz(rs.getString("CNPJ_Matriz"));
+        empresa.setPais_Sede(rs.getString("Pais_Sede"));
+        empresa.setWebsite(rs.getString("Website"));
+        empresa.setContato_Principal(rs.getString("Contato_Principal"));
+        empresa.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
+        empresa.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        return empresa;
     };
 
     @Override

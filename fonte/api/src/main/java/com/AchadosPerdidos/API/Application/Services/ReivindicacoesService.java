@@ -9,7 +9,7 @@ import com.AchadosPerdidos.API.Domain.Repository.ReivindicacoesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,7 +36,7 @@ public class ReivindicacoesService implements IReivindicacoesService {
     @Override
     public ReivindicacoesDTO createReivindicacao(ReivindicacoesDTO reivindicacoesDTO) {
         Reivindicacoes reivindicacoes = reivindicacoesModelMapper.toEntity(reivindicacoesDTO);
-        reivindicacoes.setData_Reivindicacao(new Date());
+        reivindicacoes.setData_Reivindicacao(LocalDateTime.now());
         
         Reivindicacoes savedReivindicacoes = reivindicacoesRepository.save(reivindicacoes);
         return reivindicacoesModelMapper.toDTO(savedReivindicacoes);

@@ -1,15 +1,7 @@
 package com.AchadosPerdidos.API.Application.DTOs.Usuario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "DTO para atualização de usuário")
 public class UsuariosUpdateDTO {
     
@@ -42,4 +34,35 @@ public class UsuariosUpdateDTO {
     
     @Schema(description = "Status ativo/inativo do usuário", example = "false")
     private Boolean Flg_Inativo;
+
+    // Getters e Setters
+    public String getNome_Usuario() { return Nome_Usuario; }
+    public void setNome_Usuario(String nome_Usuario) { Nome_Usuario = nome_Usuario; }
+
+    public String getCPF_Usuario() { return CPF_Usuario; }
+    public void setCPF_Usuario(String CPF_Usuario) { this.CPF_Usuario = CPF_Usuario; }
+
+    public String getEmail_Usuario() { return Email_Usuario; }
+    public void setEmail_Usuario(String email_Usuario) { Email_Usuario = email_Usuario; }
+
+    public String getSenha_Usuario() { return Senha_Usuario; }
+    public void setSenha_Usuario(String senha_Usuario) { Senha_Usuario = senha_Usuario; }
+
+    public String getMatricula_Usuario() { return Matricula_Usuario; }
+    public void setMatricula_Usuario(String matricula_Usuario) { Matricula_Usuario = matricula_Usuario; }
+
+    public String getTelefone_Usuario() { return Telefone_Usuario; }
+    public void setTelefone_Usuario(String telefone_Usuario) { Telefone_Usuario = telefone_Usuario; }
+
+    public int getTipo_Role_Id() { return Tipo_Role_Id; }
+    public void setTipo_Role_Id(int tipo_Role_Id) { Tipo_Role_Id = tipo_Role_Id; }
+
+    public Integer getId_Campus() { return Id_Campus; }
+    public void setId_Campus(Integer id_Campus) { Id_Campus = id_Campus; }
+
+    public Integer getId_Empresa() { return Id_Empresa; }
+    public void setId_Empresa(Integer id_Empresa) { Id_Empresa = id_Empresa; }
+
+    public Boolean getFlg_Inativo() { return Flg_Inativo; }
+    public void setFlg_Inativo(Boolean flg_Inativo) { Flg_Inativo = flg_Inativo; }
 }

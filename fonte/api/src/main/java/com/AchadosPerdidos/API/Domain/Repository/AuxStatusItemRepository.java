@@ -23,11 +23,11 @@ public class AuxStatusItemRepository implements IAuxStatusItemRepository {
     @Autowired
     private IAuxStatusItemQueries auxStatusItemQueries;
     
-    private final RowMapper<Aux_Status_Item> auxStatusItemRowMapper = (rs, _) -> {
+    private final RowMapper<Aux_Status_Item> auxStatusItemRowMapper = (rs, rowNum) -> {
         Aux_Status_Item auxStatusItem = new Aux_Status_Item();
         auxStatusItem.setId_Status_Item(rs.getInt("Id_Status_Item"));
         auxStatusItem.setDescricao_Status_Item(rs.getString("Descricao_Status_Item"));
-        auxStatusItem.setData_Cadastro(rs.getTimestamp("Data_Cadastro"));
+        auxStatusItem.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
         auxStatusItem.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
         return auxStatusItem;
     };
@@ -39,7 +39,7 @@ public class AuxStatusItemRepository implements IAuxStatusItemRepository {
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(auxStatusItemQueries.getInsertAuxStatusItem(), Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, auxStatusItem.getDescricao_Status_Item());
-            ps.setTimestamp(2, new java.sql.Timestamp(auxStatusItem.getData_Cadastro().getTime()));
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(auxStatusItem.getData_Cadastro()));
             ps.setBoolean(3, Boolean.TRUE.equals(auxStatusItem.getFlg_Inativo()));
             return ps;
         }, keyHolder);

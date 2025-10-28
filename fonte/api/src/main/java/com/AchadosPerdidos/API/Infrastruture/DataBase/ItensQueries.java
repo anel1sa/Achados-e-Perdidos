@@ -14,13 +14,13 @@ public class ItensQueries implements IItensQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Itens> rowMapper = (rs, _) -> {
+    private final RowMapper<Itens> rowMapper = (rs, rowNum) -> {
         Itens itens = new Itens();
         itens.setId_Item(rs.getInt("Id_Item"));
         itens.setNome_Item(rs.getString("Nome_Item"));
         itens.setDescricao_Item(rs.getString("Descricao_Item"));
-        itens.setData_Hora_Item(rs.getDate("Data_Hora_Item"));
-        itens.setData_Cadastro(rs.getDate("Data_Cadastro"));
+        itens.setData_Hora_Item(rs.getTimestamp("Data_Hora_Item").toLocalDateTime());
+        itens.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
         itens.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
         itens.setStatus_Item_Id(rs.getInt("Status_Item_Id"));
         itens.setUsuario_Id(rs.getInt("Usuario_Id"));
@@ -49,8 +49,8 @@ public class ItensQueries implements IItensQueries {
         jdbcTemplate.update(sql, 
             itens.getNome_Item(),
             itens.getDescricao_Item(),
-            itens.getData_Hora_Item(),
-            itens.getData_Cadastro(),
+            java.sql.Timestamp.valueOf(itens.getData_Hora_Item()),
+            java.sql.Timestamp.valueOf(itens.getData_Cadastro()),
             itens.getFlg_Inativo(),
             itens.getStatus_Item_Id(),
             itens.getUsuario_Id(),
@@ -62,7 +62,7 @@ public class ItensQueries implements IItensQueries {
         String selectSql = "SELECT * FROM Itens WHERE Nome_Item = ? AND Data_Cadastro = ? ORDER BY Id_Item DESC LIMIT 1";
         List<Itens> inserted = jdbcTemplate.query(selectSql, rowMapper, 
             itens.getNome_Item(), 
-            itens.getData_Cadastro());
+            java.sql.Timestamp.valueOf(itens.getData_Cadastro()));
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }

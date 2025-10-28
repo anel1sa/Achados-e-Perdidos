@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -17,23 +15,20 @@ public class CampusQueries implements ICampusQueries {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Campus> rowMapper = new RowMapper<Campus>() {
-        @Override
-        public Campus mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Campus campus = new Campus();
-            campus.setId_Campus(rs.getInt("Id_Campus"));
-            campus.setId_Instituicao(rs.getInt("Id_Instituicao"));
-            campus.setNome_Campus(rs.getString("Nome_Campus"));
-            campus.setCidade(rs.getString("Cidade"));
-            campus.setEstado(rs.getString("Estado"));
-            campus.setEndereco(rs.getString("Endereco"));
-            campus.setCEP(rs.getString("CEP"));
-            campus.setLatitude(rs.getDouble("Latitude"));
-            campus.setLongitude(rs.getDouble("Longitude"));
-            campus.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
-            campus.setData_Cadastro(rs.getDate("Data_Cadastro"));
-            return campus;
-        }
+    private final RowMapper<Campus> rowMapper = (rs, rowNum) -> {
+        Campus campus = new Campus();
+        campus.setId_Campus(rs.getInt("Id_Campus"));
+        campus.setId_Instituicao(rs.getInt("Id_Instituicao"));
+        campus.setNome_Campus(rs.getString("Nome_Campus"));
+        campus.setCidade(rs.getString("Cidade"));
+        campus.setEstado(rs.getString("Estado"));
+        campus.setEndereco(rs.getString("Endereco"));
+        campus.setCEP(rs.getString("CEP"));
+        campus.setLatitude(rs.getDouble("Latitude"));
+        campus.setLongitude(rs.getDouble("Longitude"));
+        campus.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
+        campus.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        return campus;
     };
 
     @Override
