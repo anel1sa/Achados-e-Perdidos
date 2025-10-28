@@ -1,31 +1,30 @@
 # Fase de compilação
-FROM maven:3.9-openjdk-21-slim AS builder
-WORKDIR /app
+# Multi-stage Dockerfile usando imagens Eclipse Temurin (tags amplamente disponíveis)
+# Observação: algumas variantes "openjdk" e "openjdk:*-slim" não existem para todas as versões.
+# Usar Temurin garante disponibilidade no Docker Hub.
 
-# Baixa as dependências primeiro (melhor cache)
-COPY pom.xml .
-RUN mvn dependency:resolve
+# Stage 1: build com Maven usando Temurin Java 21
+FROM maven:3.10.1-eclipse-temurin-21 AS builder
+WORKDIR /workspace
 
-# Copia o código-fonte e compila
+# Copia o pom e resolve dependências para melhor uso de cache
+COPY pom.xml ./
+RUN mvn -B dependency:resolve
+
+# Copia o restante do código e empacota
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn -B -DskipTests package
 
-# Fase de produção - usa imagem mais leve
-FROM openjdk:21-jre-slim
+# Stage 2: runtime leve com Temurin Java 21
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Cria usuário não-root para segurança
-RUN addgroup --system spring && adduser --system spring --ingroup spring
-USER spring:spring
+# Copia o JAR gerado
+COPY --from=builder /workspace/target/*.jar /app/app.jar
 
-# Copia o JAR compilado do stage anterior
-COPY --from=builder /app/target/*.jar app.jar
-
-# Expõe a porta padrão do Spring Boot
 EXPOSE 8080
 
-# Comando para iniciar a aplicação com otimizações JVM
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
 
 
