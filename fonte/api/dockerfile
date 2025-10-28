@@ -4,7 +4,7 @@
 # Usar Temurin garante disponibilidade no Docker Hub.
 
 # Stage 1: build com Maven usando Temurin Java 21
-FROM maven:3.10.1-eclipse-temurin-21 AS builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /workspace
 
 # Copia o pom e resolve dependências para melhor uso de cache
