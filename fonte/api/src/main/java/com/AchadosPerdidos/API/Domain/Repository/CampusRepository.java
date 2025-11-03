@@ -26,7 +26,7 @@ public class CampusRepository implements ICampusRepository {
 
     @Override
     public Campus save(Campus campus) {
-        if (campus.getId_Campus() == 0) {
+        if (campus.getId() == null || campus.getId() == 0) {
             return campusQueries.insert(campus);
         } else {
             return campusQueries.update(campus);

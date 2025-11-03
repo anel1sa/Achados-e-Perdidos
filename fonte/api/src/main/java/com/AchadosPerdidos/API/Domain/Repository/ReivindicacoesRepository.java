@@ -26,7 +26,7 @@ public class ReivindicacoesRepository implements IReivindicacoesRepository {
 
     @Override
     public Reivindicacoes save(Reivindicacoes reivindicacoes) {
-        if (reivindicacoes.getId_Reivindicacao() == 0) {
+        if (reivindicacoes.getId() == null || reivindicacoes.getId() == 0) {
             return reivindicacoesQueries.insert(reivindicacoes);
         } else {
             return reivindicacoesQueries.update(reivindicacoes);

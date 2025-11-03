@@ -17,76 +17,81 @@ public class InstituicaoQueries implements IInstituicaoQueries {
 
     private final RowMapper<Instituicao> rowMapper = (rs, rowNum) -> {
         Instituicao instituicao = new Instituicao();
-        instituicao.setId_Instituicao(rs.getInt("Id_Instituicao"));
-        instituicao.setTipo_Instituicao(rs.getString("Tipo_Instituicao"));
-        instituicao.setNome_Instituicao(rs.getString("Nome_Instituicao"));
-        instituicao.setCNPJ_Filial(rs.getString("CNPJ_Filial"));
-        instituicao.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
-        instituicao.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        instituicao.setId(rs.getInt("id"));
+        instituicao.setNome(rs.getString("nome"));
+        instituicao.setCodigo(rs.getString("codigo"));
+        instituicao.setTipo(rs.getString("tipo"));
+        instituicao.setCnpj(rs.getString("cnpj"));
+        instituicao.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        instituicao.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        instituicao.setDtaRemocao(rs.getTimestamp("Dta_Remocao"));
         return instituicao;
     };
 
     @Override
     public List<Instituicao> findAll() {
-        String sql = "SELECT * FROM Instituicao ORDER BY Nome_Instituicao";
+        String sql = "SELECT * FROM ap_achados_perdidos.instituicoes ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Instituicao findById(int id) {
-        String sql = "SELECT * FROM Instituicao WHERE Id_Instituicao = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.instituicoes WHERE id = ?";
         List<Instituicao> instituicoes = jdbcTemplate.query(sql, rowMapper, id);
         return instituicoes.isEmpty() ? null : instituicoes.get(0);
     }
 
     @Override
     public Instituicao insert(Instituicao instituicao) {
-        String sql = "INSERT INTO Instituicao (Tipo_Instituicao, Nome_Instituicao, CNPJ_Filial, Flg_Inativo, Data_Cadastro) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.instituicoes (nome, codigo, tipo, cnpj, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            instituicao.getTipo_Instituicao(),
-            instituicao.getNome_Instituicao(), 
-            instituicao.getCNPJ_Filial(),
-            instituicao.getFlg_Inativo(),
-            java.sql.Timestamp.valueOf(instituicao.getData_Cadastro()));
+            instituicao.getNome(),
+            instituicao.getCodigo(),
+            instituicao.getTipo(),
+            instituicao.getCnpj(),
+            instituicao.getDtaCriacao(),
+            instituicao.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM Instituicao WHERE Nome_Instituicao = ? AND Data_Cadastro = ? ORDER BY Id_Instituicao DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.instituicoes WHERE nome = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Instituicao> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            instituicao.getNome_Instituicao(), 
-            java.sql.Timestamp.valueOf(instituicao.getData_Cadastro()));
+            instituicao.getNome(), 
+            instituicao.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Instituicao update(Instituicao instituicao) {
-        String sql = "UPDATE Instituicao SET Tipo_Instituicao = ?, Nome_Instituicao = ?, CNPJ_Filial = ?, Flg_Inativo = ? WHERE Id_Instituicao = ?";
+        String sql = "UPDATE ap_achados_perdidos.instituicoes SET nome = ?, codigo = ?, tipo = ?, cnpj = ?, Flg_Inativo = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            instituicao.getTipo_Instituicao(),
-            instituicao.getNome_Instituicao(),
-            instituicao.getCNPJ_Filial(),
-            instituicao.getFlg_Inativo(),
-            instituicao.getId_Instituicao());
+            instituicao.getNome(),
+            instituicao.getCodigo(),
+            instituicao.getTipo(),
+            instituicao.getCnpj(),
+            instituicao.getFlgInativo(),
+            instituicao.getDtaRemocao(),
+            instituicao.getId());
         
-        return findById(instituicao.getId_Instituicao());
+        return findById(instituicao.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM Instituicao WHERE Id_Instituicao = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.instituicoes WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Instituicao> findActive() {
-        String sql = "SELECT * FROM Instituicao WHERE Flg_Inativo = false ORDER BY Nome_Instituicao";
+        String sql = "SELECT * FROM ap_achados_perdidos.instituicoes WHERE Flg_Inativo = false ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Instituicao> findByType(String tipoInstituicao) {
-        String sql = "SELECT * FROM Instituicao WHERE Tipo_Instituicao = ? ORDER BY Nome_Instituicao";
+        String sql = "SELECT * FROM ap_achados_perdidos.instituicoes WHERE tipo = ? ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper, tipoInstituicao);
     }
 }

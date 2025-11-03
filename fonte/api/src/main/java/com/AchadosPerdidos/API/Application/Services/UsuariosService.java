@@ -8,11 +8,10 @@ import com.AchadosPerdidos.API.Application.Mapper.UsuariosModelMapper;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IUsuariosService;
 import com.AchadosPerdidos.API.Domain.Entity.Usuarios;
 import com.AchadosPerdidos.API.Domain.Repository.UsuariosRepository;
-import com.AchadosPerdidos.API.Domain.Repository.CampusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,9 +22,6 @@ public class UsuariosService implements IUsuariosService {
 
     @Autowired
     private UsuariosModelMapper usuariosModelMapper;
-    
-    @Autowired
-    private CampusRepository campusRepository;
 
     @Override
     public UsuariosListDTO getAllUsuarios() {
@@ -48,8 +44,8 @@ public class UsuariosService implements IUsuariosService {
     @Override
     public UsuariosDTO createUsuario(UsuariosDTO usuariosDTO) {
         Usuarios usuarios = usuariosModelMapper.toEntity(usuariosDTO);
-        usuarios.setData_Cadastro(LocalDateTime.now());
-        usuarios.setFlg_Inativo(false);
+        usuarios.setDtaCriacao(new Date());
+        usuarios.setFlgInativo(false);
         
         Usuarios savedUsuarios = usuariosRepository.save(usuarios);
         return usuariosModelMapper.toDTO(savedUsuarios);
@@ -62,19 +58,16 @@ public class UsuariosService implements IUsuariosService {
             return null;
         }
         
-        existingUsuarios.setNome_Usuario(usuariosDTO.getNome_Usuario());
-        existingUsuarios.setCPF_Usuario(usuariosDTO.getCPF_Usuario());
-        existingUsuarios.setEmail_Usuario(usuariosDTO.getEmail_Usuario());
-        existingUsuarios.setSenha_Usuario(usuariosDTO.getSenha_Usuario());
-        existingUsuarios.setMatricula_Usuario(usuariosDTO.getMatricula_Usuario());
-        existingUsuarios.setTelefone_Usuario(usuariosDTO.getTelefone_Usuario());
-        existingUsuarios.setTipo_Role_Id(usuariosDTO.getTipo_Role_Id());
-        existingUsuarios.setFoto_item_id(usuariosDTO.getFoto_item_id());
-        existingUsuarios.setFoto_perfil_usuario(usuariosDTO.getFoto_perfil_usuario());
-        existingUsuarios.setFlg_Inativo(usuariosDTO.getFlg_Inativo());
-        existingUsuarios.setId_Instituicao(usuariosDTO.getId_Instituicao());
-        existingUsuarios.setId_Empresa(usuariosDTO.getId_Empresa());
-        existingUsuarios.setId_Campus(usuariosDTO.getId_Campus());
+        existingUsuarios.setNomeCompleto(usuariosDTO.getNomeCompleto());
+        existingUsuarios.setCpf(usuariosDTO.getCpf());
+        existingUsuarios.setEmail(usuariosDTO.getEmail());
+        existingUsuarios.setHashSenha(usuariosDTO.getHashSenha());
+        existingUsuarios.setMatricula(usuariosDTO.getMatricula());
+        existingUsuarios.setNumeroTelefone(usuariosDTO.getNumeroTelefone());
+        existingUsuarios.setEmpresaId(usuariosDTO.getEmpresaId());
+        existingUsuarios.setEnderecoId(usuariosDTO.getEnderecoId());
+        existingUsuarios.setFlgInativo(usuariosDTO.getFlgInativo());
+        existingUsuarios.setDtaRemocao(usuariosDTO.getDtaRemocao());
         
         Usuarios updatedUsuarios = usuariosRepository.save(existingUsuarios);
         return usuariosModelMapper.toDTO(updatedUsuarios);
@@ -123,25 +116,17 @@ public class UsuariosService implements IUsuariosService {
     @Override
     public UsuariosDTO createUsuarioFromDTO(UsuariosCreateDTO createDTO) {
         Usuarios usuarios = new Usuarios();
-        usuarios.setNome_Usuario(createDTO.getNome_Usuario());
-        usuarios.setCPF_Usuario(createDTO.getCPF_Usuario());
-        usuarios.setEmail_Usuario(createDTO.getEmail_Usuario());
-        usuarios.setSenha_Usuario(createDTO.getSenha_Usuario());
-        usuarios.setMatricula_Usuario(createDTO.getMatricula_Usuario());
-        usuarios.setTelefone_Usuario(createDTO.getTelefone_Usuario());
-        usuarios.setTipo_Role_Id(createDTO.getTipo_Role_Id());
-        usuarios.setId_Campus(createDTO.getId_Campus());
-        usuarios.setId_Empresa(createDTO.getId_Empresa());
-        usuarios.setData_Cadastro(LocalDateTime.now());
-        usuarios.setFlg_Inativo(false);
-        
-        // Preencher automaticamente a instituição baseada no campus
-        if (createDTO.getId_Campus() != null) {
-            var campus = campusRepository.findById(createDTO.getId_Campus());
-            if (campus != null) {
-                usuarios.setId_Instituicao(campus.getId_Instituicao());
-            }
-        }
+        usuarios.setNomeCompleto(createDTO.getNomeCompleto());
+        usuarios.setCpf(createDTO.getCpf());
+        usuarios.setEmail(createDTO.getEmail());
+        // TODO: Hashear a senha antes de salvar
+        usuarios.setHashSenha(createDTO.getSenha()); // Por enquanto salva texto plano - precisa hashear
+        usuarios.setMatricula(createDTO.getMatricula());
+        usuarios.setNumeroTelefone(createDTO.getNumeroTelefone());
+        usuarios.setEmpresaId(createDTO.getEmpresaId());
+        usuarios.setEnderecoId(createDTO.getEnderecoId());
+        usuarios.setDtaCriacao(new Date());
+        usuarios.setFlgInativo(false);
         
         Usuarios savedUsuarios = usuariosRepository.save(usuarios);
         return usuariosModelMapper.toDTO(savedUsuarios);
@@ -155,40 +140,33 @@ public class UsuariosService implements IUsuariosService {
         }
         
         // Atualizar apenas os campos fornecidos
-        if (updateDTO.getNome_Usuario() != null) {
-            existingUsuarios.setNome_Usuario(updateDTO.getNome_Usuario());
+        if (updateDTO.getNomeCompleto() != null) {
+            existingUsuarios.setNomeCompleto(updateDTO.getNomeCompleto());
         }
-        if (updateDTO.getCPF_Usuario() != null) {
-            existingUsuarios.setCPF_Usuario(updateDTO.getCPF_Usuario());
+        if (updateDTO.getCpf() != null) {
+            existingUsuarios.setCpf(updateDTO.getCpf());
         }
-        if (updateDTO.getEmail_Usuario() != null) {
-            existingUsuarios.setEmail_Usuario(updateDTO.getEmail_Usuario());
+        if (updateDTO.getEmail() != null) {
+            existingUsuarios.setEmail(updateDTO.getEmail());
         }
-        if (updateDTO.getSenha_Usuario() != null) {
-            existingUsuarios.setSenha_Usuario(updateDTO.getSenha_Usuario());
+        if (updateDTO.getSenha() != null) {
+            // TODO: Hashear a senha antes de salvar
+            existingUsuarios.setHashSenha(updateDTO.getSenha()); // Por enquanto salva texto plano - precisa hashear
         }
-        if (updateDTO.getMatricula_Usuario() != null) {
-            existingUsuarios.setMatricula_Usuario(updateDTO.getMatricula_Usuario());
+        if (updateDTO.getMatricula() != null) {
+            existingUsuarios.setMatricula(updateDTO.getMatricula());
         }
-        if (updateDTO.getTelefone_Usuario() != null) {
-            existingUsuarios.setTelefone_Usuario(updateDTO.getTelefone_Usuario());
+        if (updateDTO.getNumeroTelefone() != null) {
+            existingUsuarios.setNumeroTelefone(updateDTO.getNumeroTelefone());
         }
-        if (updateDTO.getTipo_Role_Id() > 0) {
-            existingUsuarios.setTipo_Role_Id(updateDTO.getTipo_Role_Id());
+        if (updateDTO.getEmpresaId() != null) {
+            existingUsuarios.setEmpresaId(updateDTO.getEmpresaId());
         }
-        if (updateDTO.getId_Campus() != null) {
-            existingUsuarios.setId_Campus(updateDTO.getId_Campus());
-            // Atualizar instituição baseada no novo campus
-            var campus = campusRepository.findById(updateDTO.getId_Campus());
-            if (campus != null) {
-                existingUsuarios.setId_Instituicao(campus.getId_Instituicao());
-            }
+        if (updateDTO.getEnderecoId() != null) {
+            existingUsuarios.setEnderecoId(updateDTO.getEnderecoId());
         }
-        if (updateDTO.getId_Empresa() != null) {
-            existingUsuarios.setId_Empresa(updateDTO.getId_Empresa());
-        }
-        if (updateDTO.getFlg_Inativo() != null) {
-            existingUsuarios.setFlg_Inativo(updateDTO.getFlg_Inativo());
+        if (updateDTO.getFlgInativo() != null) {
+            existingUsuarios.setFlgInativo(updateDTO.getFlgInativo());
         }
         
         Usuarios updatedUsuarios = usuariosRepository.save(existingUsuarios);

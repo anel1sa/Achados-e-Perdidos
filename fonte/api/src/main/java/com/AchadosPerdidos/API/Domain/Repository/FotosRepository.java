@@ -26,7 +26,7 @@ public class FotosRepository implements IFotosRepository {
 
     @Override
     public Fotos save(Fotos fotos) {
-        if (fotos.getId_Foto() == 0) {
+        if (fotos.getId() == null || fotos.getId() == 0) {
             return fotosQueries.insert(fotos);
         } else {
             return fotosQueries.update(fotos);

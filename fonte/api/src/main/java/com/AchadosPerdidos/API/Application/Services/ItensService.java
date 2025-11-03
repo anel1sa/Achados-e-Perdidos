@@ -13,7 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -43,9 +43,11 @@ public class ItensService implements IItensService {
     @CacheEvict(value = "itens", allEntries = true)
     public ItensDTO createItem(ItensDTO itensDTO) {
         Itens itens = itensModelMapper.toEntity(itensDTO);
-        itens.setData_Cadastro(LocalDateTime.now());
-        itens.setData_Hora_Item(LocalDateTime.now());
-        itens.setFlg_Inativo(false);
+        itens.setDtaCriacao(new Date());
+        if (itens.getEncontradoEm() == null) {
+            itens.setEncontradoEm(new Date());
+        }
+        itens.setFlgInativo(false);
         
         Itens savedItens = itensRepository.save(itens);
         return itensModelMapper.toDTO(savedItens);
@@ -55,14 +57,13 @@ public class ItensService implements IItensService {
     @CacheEvict(value = "itens", allEntries = true)
     public ItensDTO createItemFromDTO(ItensCreateDTO createDTO) {
         Itens itens = new Itens();
-        itens.setNome_Item(createDTO.getNome_Item());
-        itens.setDescricao_Item(createDTO.getDescricao_Item());
-        itens.setStatus_Item_Id(createDTO.getStatus_Item_Id());
-        itens.setLocal_Id(createDTO.getLocal_Id());
-        itens.setCampus_Id(createDTO.getCampus_Id());
-        itens.setData_Cadastro(LocalDateTime.now());
-        itens.setData_Hora_Item(LocalDateTime.now());
-        itens.setFlg_Inativo(false);
+        itens.setNome(createDTO.getNome());
+        itens.setDescricao(createDTO.getDescricao());
+        itens.setStatusItemId(createDTO.getStatusItemId());
+        itens.setLocalId(createDTO.getLocalId());
+        itens.setEncontradoEm(createDTO.getEncontradoEm() != null ? createDTO.getEncontradoEm() : new Date());
+        itens.setDtaCriacao(new Date());
+        itens.setFlgInativo(false);
         
         Itens savedItens = itensRepository.save(itens);
         return itensModelMapper.toDTO(savedItens);
@@ -76,15 +77,14 @@ public class ItensService implements IItensService {
             return null;
         }
         
-        existingItens.setNome_Item(itensDTO.getNome_Item());
-        existingItens.setDescricao_Item(itensDTO.getDescricao_Item());
-        existingItens.setData_Hora_Item(itensDTO.getData_Hora_Item());
-        existingItens.setFlg_Inativo(itensDTO.getFlg_Inativo());
-        existingItens.setStatus_Item_Id(itensDTO.getStatus_Item_Id());
-        existingItens.setUsuario_Id(itensDTO.getUsuario_Id());
-        existingItens.setLocal_Id(itensDTO.getLocal_Id());
-        existingItens.setCampus_Id(itensDTO.getCampus_Id());
-        existingItens.setId_Empresa(itensDTO.getId_Empresa());
+        existingItens.setNome(itensDTO.getNome());
+        existingItens.setDescricao(itensDTO.getDescricao());
+        existingItens.setEncontradoEm(itensDTO.getEncontradoEm());
+        existingItens.setFlgInativo(itensDTO.getFlgInativo());
+        existingItens.setStatusItemId(itensDTO.getStatusItemId());
+        existingItens.setUsuarioRelatorId(itensDTO.getUsuarioRelatorId());
+        existingItens.setLocalId(itensDTO.getLocalId());
+        existingItens.setDtaRemocao(itensDTO.getDtaRemocao());
         
         Itens updatedItens = itensRepository.save(existingItens);
         return itensModelMapper.toDTO(updatedItens);
@@ -99,23 +99,23 @@ public class ItensService implements IItensService {
         }
         
         // Atualizar apenas os campos fornecidos
-        if (updateDTO.getNome_Item() != null) {
-            existingItens.setNome_Item(updateDTO.getNome_Item());
+        if (updateDTO.getNome() != null) {
+            existingItens.setNome(updateDTO.getNome());
         }
-        if (updateDTO.getDescricao_Item() != null) {
-            existingItens.setDescricao_Item(updateDTO.getDescricao_Item());
+        if (updateDTO.getDescricao() != null) {
+            existingItens.setDescricao(updateDTO.getDescricao());
         }
-        if (updateDTO.getFlg_Inativo() != null) {
-            existingItens.setFlg_Inativo(updateDTO.getFlg_Inativo());
+        if (updateDTO.getFlgInativo() != null) {
+            existingItens.setFlgInativo(updateDTO.getFlgInativo());
         }
-        if (updateDTO.getStatus_Item_Id() > 0) {
-            existingItens.setStatus_Item_Id(updateDTO.getStatus_Item_Id());
+        if (updateDTO.getStatusItemId() != null) {
+            existingItens.setStatusItemId(updateDTO.getStatusItemId());
         }
-        if (updateDTO.getLocal_Id() > 0) {
-            existingItens.setLocal_Id(updateDTO.getLocal_Id());
+        if (updateDTO.getLocalId() != null) {
+            existingItens.setLocalId(updateDTO.getLocalId());
         }
-        if (updateDTO.getCampus_Id() > 0) {
-            existingItens.setCampus_Id(updateDTO.getCampus_Id());
+        if (updateDTO.getEncontradoEm() != null) {
+            existingItens.setEncontradoEm(updateDTO.getEncontradoEm());
         }
         
         Itens updatedItens = itensRepository.save(existingItens);
@@ -196,8 +196,8 @@ public class ItensService implements IItensService {
     public boolean markItemAsDonated(int itemId) {
         Itens item = itensRepository.findById(itemId);
         if (item != null) {
-            // Status 3 = "Doado" (conforme aux_status_item)
-            item.setStatus_Item_Id(3);
+            // Status 3 = "Doado" (conforme status_item)
+            item.setStatusItemId(3);
             itensRepository.save(item);
             return true;
         }

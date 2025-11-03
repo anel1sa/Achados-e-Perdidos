@@ -36,7 +36,7 @@ public class UsuariosRepository implements IUsuariosRepository {
 
     @Override
     public Usuarios save(Usuarios usuarios) {
-        if (usuarios.getId_Usuario() == 0) {
+        if (usuarios.getId() == null || usuarios.getId() == 0) {
             return usuariosQueries.insert(usuarios);
         } else {
             return usuariosQueries.update(usuarios);

@@ -9,7 +9,7 @@ import com.AchadosPerdidos.API.Domain.Repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -36,8 +36,8 @@ public class EmpresaService implements IEmpresaService {
     @Override
     public EmpresaDTO createEmpresa(EmpresaDTO empresaDTO) {
         Empresa empresa = empresaModelMapper.toEntity(empresaDTO);
-        empresa.setData_Cadastro(LocalDateTime.now());
-        empresa.setFlg_Ativo(true);
+        empresa.setDtaCriacao(new Date());
+        empresa.setFlgInativo(false);
         
         Empresa savedEmpresa = empresaRepository.save(empresa);
         return empresaModelMapper.toDTO(savedEmpresa);
@@ -50,12 +50,12 @@ public class EmpresaService implements IEmpresaService {
             return null;
         }
         
-        existingEmpresa.setNome_Empresa(empresaDTO.getNome_Empresa());
-        existingEmpresa.setCNPJ_Matriz(empresaDTO.getCNPJ_Empresa());
-        existingEmpresa.setPais_Sede(empresaDTO.getEndereco_Empresa()); // Mapeando Endereco_Empresa para Pais_Sede
-        existingEmpresa.setWebsite(empresaDTO.getEmail_Empresa()); // Mapeando Email_Empresa para Website
-        existingEmpresa.setContato_Principal(empresaDTO.getTelefone_Empresa()); // Mapeando Telefone_Empresa para Contato_Principal
-        existingEmpresa.setFlg_Ativo(empresaDTO.getFlg_Ativo());
+        existingEmpresa.setNome(empresaDTO.getNome());
+        existingEmpresa.setNomeFantasia(empresaDTO.getNomeFantasia());
+        existingEmpresa.setCnpj(empresaDTO.getCnpj());
+        existingEmpresa.setEnderecoId(empresaDTO.getEnderecoId());
+        existingEmpresa.setFlgInativo(empresaDTO.getFlgInativo());
+        existingEmpresa.setDtaRemocao(empresaDTO.getDtaRemocao());
         
         Empresa updatedEmpresa = empresaRepository.save(existingEmpresa);
         return empresaModelMapper.toDTO(updatedEmpresa);

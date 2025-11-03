@@ -60,11 +60,10 @@ public class JwtTokenService implements IJwtTokenService {
 
             _log.info("Token JWT gerado com sucesso para o usuário: {}", email);
             return token;
+            
         } catch (Exception e) {
-            _log.error("Erro interno ao gerar token JWT", e);
-            throw new RuntimeException("Erro interno ao gerar token JWT", e);
-        } finally {
-            _log.debug("Finalizando geração de token JWT");
+            _log.error("Erro ao gerar token JWT", e);
+            throw new RuntimeException("Erro ao gerar token JWT", e);
         }
     }
 
@@ -80,8 +79,6 @@ public class JwtTokenService implements IJwtTokenService {
         } catch (Exception e) {
             _log.warn("Token JWT inválido: {}", e.getMessage());
             return false;
-        } finally {
-            _log.debug("Finalizando validação de token JWT");
         }
     }
 
@@ -96,10 +93,8 @@ public class JwtTokenService implements IJwtTokenService {
                 .getPayload();
             return claims.get("email", String.class);
         } catch (Exception e) {
-            _log.error("Erro interno ao extrair email do token", e);
+            _log.error("Erro ao extrair email do token", e);
             return null;
-        } finally {
-            _log.debug("Finalizando extração de email do token");
         }
     }
 
@@ -114,7 +109,7 @@ public class JwtTokenService implements IJwtTokenService {
                 .getPayload();
             return claims.getSubject();
         } catch (Exception e) {
-            _log.error("Erro interno ao extrair ID do usuário do token", e);
+            _log.error("Erro ao extrair ID do usuário do token", e);
             return null;
         }
     }
@@ -129,14 +124,9 @@ public class JwtTokenService implements IJwtTokenService {
                 .parseSignedClaims(token)
                 .getPayload();
             return claims.getExpiration().before(new Date());
-        } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException e) {
-            _log.error("Erro de formato ao verificar expiração do token", e);
-            return true;
         } catch (Exception e) {
-            _log.error("Erro interno ao verificar expiração do token", e);
+            _log.error("Erro ao verificar expiração do token", e);
             return true;
-        } finally {
-            _log.debug("Finalizando verificação de expiração do token");
         }
     }
 }

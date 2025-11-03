@@ -11,7 +11,7 @@ import com.AchadosPerdidos.API.Domain.Repository.CampusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,8 +38,8 @@ public class CampusService implements ICampusService {
     @Override
     public CampusDTO createCampus(CampusDTO campusDTO) {
         Campus campus = campusModelMapper.toEntity(campusDTO);
-        campus.setData_Cadastro(LocalDateTime.now());
-        campus.setFlg_Ativo(true);
+        campus.setDtaCriacao(new Date());
+        campus.setFlgInativo(false);
         
         Campus savedCampus = campusRepository.save(campus);
         return campusModelMapper.toDTO(savedCampus);
@@ -48,14 +48,11 @@ public class CampusService implements ICampusService {
     @Override
     public CampusDTO createCampusFromDTO(CampusCreateDTO createDTO) {
         Campus campus = new Campus();
-        campus.setNome_Campus(createDTO.getNome_Campus());
-        campus.setCidade(createDTO.getCidade());
-        campus.setEstado(createDTO.getEstado());
-        campus.setEndereco(createDTO.getEndereco());
-        campus.setCEP(createDTO.getCEP());
-        campus.setId_Instituicao(createDTO.getId_Instituicao());
-        campus.setData_Cadastro(LocalDateTime.now());
-        campus.setFlg_Ativo(true);
+        campus.setNome(createDTO.getNome());
+        campus.setInstituicaoId(createDTO.getInstituicaoId());
+        campus.setEnderecoId(createDTO.getEnderecoId());
+        campus.setDtaCriacao(new Date());
+        campus.setFlgInativo(false);
         
         Campus savedCampus = campusRepository.save(campus);
         return campusModelMapper.toDTO(savedCampus);
@@ -68,13 +65,11 @@ public class CampusService implements ICampusService {
             return null;
         }
         
-        existingCampus.setId_Instituicao(campusDTO.getId_Instituicao());
-        existingCampus.setNome_Campus(campusDTO.getNome_Campus());
-        existingCampus.setCidade(campusDTO.getCidade());
-        existingCampus.setEstado(campusDTO.getEstado());
-        existingCampus.setEndereco(campusDTO.getEndereco());
-        existingCampus.setCEP(campusDTO.getCEP());
-        existingCampus.setFlg_Ativo(campusDTO.getFlg_Ativo());
+        existingCampus.setNome(campusDTO.getNome());
+        existingCampus.setInstituicaoId(campusDTO.getInstituicaoId());
+        existingCampus.setEnderecoId(campusDTO.getEnderecoId());
+        existingCampus.setFlgInativo(campusDTO.getFlgInativo());
+        existingCampus.setDtaRemocao(campusDTO.getDtaRemocao());
         
         Campus updatedCampus = campusRepository.save(existingCampus);
         return campusModelMapper.toDTO(updatedCampus);
@@ -88,23 +83,17 @@ public class CampusService implements ICampusService {
         }
         
         // Atualizar apenas os campos fornecidos
-        if (updateDTO.getNome_Campus() != null) {
-            existingCampus.setNome_Campus(updateDTO.getNome_Campus());
+        if (updateDTO.getNome() != null) {
+            existingCampus.setNome(updateDTO.getNome());
         }
-        if (updateDTO.getCidade() != null) {
-            existingCampus.setCidade(updateDTO.getCidade());
+        if (updateDTO.getInstituicaoId() != null) {
+            existingCampus.setInstituicaoId(updateDTO.getInstituicaoId());
         }
-        if (updateDTO.getEstado() != null) {
-            existingCampus.setEstado(updateDTO.getEstado());
+        if (updateDTO.getEnderecoId() != null) {
+            existingCampus.setEnderecoId(updateDTO.getEnderecoId());
         }
-        if (updateDTO.getEndereco() != null) {
-            existingCampus.setEndereco(updateDTO.getEndereco());
-        }
-        if (updateDTO.getCEP() != null) {
-            existingCampus.setCEP(updateDTO.getCEP());
-        }
-        if (updateDTO.getFlg_Ativo() != null) {
-            existingCampus.setFlg_Ativo(updateDTO.getFlg_Ativo());
+        if (updateDTO.getFlgInativo() != null) {
+            existingCampus.setFlgInativo(updateDTO.getFlgInativo());
         }
         
         Campus updatedCampus = campusRepository.save(existingCampus);

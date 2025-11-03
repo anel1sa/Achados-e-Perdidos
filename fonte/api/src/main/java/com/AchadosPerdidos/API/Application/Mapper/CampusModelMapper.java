@@ -17,14 +17,13 @@ public class CampusModelMapper {
         }
         
         CampusDTO dto = new CampusDTO();
-        dto.setId_Campus(campus.getId_Campus());
-        dto.setNome_Campus(campus.getNome_Campus());
-        dto.setCidade(campus.getCidade());
-        dto.setEstado(campus.getEstado());
-        dto.setEndereco(campus.getEndereco());
-        dto.setCEP(campus.getCEP());
-        dto.setFlg_Ativo(campus.getFlg_Ativo());
-        dto.setId_Instituicao(campus.getId_Instituicao());
+        dto.setId(campus.getId());
+        dto.setNome(campus.getNome());
+        dto.setInstituicaoId(campus.getInstituicaoId());
+        dto.setEnderecoId(campus.getEnderecoId());
+        dto.setDtaCriacao(campus.getDtaCriacao());
+        dto.setFlgInativo(campus.getFlgInativo());
+        dto.setDtaRemocao(campus.getDtaRemocao());
         
         return dto;
     }
@@ -35,14 +34,13 @@ public class CampusModelMapper {
         }
         
         Campus campus = new Campus();
-        campus.setId_Campus(dto.getId_Campus());
-        campus.setNome_Campus(dto.getNome_Campus());
-        campus.setCidade(dto.getCidade());
-        campus.setEstado(dto.getEstado());
-        campus.setEndereco(dto.getEndereco());
-        campus.setCEP(dto.getCEP());
-        campus.setFlg_Ativo(dto.getFlg_Ativo());
-        campus.setId_Instituicao(dto.getId_Instituicao());
+        campus.setId(dto.getId());
+        campus.setNome(dto.getNome());
+        campus.setInstituicaoId(dto.getInstituicaoId());
+        campus.setEnderecoId(dto.getEnderecoId());
+        campus.setDtaCriacao(dto.getDtaCriacao());
+        campus.setFlgInativo(dto.getFlgInativo());
+        campus.setDtaRemocao(dto.getDtaRemocao());
         
         return campus;
     }

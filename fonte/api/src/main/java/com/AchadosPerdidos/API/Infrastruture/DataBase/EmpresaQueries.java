@@ -17,82 +17,81 @@ public class EmpresaQueries implements IEmpresaQueries {
 
     private final RowMapper<Empresa> rowMapper = (rs, rowNum) -> {
         Empresa empresa = new Empresa();
-        empresa.setId_Empresa(rs.getInt("Id_Empresa"));
-        empresa.setNome_Empresa(rs.getString("Nome_Empresa"));
-        empresa.setCNPJ_Matriz(rs.getString("CNPJ_Matriz"));
-        empresa.setPais_Sede(rs.getString("Pais_Sede"));
-        empresa.setWebsite(rs.getString("Website"));
-        empresa.setContato_Principal(rs.getString("Contato_Principal"));
-        empresa.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
-        empresa.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        empresa.setId(rs.getInt("id"));
+        empresa.setNome(rs.getString("nome"));
+        empresa.setNomeFantasia(rs.getString("nome_fantasia"));
+        empresa.setCnpj(rs.getString("cnpj"));
+        empresa.setEnderecoId(rs.getObject("endereco_id", Integer.class));
+        empresa.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        empresa.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        empresa.setDtaRemocao(rs.getTimestamp("Dta_Remocao"));
         return empresa;
     };
 
     @Override
     public List<Empresa> findAll() {
-        String sql = "SELECT * FROM Empresa ORDER BY Nome_Empresa";
+        String sql = "SELECT * FROM ap_achados_perdidos.empresas ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Empresa findById(int id) {
-        String sql = "SELECT * FROM Empresa WHERE Id_Empresa = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.empresas WHERE id = ?";
         List<Empresa> empresas = jdbcTemplate.query(sql, rowMapper, id);
         return empresas.isEmpty() ? null : empresas.get(0);
     }
 
     @Override
     public Empresa insert(Empresa empresa) {
-        String sql = "INSERT INTO Empresa (Nome_Empresa, CNPJ_Matriz, Pais_Sede, Website, Contato_Principal, Flg_Ativo, Data_Cadastro) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.empresas (nome, nome_fantasia, cnpj, endereco_id, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            empresa.getNome_Empresa(),
-            empresa.getCNPJ_Matriz(),
-            empresa.getPais_Sede(),
-            empresa.getWebsite(),
-            empresa.getContato_Principal(),
-            empresa.getFlg_Ativo(),
-            empresa.getData_Cadastro());
+            empresa.getNome(),
+            empresa.getNomeFantasia(),
+            empresa.getCnpj(),
+            empresa.getEnderecoId(),
+            empresa.getDtaCriacao(),
+            empresa.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM Empresa WHERE Nome_Empresa = ? AND Data_Cadastro = ? ORDER BY Id_Empresa DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.empresas WHERE nome = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Empresa> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            empresa.getNome_Empresa(), 
-            empresa.getData_Cadastro());
+            empresa.getNome(), 
+            empresa.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Empresa update(Empresa empresa) {
-        String sql = "UPDATE Empresa SET Nome_Empresa = ?, CNPJ_Matriz = ?, Pais_Sede = ?, Website = ?, Contato_Principal = ?, Flg_Ativo = ? WHERE Id_Empresa = ?";
+        String sql = "UPDATE ap_achados_perdidos.empresas SET nome = ?, nome_fantasia = ?, cnpj = ?, endereco_id = ?, Flg_Inativo = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            empresa.getNome_Empresa(),
-            empresa.getCNPJ_Matriz(),
-            empresa.getPais_Sede(),
-            empresa.getWebsite(),
-            empresa.getContato_Principal(),
-            empresa.getFlg_Ativo(),
-            empresa.getId_Empresa());
+            empresa.getNome(),
+            empresa.getNomeFantasia(),
+            empresa.getCnpj(),
+            empresa.getEnderecoId(),
+            empresa.getFlgInativo(),
+            empresa.getDtaRemocao(),
+            empresa.getId());
         
-        return findById(empresa.getId_Empresa());
+        return findById(empresa.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM Empresa WHERE Id_Empresa = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.empresas WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Empresa> findActive() {
-        String sql = "SELECT * FROM Empresa WHERE Flg_Ativo = true ORDER BY Nome_Empresa";
+        String sql = "SELECT * FROM ap_achados_perdidos.empresas WHERE Flg_Inativo = false ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Empresa> findByCountry(String paisSede) {
-        String sql = "SELECT * FROM Empresa WHERE Pais_Sede = ? ORDER BY Nome_Empresa";
-        return jdbcTemplate.query(sql, rowMapper, paisSede);
+        // TODO: Este método não faz mais sentido com o novo schema - remover ou adaptar
+        return new java.util.ArrayList<>();
     }
 }

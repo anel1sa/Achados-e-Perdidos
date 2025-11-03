@@ -18,137 +18,136 @@ public class FotosQueries implements IFotosQueries {
 
     private final RowMapper<Fotos> rowMapper = (rs, rowNum) -> {
         Fotos fotos = new Fotos();
-        fotos.setId_Foto(rs.getInt("Id_Foto"));
-        fotos.setUsuario_Id(rs.getInt("Usuario_Id"));
-        fotos.setItem_Id(rs.getInt("Item_Id"));
-        fotos.setProvedor_Armazenamento(Provedor_Armazenamento.valueOf(rs.getString("Provedor_Armazenamento")));
-        fotos.setNome_Bucket(rs.getString("Nome_Bucket"));
-        fotos.setChave_Objeto(rs.getString("Chave_Objeto"));
-        fotos.setUrl_Arquivo(rs.getString("Url_Arquivo"));
-        fotos.setNome_Original(rs.getString("Nome_Original"));
-        fotos.setLargura(rs.getInt("Largura"));
-        fotos.setAltura(rs.getInt("Altura"));
-        fotos.setPerfil_Usuario(rs.getBoolean("Perfil_Usuario"));
-        fotos.setFoto_Item(rs.getBoolean("Foto_Item"));
-        fotos.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
-        fotos.setData_Envio(rs.getTimestamp("Data_Envio") != null ? rs.getTimestamp("Data_Envio").toLocalDateTime() : null);
-        fotos.setData_Exclusao(rs.getTimestamp("Data_Exclusao") != null ? rs.getTimestamp("Data_Exclusao").toLocalDateTime() : null);
-        fotos.setData_Atualizacao(rs.getTimestamp("Data_Atualizacao") != null ? rs.getTimestamp("Data_Atualizacao").toLocalDateTime() : null);
+        fotos.setId(rs.getInt("id"));
+        fotos.setUrl(rs.getString("url"));
+        String provedorStr = rs.getString("provedor_armazenamento");
+        if (provedorStr != null) {
+            fotos.setProvedorArmazenamento(Provedor_Armazenamento.valueOf(provedorStr));
+        }
+        fotos.setChaveArmazenamento(rs.getString("chave_armazenamento"));
+        fotos.setNomeArquivoOriginal(rs.getString("nome_arquivo_original"));
+        fotos.setTamanhoArquivoBytes(rs.getLong("tamanho_arquivo_bytes"));
+        fotos.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        fotos.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        fotos.setDtaRemocao(rs.getTimestamp("Dta_Remocao"));
         return fotos;
     };
 
     @Override
     public List<Fotos> findAll() {
-        String sql = "SELECT * FROM Fotos ORDER BY Data_Envio DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.fotos ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Fotos findById(int id) {
-        String sql = "SELECT * FROM Fotos WHERE Id_Foto = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.fotos WHERE id = ?";
         List<Fotos> fotos = jdbcTemplate.query(sql, rowMapper, id);
         return fotos.isEmpty() ? null : fotos.get(0);
     }
 
     @Override
     public Fotos insert(Fotos fotos) {
-        String sql = "INSERT INTO Fotos (Usuario_Id, Item_Id, Provedor_Armazenamento, Nome_Bucket, Chave_Objeto, Url_Arquivo, Nome_Original, Largura, Altura, Perfil_Usuario, Foto_Item, Flg_Inativo, Data_Envio, Data_Exclusao, Data_Atualizacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.fotos (url, provedor_armazenamento, chave_armazenamento, nome_arquivo_original, tamanho_arquivo_bytes, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            fotos.getUsuario_Id(),
-            fotos.getItem_Id(),
-            fotos.getProvedor_Armazenamento(),
-            fotos.getNome_Bucket(),
-            fotos.getChave_Objeto(),
-            fotos.getUrl_Arquivo(),
-            fotos.getNome_Original(),
-            fotos.getLargura(),
-            fotos.getAltura(),
-            fotos.getPerfil_Usuario(),
-            fotos.getFoto_Item(),
-            fotos.getFlg_Inativo(),
-            fotos.getData_Envio(),
-            fotos.getData_Exclusao(),
-            fotos.getData_Atualizacao());
+            fotos.getUrl(),
+            fotos.getProvedorArmazenamento() != null ? fotos.getProvedorArmazenamento().toString() : "local",
+            fotos.getChaveArmazenamento(),
+            fotos.getNomeArquivoOriginal(),
+            fotos.getTamanhoArquivoBytes(),
+            fotos.getDtaCriacao(),
+            fotos.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM Fotos WHERE Url_Arquivo = ? AND Data_Envio = ? ORDER BY Id_Foto DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.fotos WHERE url = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Fotos> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            fotos.getUrl_Arquivo(), 
-            fotos.getData_Envio());
+            fotos.getUrl(), 
+            fotos.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Fotos update(Fotos fotos) {
-        String sql = "UPDATE Fotos SET Usuario_Id = ?, Item_Id = ?, Provedor_Armazenamento = ?, Nome_Bucket = ?, Chave_Objeto = ?, Url_Arquivo = ?, Nome_Original = ?, Largura = ?, Altura = ?, Perfil_Usuario = ?, Foto_Item = ?, Flg_Inativo = ?, Data_Exclusao = ?, Data_Atualizacao = ? WHERE Id_Foto = ?";
+        String sql = "UPDATE ap_achados_perdidos.fotos SET url = ?, provedor_armazenamento = ?, chave_armazenamento = ?, nome_arquivo_original = ?, tamanho_arquivo_bytes = ?, Flg_Inativo = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            fotos.getUsuario_Id(),
-            fotos.getItem_Id(),
-            fotos.getProvedor_Armazenamento(),
-            fotos.getNome_Bucket(),
-            fotos.getChave_Objeto(),
-            fotos.getUrl_Arquivo(),
-            fotos.getNome_Original(),
-            fotos.getLargura(),
-            fotos.getAltura(),
-            fotos.getPerfil_Usuario(),
-            fotos.getFoto_Item(),
-            fotos.getFlg_Inativo(),
-            fotos.getData_Exclusao(),
-            fotos.getData_Atualizacao(),
-            fotos.getId_Foto());
+            fotos.getUrl(),
+            fotos.getProvedorArmazenamento() != null ? fotos.getProvedorArmazenamento().toString() : "local",
+            fotos.getChaveArmazenamento(),
+            fotos.getNomeArquivoOriginal(),
+            fotos.getTamanhoArquivoBytes(),
+            fotos.getFlgInativo(),
+            fotos.getDtaRemocao(),
+            fotos.getId());
         
-        return findById(fotos.getId_Foto());
+        return findById(fotos.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM Fotos WHERE Id_Foto = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.fotos WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Fotos> findActive() {
-        String sql = "SELECT * FROM Fotos WHERE Flg_Inativo = false ORDER BY Data_Envio DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.fotos WHERE Flg_Inativo = false ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Fotos> findByUser(int userId) {
-        String sql = "SELECT * FROM Fotos WHERE Usuario_Id = ? ORDER BY Data_Envio DESC";
+        // TODO: Implementar join com fotos_usuario
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_usuario fu ON f.id = fu.foto_id " +
+                     "WHERE fu.usuario_id = ? ORDER BY f.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
 
     @Override
     public List<Fotos> findByItem(int itemId) {
-        String sql = "SELECT * FROM Fotos WHERE Item_Id = ? ORDER BY Data_Envio DESC";
+        // TODO: Implementar join com fotos_item
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_item fi ON f.id = fi.foto_id " +
+                     "WHERE fi.item_id = ? ORDER BY f.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, itemId);
     }
 
     @Override
     public List<Fotos> findProfilePhotos(int userId) {
-        String sql = "SELECT * FROM Fotos WHERE Usuario_Id = ? AND Perfil_Usuario = true ORDER BY Data_Envio DESC";
+        // TODO: Implementar join com fotos_usuario
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_usuario fu ON f.id = fu.foto_id " +
+                     "WHERE fu.usuario_id = ? AND f.Flg_Inativo = false ORDER BY f.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
 
     @Override
     public List<Fotos> findItemPhotos(int itemId) {
-        String sql = "SELECT * FROM Fotos WHERE Item_Id = ? AND Foto_Item = true ORDER BY Data_Envio DESC";
+        // TODO: Implementar join com fotos_item
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_item fi ON f.id = fi.foto_id " +
+                     "WHERE fi.item_id = ? AND f.Flg_Inativo = false ORDER BY f.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, itemId);
     }
 
     @Override
     public Fotos findMainItemPhoto(int itemId) {
-        String sql = "SELECT * FROM Fotos WHERE Item_Id = ? AND Foto_Item = true AND Flg_Inativo = false ORDER BY Data_Envio DESC LIMIT 1";
+        // TODO: Implementar join com fotos_item
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_item fi ON f.id = fi.foto_id " +
+                     "WHERE fi.item_id = ? AND f.Flg_Inativo = false ORDER BY f.Dta_Criacao DESC LIMIT 1";
         List<Fotos> fotos = jdbcTemplate.query(sql, rowMapper, itemId);
         return fotos.isEmpty() ? null : fotos.get(0);
     }
 
     @Override
     public Fotos findProfilePhoto(int userId) {
-        String sql = "SELECT * FROM Fotos WHERE Usuario_Id = ? AND Perfil_Usuario = true AND Flg_Inativo = false ORDER BY Data_Envio DESC LIMIT 1";
+        // TODO: Implementar join com fotos_usuario
+        String sql = "SELECT f.* FROM ap_achados_perdidos.fotos f " +
+                     "INNER JOIN ap_achados_perdidos.fotos_usuario fu ON f.id = fu.foto_id " +
+                     "WHERE fu.usuario_id = ? AND f.Flg_Inativo = false ORDER BY f.Dta_Criacao DESC LIMIT 1";
         List<Fotos> fotos = jdbcTemplate.query(sql, rowMapper, userId);
         return fotos.isEmpty() ? null : fotos.get(0);
     }

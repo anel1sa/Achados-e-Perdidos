@@ -26,7 +26,7 @@ public class InstituicaoRepository implements IInstituicaoRepository {
 
     @Override
     public Instituicao save(Instituicao instituicao) {
-        if (instituicao.getId_Instituicao() == 0) {
+        if (instituicao.getId() == null || instituicao.getId() == 0) {
             return instituicaoQueries.insert(instituicao);
         } else {
             return instituicaoQueries.update(instituicao);

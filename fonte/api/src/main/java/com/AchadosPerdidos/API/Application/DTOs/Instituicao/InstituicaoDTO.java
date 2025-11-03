@@ -1,32 +1,38 @@
 package com.AchadosPerdidos.API.Application.DTOs.Instituicao;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "DTO completo de instituição")
 public class InstituicaoDTO {
-    
-    @Schema(description = "ID único da instituição", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
-    private int Id_Instituicao;
-    
-    @Schema(description = "Tipo da instituição (PUBLICA ou PRIVADA)", example = "PUBLICA")
-    private String Tipo_Instituicao;
-    
+    @Schema(description = "ID da instituição", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    private Integer id;
+
     @Schema(description = "Nome da instituição", example = "Instituto Federal do Paraná")
-    private String Nome_Instituicao;
-    
-    @Schema(description = "CNPJ da instituição", example = "12345678000195")
-    private String CNPJ_Filial;
+    private String nome;
 
-    // Getters e Setters
-    public int getId_Instituicao() { return Id_Instituicao; }
-    public void setId_Instituicao(int id_Instituicao) { Id_Instituicao = id_Instituicao; }
+    @Schema(description = "Código da instituição", example = "IFPR")
+    private String codigo;
 
-    public String getTipo_Instituicao() { return Tipo_Instituicao; }
-    public void setTipo_Instituicao(String tipo_Instituicao) { Tipo_Instituicao = tipo_Instituicao; }
+    @Schema(description = "Tipo da instituição", example = "PUBLICA")
+    private String tipo;
 
-    public String getNome_Instituicao() { return Nome_Instituicao; }
-    public void setNome_Instituicao(String nome_Instituicao) { Nome_Instituicao = nome_Instituicao; }
+    @Schema(description = "CNPJ", example = "12345678000195")
+    private String cnpj;
 
-    public String getCNPJ_Filial() { return CNPJ_Filial; }
-    public void setCNPJ_Filial(String CNPJ_Filial) { this.CNPJ_Filial = CNPJ_Filial; }
+    @Schema(description = "Data de criação", example = "2024-01-01T00:00:00")
+    private java.util.Date dtaCriacao;
+
+    @Schema(description = "Flag de inativação", example = "false")
+    private Boolean flgInativo;
+
+    @Schema(description = "Data de remoção lógica", example = "2024-02-01T00:00:00")
+    private java.util.Date dtaRemocao;
 }

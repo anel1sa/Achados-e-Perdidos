@@ -1,8 +1,16 @@
 package com.AchadosPerdidos.API.Application.DTOs.Usuario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "DTO para lista de usuários")
 public class UsuariosListDTO {
     
@@ -11,11 +19,4 @@ public class UsuariosListDTO {
     
     @Schema(description = "Total de usuários na lista")
     private int totalCount;
-
-    // Getters e Setters
-    public List<UsuariosDTO> getUsuarios() { return usuarios; }
-    public void setUsuarios(List<UsuariosDTO> usuarios) { this.usuarios = usuarios; }
-
-    public int getTotalCount() { return totalCount; }
-    public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
 }

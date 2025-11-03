@@ -16,142 +16,144 @@ public class ItensQueries implements IItensQueries {
 
     private final RowMapper<Itens> rowMapper = (rs, rowNum) -> {
         Itens itens = new Itens();
-        itens.setId_Item(rs.getInt("Id_Item"));
-        itens.setNome_Item(rs.getString("Nome_Item"));
-        itens.setDescricao_Item(rs.getString("Descricao_Item"));
-        itens.setData_Hora_Item(rs.getTimestamp("Data_Hora_Item").toLocalDateTime());
-        itens.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
-        itens.setFlg_Inativo(rs.getBoolean("Flg_Inativo"));
-        itens.setStatus_Item_Id(rs.getInt("Status_Item_Id"));
-        itens.setUsuario_Id(rs.getInt("Usuario_Id"));
-        itens.setLocal_Id(rs.getInt("Local_Id"));
-        itens.setCampus_Id(rs.getInt("Campus_Id"));
-        itens.setId_Empresa(rs.getInt("Id_Empresa"));
+        itens.setId(rs.getInt("id"));
+        itens.setNome(rs.getString("nome"));
+        itens.setDescricao(rs.getString("descricao"));
+        itens.setEncontradoEm(rs.getTimestamp("encontrado_em"));
+        itens.setUsuarioRelatorId(rs.getInt("usuario_relator_id"));
+        itens.setLocalId(rs.getInt("local_id"));
+        itens.setStatusItemId(rs.getInt("status_item_id"));
+        itens.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        itens.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        itens.setDtaRemocao(rs.getTimestamp("Dta_Remocao") != null ? rs.getTimestamp("Dta_Remocao") : null);
         return itens;
     };
 
     @Override
     public List<Itens> findAll() {
-        String sql = "SELECT * FROM Itens ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Itens findById(int id) {
-        String sql = "SELECT * FROM Itens WHERE Id_Item = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE id = ?";
         List<Itens> itens = jdbcTemplate.query(sql, rowMapper, id);
         return itens.isEmpty() ? null : itens.get(0);
     }
 
     @Override
     public Itens insert(Itens itens) {
-        String sql = "INSERT INTO Itens (Nome_Item, Descricao_Item, Data_Hora_Item, Data_Cadastro, Flg_Inativo, Status_Item_Id, Usuario_Id, Local_Id, Campus_Id, Id_Empresa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.itens_perdidos (nome, descricao, encontrado_em, usuario_relator_id, local_id, status_item_id, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            itens.getNome_Item(),
-            itens.getDescricao_Item(),
-            java.sql.Timestamp.valueOf(itens.getData_Hora_Item()),
-            java.sql.Timestamp.valueOf(itens.getData_Cadastro()),
-            itens.getFlg_Inativo(),
-            itens.getStatus_Item_Id(),
-            itens.getUsuario_Id(),
-            itens.getLocal_Id(),
-            itens.getCampus_Id(),
-            itens.getId_Empresa());
+            itens.getNome(),
+            itens.getDescricao(),
+            itens.getEncontradoEm(),
+            itens.getUsuarioRelatorId(),
+            itens.getLocalId(),
+            itens.getStatusItemId(),
+            itens.getDtaCriacao(),
+            itens.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM Itens WHERE Nome_Item = ? AND Data_Cadastro = ? ORDER BY Id_Item DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE nome = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Itens> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            itens.getNome_Item(), 
-            java.sql.Timestamp.valueOf(itens.getData_Cadastro()));
+            itens.getNome(), 
+            itens.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Itens update(Itens itens) {
-        String sql = "UPDATE Itens SET Nome_Item = ?, Descricao_Item = ?, Data_Hora_Item = ?, Flg_Inativo = ?, Status_Item_Id = ?, Usuario_Id = ?, Local_Id = ?, Campus_Id = ?, Id_Empresa = ? WHERE Id_Item = ?";
+        String sql = "UPDATE ap_achados_perdidos.itens_perdidos SET nome = ?, descricao = ?, encontrado_em = ?, Flg_Inativo = ?, status_item_id = ?, usuario_relator_id = ?, local_id = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            itens.getNome_Item(),
-            itens.getDescricao_Item(),
-            itens.getData_Hora_Item(),
-            itens.getFlg_Inativo(),
-            itens.getStatus_Item_Id(),
-            itens.getUsuario_Id(),
-            itens.getLocal_Id(),
-            itens.getCampus_Id(),
-            itens.getId_Empresa(),
-            itens.getId_Item());
+            itens.getNome(),
+            itens.getDescricao(),
+            itens.getEncontradoEm(),
+            itens.getFlgInativo(),
+            itens.getStatusItemId(),
+            itens.getUsuarioRelatorId(),
+            itens.getLocalId(),
+            itens.getDtaRemocao(),
+            itens.getId());
         
-        return findById(itens.getId_Item());
+        return findById(itens.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM Itens WHERE Id_Item = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.itens_perdidos WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Itens> findActive() {
-        String sql = "SELECT * FROM Itens WHERE Flg_Inativo = false ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE Flg_Inativo = false ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Itens> findByStatus(int statusId) {
-        String sql = "SELECT * FROM Itens WHERE Status_Item_Id = ? ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE status_item_id = ? ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, statusId);
     }
 
     @Override
     public List<Itens> findByUser(int userId) {
-        String sql = "SELECT * FROM Itens WHERE Usuario_Id = ? ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE usuario_relator_id = ? ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
 
     @Override
     public List<Itens> findByCampus(int campusId) {
-        String sql = "SELECT * FROM Itens WHERE Campus_Id = ? ORDER BY Data_Cadastro DESC";
+        // TODO: Implementar join com locais para buscar por campus
+        String sql = "SELECT ip.* FROM ap_achados_perdidos.itens_perdidos ip " +
+                     "INNER JOIN ap_achados_perdidos.locais l ON ip.local_id = l.id " +
+                     "WHERE l.campus_id = ? ORDER BY ip.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, campusId);
     }
 
     @Override
     public List<Itens> findByLocal(int localId) {
-        String sql = "SELECT * FROM Itens WHERE Local_Id = ? ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE local_id = ? ORDER BY Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, localId);
     }
 
     @Override
     public List<Itens> findByEmpresa(int empresaId) {
-        String sql = "SELECT * FROM Itens WHERE Id_Empresa = ? ORDER BY Data_Cadastro DESC";
+        // TODO: Implementar join com usuarios para buscar por empresa
+        String sql = "SELECT ip.* FROM ap_achados_perdidos.itens_perdidos ip " +
+                     "INNER JOIN ap_achados_perdidos.usuarios u ON ip.usuario_relator_id = u.id " +
+                     "WHERE u.empresa_id = ? ORDER BY ip.Dta_Criacao DESC";
         return jdbcTemplate.query(sql, rowMapper, empresaId);
     }
 
     @Override
     public List<Itens> searchByTerm(String searchTerm) {
-        String sql = "SELECT * FROM Itens WHERE (Nome_Item LIKE ? OR Descricao_Item LIKE ?) AND Flg_Inativo = false ORDER BY Data_Cadastro DESC";
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE (nome LIKE ? OR descricao LIKE ?) AND Flg_Inativo = false ORDER BY Dta_Criacao DESC";
         String searchPattern = "%" + searchTerm + "%";
         return jdbcTemplate.query(sql, rowMapper, searchPattern, searchPattern);
     }
 
     @Override
     public List<Itens> findItemsNearDonationDeadline(int daysFromNow) {
-        String sql = "SELECT * FROM Itens WHERE " +
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE " +
                      "Flg_Inativo = false AND " +
-                     "Status_Item_Id = 1 AND " + // Status "Ativo"
-                     "Data_Cadastro <= (CURRENT_DATE - INTERVAL '" + daysFromNow + " days') " +
-                     "ORDER BY Data_Cadastro ASC";
+                     "status_item_id = 1 AND " + // Status "Ativo"
+                     "Dta_Criacao <= (CURRENT_DATE - INTERVAL '" + daysFromNow + " days') " +
+                     "ORDER BY Dta_Criacao ASC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Itens> findExpiredItems(int daysExpired) {
-        String sql = "SELECT * FROM Itens WHERE " +
+        String sql = "SELECT * FROM ap_achados_perdidos.itens_perdidos WHERE " +
                      "Flg_Inativo = false AND " +
-                     "Status_Item_Id = 1 AND " + // Status "Ativo"
-                     "Data_Cadastro <= (CURRENT_DATE - INTERVAL '" + daysExpired + " days') " +
-                     "ORDER BY Data_Cadastro ASC";
+                     "status_item_id = 1 AND " + // Status "Ativo"
+                     "Dta_Criacao <= (CURRENT_DATE - INTERVAL '" + daysExpired + " days') " +
+                     "ORDER BY Dta_Criacao ASC";
         return jdbcTemplate.query(sql, rowMapper);
     }
 }

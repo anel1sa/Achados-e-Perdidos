@@ -17,13 +17,14 @@ public class ReivindicacoesModelMapper {
         }
         
         ReivindicacoesDTO dto = new ReivindicacoesDTO();
-        dto.setId_Reivindicacao(reivindicacoes.getId_Reivindicacao());
-        dto.setId_Item(reivindicacoes.getId_Item());
-        dto.setId_Usuario(reivindicacoes.getId_Usuario_Post());
-        dto.setData_Reivindicacao(reivindicacoes.getData_Reivindicacao());
-        dto.setStatus_Reivindicacao("PENDENTE"); // Status padrão
-        dto.setDescricao_Reivindicacao(reivindicacoes.getObservacao());
-        dto.setComprovantes(""); // Campo vazio por padrão
+        dto.setId(reivindicacoes.getId());
+        dto.setDetalhesReivindicacao(reivindicacoes.getDetalhesReivindicacao());
+        dto.setItemId(reivindicacoes.getItemId());
+        dto.setUsuarioReivindicadorId(reivindicacoes.getUsuarioReivindicadorId());
+        dto.setUsuarioAchouId(reivindicacoes.getUsuarioAchouId());
+        dto.setDtaCriacao(reivindicacoes.getDtaCriacao());
+        dto.setFlgInativo(reivindicacoes.getFlgInativo());
+        dto.setDtaRemocao(reivindicacoes.getDtaRemocao());
         
         return dto;
     }
@@ -34,11 +35,14 @@ public class ReivindicacoesModelMapper {
         }
         
         Reivindicacoes reivindicacoes = new Reivindicacoes();
-        reivindicacoes.setId_Reivindicacao(dto.getId_Reivindicacao());
-        reivindicacoes.setId_Item(dto.getId_Item());
-        reivindicacoes.setId_Usuario_Post(dto.getId_Usuario());
-        reivindicacoes.setData_Reivindicacao(dto.getData_Reivindicacao());
-        reivindicacoes.setObservacao(dto.getDescricao_Reivindicacao());
+        reivindicacoes.setId(dto.getId());
+        reivindicacoes.setDetalhesReivindicacao(dto.getDetalhesReivindicacao());
+        reivindicacoes.setItemId(dto.getItemId());
+        reivindicacoes.setUsuarioReivindicadorId(dto.getUsuarioReivindicadorId());
+        reivindicacoes.setUsuarioAchouId(dto.getUsuarioAchouId());
+        reivindicacoes.setDtaCriacao(dto.getDtaCriacao());
+        reivindicacoes.setFlgInativo(dto.getFlgInativo());
+        reivindicacoes.setDtaRemocao(dto.getDtaRemocao());
         
         return reivindicacoes;
     }

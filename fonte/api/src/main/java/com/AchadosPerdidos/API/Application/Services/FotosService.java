@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -42,9 +42,8 @@ public class FotosService implements IFotosService {
     @Override
     public FotosDTO createFoto(FotosDTO fotosDTO) {
         Fotos fotos = fotosModelMapper.toEntity(fotosDTO);
-        fotos.setData_Envio(LocalDateTime.now());
-        fotos.setData_Atualizacao(LocalDateTime.now());
-        fotos.setFlg_Inativo(false);
+        fotos.setDtaCriacao(new Date());
+        fotos.setFlgInativo(false);
         
         Fotos savedFotos = fotosRepository.save(fotos);
         return fotosModelMapper.toDTO(savedFotos);
@@ -58,26 +57,22 @@ public class FotosService implements IFotosService {
         }
         
         // Mapeamento correto dos campos do FotosDTO para a entidade Fotos
-        if (fotosDTO.getId_Usuario() != null) {
-            existingFotos.setUsuario_Id(fotosDTO.getId_Usuario());
+        if (fotosDTO.getUrl() != null) {
+            existingFotos.setUrl(fotosDTO.getUrl());
         }
-        if (fotosDTO.getId_Item() != null) {
-            existingFotos.setItem_Id(fotosDTO.getId_Item());
+        if (fotosDTO.getProvedorArmazenamento() != null) {
+            existingFotos.setProvedorArmazenamento(Provedor_Armazenamento.valueOf(fotosDTO.getProvedorArmazenamento()));
         }
-        if (fotosDTO.getURL_Foto() != null) {
-            existingFotos.setUrl_Arquivo(fotosDTO.getURL_Foto());
+        if (fotosDTO.getChaveArmazenamento() != null) {
+            existingFotos.setChaveArmazenamento(fotosDTO.getChaveArmazenamento());
         }
-        if (fotosDTO.getNome_Arquivo() != null) {
-            existingFotos.setNome_Original(fotosDTO.getNome_Arquivo());
+        if (fotosDTO.getNomeArquivoOriginal() != null) {
+            existingFotos.setNomeArquivoOriginal(fotosDTO.getNomeArquivoOriginal());
         }
-        if (fotosDTO.getTamanho_Arquivo() != null) {
-            existingFotos.setTamanho_Bytes(fotosDTO.getTamanho_Arquivo());
+        if (fotosDTO.getTamanhoArquivoBytes() != null) {
+            existingFotos.setTamanhoArquivoBytes(fotosDTO.getTamanhoArquivoBytes());
         }
-        if (fotosDTO.getTipo_MIME() != null) {
-            // O tipo MIME pode ser usado para validação, mas não há campo específico na entidade
-            // Pode ser armazenado em um campo de metadados se necessário
-        }
-        existingFotos.setData_Atualizacao(LocalDateTime.now());
+        existingFotos.setDtaCriacao(new Date());
         
         Fotos updatedFotos = fotosRepository.save(existingFotos);
         return fotosModelMapper.toDTO(updatedFotos);
@@ -175,18 +170,13 @@ public class FotosService implements IFotosService {
 
             // Criar entidade Fotos
             Fotos fotos = new Fotos();
-            fotos.setUsuario_Id(userId);
-            fotos.setItem_Id(itemId);
-            fotos.setProvedor_Armazenamento(Provedor_Armazenamento.s3);
-            fotos.setNome_Bucket(""); // Será preenchido pelo S3Service se necessário
-            fotos.setChave_Objeto(uploadResult.getS3Key());
-            fotos.setUrl_Arquivo(uploadResult.getFileUrl());
-            fotos.setNome_Original(uploadResult.getOriginalName());
-            fotos.setPerfil_Usuario(isProfilePhoto);
-            fotos.setFoto_Item(!isProfilePhoto);
-            fotos.setFlg_Inativo(false);
-            fotos.setData_Envio(LocalDateTime.now());
-            fotos.setData_Atualizacao(LocalDateTime.now());
+            fotos.setProvedorArmazenamento(Provedor_Armazenamento.s3);
+            fotos.setChaveArmazenamento(uploadResult.getS3Key());
+            fotos.setUrl(uploadResult.getFileUrl());
+            fotos.setNomeArquivoOriginal(uploadResult.getOriginalName());
+            fotos.setTamanhoArquivoBytes((long) fileBytes.length);
+            fotos.setFlgInativo(false);
+            fotos.setDtaCriacao(new Date());
 
             // Salvar no banco de dados
             Fotos savedFotos = fotosRepository.save(fotos);
@@ -208,11 +198,11 @@ public class FotosService implements IFotosService {
             throw new IllegalArgumentException("Foto não encontrada");
         }
 
-        if (fotos.getProvedor_Armazenamento() != Provedor_Armazenamento.s3) {
+        if (fotos.getProvedorArmazenamento() != Provedor_Armazenamento.s3) {
             throw new IllegalArgumentException("Foto não está armazenada no S3");
         }
 
-        return s3Service.downloadFile(fotos.getChave_Objeto());
+        return s3Service.downloadFile(fotos.getChaveArmazenamento());
     }
 
     /**
@@ -228,8 +218,8 @@ public class FotosService implements IFotosService {
 
         try {
             // Deletar do S3 se for S3
-            if (fotos.getProvedor_Armazenamento() == Provedor_Armazenamento.s3) {
-                s3Service.deleteFile(fotos.getChave_Objeto());
+            if (fotos.getProvedorArmazenamento() == Provedor_Armazenamento.s3) {
+                s3Service.deleteFile(fotos.getChaveArmazenamento());
             }
 
             // Deletar do banco de dados

@@ -17,91 +17,78 @@ public class CampusQueries implements ICampusQueries {
 
     private final RowMapper<Campus> rowMapper = (rs, rowNum) -> {
         Campus campus = new Campus();
-        campus.setId_Campus(rs.getInt("Id_Campus"));
-        campus.setId_Instituicao(rs.getInt("Id_Instituicao"));
-        campus.setNome_Campus(rs.getString("Nome_Campus"));
-        campus.setCidade(rs.getString("Cidade"));
-        campus.setEstado(rs.getString("Estado"));
-        campus.setEndereco(rs.getString("Endereco"));
-        campus.setCEP(rs.getString("CEP"));
-        campus.setLatitude(rs.getDouble("Latitude"));
-        campus.setLongitude(rs.getDouble("Longitude"));
-        campus.setFlg_Ativo(rs.getBoolean("Flg_Ativo"));
-        campus.setData_Cadastro(rs.getTimestamp("Data_Cadastro").toLocalDateTime());
+        campus.setId(rs.getInt("id"));
+        campus.setNome(rs.getString("nome"));
+        campus.setInstituicaoId(rs.getInt("instituicao_id"));
+        campus.setEnderecoId(rs.getInt("endereco_id"));
+        campus.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        campus.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        campus.setDtaRemocao(rs.getTimestamp("Dta_Remocao"));
         return campus;
     };
 
     @Override
     public List<Campus> findAll() {
-        String sql = "SELECT * FROM Campus ORDER BY Nome_Campus";
+        String sql = "SELECT * FROM ap_achados_perdidos.campus ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Campus findById(int id) {
-        String sql = "SELECT * FROM Campus WHERE Id_Campus = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.campus WHERE id = ?";
         List<Campus> campus = jdbcTemplate.query(sql, rowMapper, id);
         return campus.isEmpty() ? null : campus.get(0);
     }
 
     @Override
     public Campus insert(Campus campus) {
-        String sql = "INSERT INTO Campus (Id_Instituicao, Nome_Campus, Cidade, Estado, Endereco, CEP, Latitude, Longitude, Flg_Ativo, Data_Cadastro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.campus (nome, instituicao_id, endereco_id, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            campus.getId_Instituicao(),
-            campus.getNome_Campus(), 
-            campus.getCidade(),
-            campus.getEstado(),
-            campus.getEndereco(),
-            campus.getCEP(),
-            campus.getLatitude(),
-            campus.getLongitude(),
-            campus.getFlg_Ativo(),
-            campus.getData_Cadastro());
+            campus.getNome(),
+            campus.getInstituicaoId(),
+            campus.getEnderecoId(),
+            campus.getDtaCriacao(),
+            campus.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM Campus WHERE Nome_Campus = ? AND Data_Cadastro = ? ORDER BY Id_Campus DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.campus WHERE nome = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Campus> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            campus.getNome_Campus(), 
-            campus.getData_Cadastro());
+            campus.getNome(), 
+            campus.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Campus update(Campus campus) {
-        String sql = "UPDATE Campus SET Id_Instituicao = ?, Nome_Campus = ?, Cidade = ?, Estado = ?, Endereco = ?, CEP = ?, Latitude = ?, Longitude = ?, Flg_Ativo = ? WHERE Id_Campus = ?";
+        String sql = "UPDATE ap_achados_perdidos.campus SET nome = ?, instituicao_id = ?, endereco_id = ?, Flg_Inativo = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            campus.getId_Instituicao(),
-            campus.getNome_Campus(),
-            campus.getCidade(),
-            campus.getEstado(),
-            campus.getEndereco(),
-            campus.getCEP(),
-            campus.getLatitude(),
-            campus.getLongitude(),
-            campus.getFlg_Ativo(),
-            campus.getId_Campus());
+            campus.getNome(),
+            campus.getInstituicaoId(),
+            campus.getEnderecoId(),
+            campus.getFlgInativo(),
+            campus.getDtaRemocao(),
+            campus.getId());
         
-        return findById(campus.getId_Campus());
+        return findById(campus.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM Campus WHERE Id_Campus = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.campus WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Campus> findActive() {
-        String sql = "SELECT * FROM Campus WHERE Flg_Ativo = true ORDER BY Nome_Campus";
+        String sql = "SELECT * FROM ap_achados_perdidos.campus WHERE Flg_Inativo = false ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Campus> findByInstitution(int institutionId) {
-        String sql = "SELECT * FROM Campus WHERE Id_Instituicao = ? ORDER BY Nome_Campus";
+        String sql = "SELECT * FROM ap_achados_perdidos.campus WHERE instituicao_id = ? ORDER BY nome";
         return jdbcTemplate.query(sql, rowMapper, institutionId);
     }
 }

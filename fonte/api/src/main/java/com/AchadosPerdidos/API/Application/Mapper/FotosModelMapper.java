@@ -17,13 +17,15 @@ public class FotosModelMapper {
         }
         
         FotosDTO dto = new FotosDTO();
-        dto.setId_Foto(fotos.getId_Foto());
-        dto.setNome_Arquivo(fotos.getNome_Original());
-        dto.setURL_Foto(fotos.getUrl_Arquivo());
-        dto.setTamanho_Arquivo(fotos.getTamanho_Bytes());
-        dto.setTipo_MIME("image/jpeg"); // Default MIME type
-        dto.setId_Item(fotos.getItem_Id());
-        dto.setId_Usuario(fotos.getUsuario_Id());
+        dto.setId(fotos.getId());
+        dto.setUrl(fotos.getUrl());
+        dto.setProvedorArmazenamento(fotos.getProvedorArmazenamento() != null ? fotos.getProvedorArmazenamento().toString() : null);
+        dto.setChaveArmazenamento(fotos.getChaveArmazenamento());
+        dto.setNomeArquivoOriginal(fotos.getNomeArquivoOriginal());
+        dto.setTamanhoArquivoBytes(fotos.getTamanhoArquivoBytes());
+        dto.setDtaCriacao(fotos.getDtaCriacao());
+        dto.setFlgInativo(fotos.getFlgInativo());
+        dto.setDtaRemocao(fotos.getDtaRemocao());
         
         return dto;
     }
@@ -34,12 +36,17 @@ public class FotosModelMapper {
         }
         
         Fotos fotos = new Fotos();
-        fotos.setId_Foto(dto.getId_Foto());
-        fotos.setNome_Original(dto.getNome_Arquivo());
-        fotos.setUrl_Arquivo(dto.getURL_Foto());
-        fotos.setTamanho_Bytes(dto.getTamanho_Arquivo());
-        fotos.setItem_Id(dto.getId_Item());
-        fotos.setUsuario_Id(dto.getId_Usuario());
+        fotos.setId(dto.getId());
+        fotos.setUrl(dto.getUrl());
+        if (dto.getProvedorArmazenamento() != null) {
+            fotos.setProvedorArmazenamento(com.AchadosPerdidos.API.Domain.Enum.Provedor_Armazenamento.valueOf(dto.getProvedorArmazenamento()));
+        }
+        fotos.setChaveArmazenamento(dto.getChaveArmazenamento());
+        fotos.setNomeArquivoOriginal(dto.getNomeArquivoOriginal());
+        fotos.setTamanhoArquivoBytes(dto.getTamanhoArquivoBytes());
+        fotos.setDtaCriacao(dto.getDtaCriacao());
+        fotos.setFlgInativo(dto.getFlgInativo());
+        fotos.setDtaRemocao(dto.getDtaRemocao());
         
         return fotos;
     }

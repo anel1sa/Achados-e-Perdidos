@@ -16,10 +16,6 @@ import org.springframework.context.annotation.Profile;
 import java.time.Duration;
 import java.util.List;
 
-/**
- * Configuração de cache para a aplicação.
- * Suporta Caffeine Cache para produção e ConcurrentMap para desenvolvimento/teste.
- */
 @Configuration
 @EnableCaching
 public class CacheConfig {
@@ -32,7 +28,11 @@ public class CacheConfig {
         "usuarios", 
         "campus",
         "statusItems",
-        "localItems"
+        "localItems",
+        "cidades",
+        "estados",
+        "enderecos",
+        "roles"
     );
 
     @Value("${cache.enabled:true}")
@@ -63,6 +63,11 @@ public class CacheConfig {
         cacheManager.setCacheNames(CACHE_NAMES);
         
         return cacheManager;
+    }
+
+    @Bean
+    public CacheManager fallbackCacheManager() {
+        return createFallbackCacheManager();
     }
 
     @Bean

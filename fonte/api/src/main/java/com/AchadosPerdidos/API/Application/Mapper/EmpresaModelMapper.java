@@ -17,13 +17,14 @@ public class EmpresaModelMapper {
         }
         
         EmpresaDTO dto = new EmpresaDTO();
-        dto.setId_Empresa(empresa.getId_Empresa());
-        dto.setNome_Empresa(empresa.getNome_Empresa());
-        dto.setCNPJ_Empresa(empresa.getCNPJ_Matriz());
-        dto.setEndereco_Empresa(empresa.getPais_Sede()); // Mapeando Pais_Sede para Endereco_Empresa
-        dto.setTelefone_Empresa(empresa.getContato_Principal()); // Mapeando Contato_Principal para Telefone_Empresa
-        dto.setEmail_Empresa(empresa.getWebsite()); // Mapeando Website para Email_Empresa
-        dto.setFlg_Ativo(empresa.getFlg_Ativo());
+        dto.setId(empresa.getId());
+        dto.setNome(empresa.getNome());
+        dto.setNomeFantasia(empresa.getNomeFantasia());
+        dto.setCnpj(empresa.getCnpj());
+        dto.setEnderecoId(empresa.getEnderecoId());
+        dto.setDtaCriacao(empresa.getDtaCriacao());
+        dto.setFlgInativo(empresa.getFlgInativo());
+        dto.setDtaRemocao(empresa.getDtaRemocao());
         
         return dto;
     }
@@ -34,13 +35,14 @@ public class EmpresaModelMapper {
         }
         
         Empresa empresa = new Empresa();
-        empresa.setId_Empresa(dto.getId_Empresa());
-        empresa.setNome_Empresa(dto.getNome_Empresa());
-        empresa.setCNPJ_Matriz(dto.getCNPJ_Empresa());
-        empresa.setPais_Sede(dto.getEndereco_Empresa()); // Mapeando Endereco_Empresa para Pais_Sede
-        empresa.setContato_Principal(dto.getTelefone_Empresa()); // Mapeando Telefone_Empresa para Contato_Principal
-        empresa.setWebsite(dto.getEmail_Empresa()); // Mapeando Email_Empresa para Website
-        empresa.setFlg_Ativo(dto.getFlg_Ativo());
+        empresa.setId(dto.getId());
+        empresa.setNome(dto.getNome());
+        empresa.setNomeFantasia(dto.getNomeFantasia());
+        empresa.setCnpj(dto.getCnpj());
+        empresa.setEnderecoId(dto.getEnderecoId());
+        empresa.setDtaCriacao(dto.getDtaCriacao());
+        empresa.setFlgInativo(dto.getFlgInativo());
+        empresa.setDtaRemocao(dto.getDtaRemocao());
         
         return empresa;
     }

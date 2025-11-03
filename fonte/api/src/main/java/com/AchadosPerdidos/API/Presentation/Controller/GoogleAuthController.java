@@ -6,6 +6,7 @@ import com.AchadosPerdidos.API.Application.DTOs.Usuario.UsuariosDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IGoogleAuthService;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IJwtTokenService;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IUsuariosService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/google-auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "Autenticação Google", description = "API para autenticação via Google OAuth2")
 public class GoogleAuthController {
     
     private static final Logger logger = LoggerFactory.getLogger(GoogleAuthController.class);
@@ -90,29 +92,29 @@ public class GoogleAuthController {
             }
             
             // Verificar se o usuário está ativo
-            if (usuario.getFlg_Inativo()) {
-                logger.warn("Usuário inativo tentou fazer login: {}", usuario.getEmail_Usuario());
+            if (usuario.getFlgInativo()) {
+                logger.warn("Usuário inativo tentou fazer login: {}", usuario.getEmail());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Usuário inativo");
             }
             
-            logger.info("Informações do usuário obtidas: {}", usuario.getEmail_Usuario());
+            logger.info("Informações do usuário obtidas: {}", usuario.getEmail());
             
             // Gerar token JWT com informações do usuário
             String token = jwtTokenService.generateToken(
-                usuario.getEmail_Usuario(),
-                usuario.getNome_Usuario(),
+                usuario.getEmail(),
+                usuario.getNomeCompleto(),
                 "User",
-                String.valueOf(usuario.getId_Usuario())
+                String.valueOf(usuario.getId())
             );
             
-            logger.info("Token JWT gerado com sucesso para o usuário: {}", usuario.getEmail_Usuario());
+            logger.info("Token JWT gerado com sucesso para o usuário: {}", usuario.getEmail());
             
             // Criar resposta com token e informações do usuário
             AuthResponseDTO.UserInfoDTO userInfo = new AuthResponseDTO.UserInfoDTO();
-            userInfo.setId(usuario.getId_Usuario());
-            userInfo.setNome(usuario.getNome_Usuario());
-            userInfo.setEmail(usuario.getEmail_Usuario());
+            userInfo.setId(usuario.getId());
+            userInfo.setNome(usuario.getNomeCompleto());
+            userInfo.setEmail(usuario.getEmail());
             userInfo.setRole("User");
             userInfo.setCampus("");
             

@@ -26,7 +26,7 @@ public class EmpresaRepository implements IEmpresaRepository {
 
     @Override
     public Empresa save(Empresa empresa) {
-        if (empresa.getId_Empresa() == 0) {
+        if (empresa.getId() == null || empresa.getId() == 0) {
             return empresaQueries.insert(empresa);
         } else {
             return empresaQueries.update(empresa);

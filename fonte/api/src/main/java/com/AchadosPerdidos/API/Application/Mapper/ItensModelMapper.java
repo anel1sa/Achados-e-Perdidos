@@ -17,17 +17,16 @@ public class ItensModelMapper {
         }
         
         ItensDTO dto = new ItensDTO();
-        dto.setId_Item(itens.getId_Item());
-        dto.setNome_Item(itens.getNome_Item());
-        dto.setDescricao_Item(itens.getDescricao_Item());
-        dto.setData_Hora_Item(itens.getData_Hora_Item());
-        dto.setData_Cadastro(itens.getData_Cadastro());
-        dto.setFlg_Inativo(itens.getFlg_Inativo());
-        dto.setStatus_Item_Id(itens.getStatus_Item_Id());
-        dto.setUsuario_Id(itens.getUsuario_Id());
-        dto.setLocal_Id(itens.getLocal_Id());
-        dto.setCampus_Id(itens.getCampus_Id());
-        dto.setId_Empresa(itens.getId_Empresa());
+        dto.setId(itens.getId());
+        dto.setNome(itens.getNome());
+        dto.setDescricao(itens.getDescricao());
+        dto.setEncontradoEm(itens.getEncontradoEm());
+        dto.setUsuarioRelatorId(itens.getUsuarioRelatorId());
+        dto.setLocalId(itens.getLocalId());
+        dto.setStatusItemId(itens.getStatusItemId());
+        dto.setDtaCriacao(itens.getDtaCriacao());
+        dto.setFlgInativo(itens.getFlgInativo());
+        dto.setDtaRemocao(itens.getDtaRemocao());
         
         return dto;
     }
@@ -38,17 +37,16 @@ public class ItensModelMapper {
         }
         
         Itens itens = new Itens();
-        itens.setId_Item(dto.getId_Item());
-        itens.setNome_Item(dto.getNome_Item());
-        itens.setDescricao_Item(dto.getDescricao_Item());
-        itens.setData_Hora_Item(dto.getData_Hora_Item());
-        itens.setData_Cadastro(dto.getData_Cadastro());
-        itens.setFlg_Inativo(dto.getFlg_Inativo());
-        itens.setStatus_Item_Id(dto.getStatus_Item_Id());
-        itens.setUsuario_Id(dto.getUsuario_Id());
-        itens.setLocal_Id(dto.getLocal_Id());
-        itens.setCampus_Id(dto.getCampus_Id());
-        itens.setId_Empresa(dto.getId_Empresa());
+        itens.setId(dto.getId());
+        itens.setNome(dto.getNome());
+        itens.setDescricao(dto.getDescricao());
+        itens.setEncontradoEm(dto.getEncontradoEm());
+        itens.setUsuarioRelatorId(dto.getUsuarioRelatorId());
+        itens.setLocalId(dto.getLocalId());
+        itens.setStatusItemId(dto.getStatusItemId());
+        itens.setDtaCriacao(dto.getDtaCriacao());
+        itens.setFlgInativo(dto.getFlgInativo());
+        itens.setDtaRemocao(dto.getDtaRemocao());
         
         return itens;
     }

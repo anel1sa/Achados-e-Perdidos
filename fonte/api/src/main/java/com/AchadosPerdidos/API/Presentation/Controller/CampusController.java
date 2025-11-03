@@ -5,6 +5,7 @@ import com.AchadosPerdidos.API.Application.DTOs.Campus.CampusListDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Campus.CampusCreateDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Campus.CampusUpdateDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.ICampusService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/campus")
 @CrossOrigin(origins = "*")
+@Tag(name = "Campus", description = "API para gerenciamento de campus")
 public class CampusController {
 
     @Autowired

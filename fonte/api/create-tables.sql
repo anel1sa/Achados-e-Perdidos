@@ -1,150 +1,229 @@
-CREATE SCHEMA IF NOT EXISTS ap;
-SET search_path TO ap, public;
+-- =================================================================
+-- Esquema: Sistema de Achados e Perdidos (Convertido para PostgreSQL)
+-- Autor: Augusto Farias dos Santos
+-- =================================================================
 
--- 1) Tabelas auxiliares
-CREATE TABLE IF NOT EXISTS aux_tipo_role (
-    id_tipo_role SERIAL PRIMARY KEY,
-    nome_tipo_role VARCHAR(50) NOT NULL,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    flg_inativo BOOLEAN DEFAULT FALSE
+
+CREATE SCHEMA IF NOT EXISTS ap_achados_perdidos;
+SET search_path TO ap_achados_perdidos, public;
+
+-- =================================================================
+-- Seção 1: Tabelas Auxiliares
+-- =================================================================
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    descricao TEXT,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL
 );
 
-CREATE TABLE IF NOT EXISTS aux_status_item (
-    id_status_item SERIAL PRIMARY KEY,
-    descricao_status_item VARCHAR(50) NOT NULL,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    flg_inativo BOOLEAN DEFAULT FALSE
+CREATE TABLE status_item (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    descricao TEXT,
+    status_item VARCHAR(100),
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL
 );
 
-CREATE TABLE IF NOT EXISTS aux_local_item (
-    id_aux_local_item SERIAL PRIMARY KEY,
-    nome_local_item VARCHAR(150) NOT NULL,
-    descricao_local_item VARCHAR(255),
-    data_cadastro_local_item TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    flg_inativo_local_item BOOLEAN DEFAULT FALSE
+-- =================================================================
+-- Seção 2: Normalização de Endereços
+-- =================================================================
+
+CREATE TABLE estados (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    uf CHAR(2) NOT NULL UNIQUE,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL
 );
 
--- 2) Instituicao
--- ENUM('PUBLICA','PRIVADA')
-CREATE TABLE IF NOT EXISTS instituicao (
-    id_instituicao SERIAL PRIMARY KEY,
-    tipo_instituicao VARCHAR(20) NOT NULL,
-    nome_instituicao VARCHAR(255) NOT NULL,
-    cnpj_filial CHAR(14) UNIQUE,
-    flg_inativo BOOLEAN DEFAULT FALSE,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE cidades (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    estado_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_cidades_estado FOREIGN KEY (estado_id) REFERENCES estados(id) ON DELETE RESTRICT
 );
 
--- 3) Empresa
-CREATE TABLE IF NOT EXISTS empresa (
-    id_empresa SERIAL PRIMARY KEY,
-    nome_empresa VARCHAR(255) NOT NULL,
-    cnpj_matriz CHAR(14) UNIQUE,
-    pais_sede VARCHAR(100),
-    website VARCHAR(255),
-    contato_principal VARCHAR(255),
-    flg_ativo BOOLEAN DEFAULT TRUE,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE enderecos (
+    id SERIAL PRIMARY KEY,
+    logradouro VARCHAR(255) NOT NULL,
+    numero VARCHAR(20),
+    complemento VARCHAR(100),
+    bairro VARCHAR(100),
+    cep VARCHAR(8),
+    cidade_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_enderecos_cidade FOREIGN KEY (cidade_id) REFERENCES cidades(id) ON DELETE RESTRICT
 );
 
--- 4) Campus
-CREATE TABLE IF NOT EXISTS campus (
-    id_campus SERIAL PRIMARY KEY,
-    id_instituicao INT NULL,
-    nome_campus VARCHAR(150) NOT NULL,
-    cidade VARCHAR(100),
-    estado VARCHAR(50),
-    endereco VARCHAR(255),
-    cep VARCHAR(20),
-    latitude DECIMAL(10,7),
-    longitude DECIMAL(10,7),
-    flg_ativo BOOLEAN DEFAULT TRUE,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_campus_instituicao FOREIGN KEY (id_instituicao) REFERENCES instituicao(id_instituicao) ON DELETE SET NULL
+-- =================================================================
+-- Seção 3: Entidades Organizacionais (Normalizadas)
+-- =================================================================
+
+CREATE TABLE instituicoes (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    codigo VARCHAR(100) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    cnpj CHAR(14) UNIQUE,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL
 );
 
--- 5) Usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
-    id_usuario SERIAL PRIMARY KEY,
-    nome_usuario VARCHAR(255) NOT NULL,
-    cpf_usuario CHAR(11) UNIQUE,
-    email_usuario VARCHAR(255) UNIQUE NOT NULL,
-    senha_usuario VARCHAR(255) NOT NULL,
-    matricula_usuario VARCHAR(50) UNIQUE,
-    telefone_usuario VARCHAR(20),
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    tipo_role_id INT NOT NULL,
-    foto_item_id INT,
-    foto_perfil_usuario INT,
-    flg_inativo BOOLEAN DEFAULT FALSE,
-    id_instituicao INT,
-    id_empresa INT,
-    id_campus INT,
-    CONSTRAINT fk_usuarios_tipo_role FOREIGN KEY (tipo_role_id) REFERENCES aux_tipo_role(id_tipo_role),
-    CONSTRAINT fk_usuarios_instituicao FOREIGN KEY (id_instituicao) REFERENCES instituicao(id_instituicao) ON DELETE SET NULL,
-    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE SET NULL,
-    CONSTRAINT fk_usuarios_campus FOREIGN KEY (id_campus) REFERENCES campus(id_campus) ON DELETE SET NULL
+CREATE TABLE empresas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    nome_fantasia VARCHAR(255) NOT NULL,
+    cnpj CHAR(14) UNIQUE,
+    endereco_id INT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_empresas_endereco FOREIGN KEY (endereco_id) REFERENCES enderecos(id) ON DELETE SET NULL
 );
 
--- 6) Itens
-CREATE TABLE IF NOT EXISTS itens (
-    id_item SERIAL PRIMARY KEY,
-    nome_item VARCHAR(255) NOT NULL,
-    descricao_item TEXT NOT NULL,
-    data_hora_item TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    flg_inativo BOOLEAN DEFAULT FALSE,
-    status_item_id INT,
-    usuario_id INT,
-    local_id INT,
-    campus_id INT,
-    id_empresa INT,
-    CONSTRAINT fk_itens_status FOREIGN KEY (status_item_id) REFERENCES aux_status_item(id_status_item) ON DELETE SET NULL,
-    CONSTRAINT fk_itens_local FOREIGN KEY (local_id) REFERENCES aux_local_item(id_aux_local_item) ON DELETE SET NULL,
-    CONSTRAINT fk_itens_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuario) ON DELETE SET NULL,
-    CONSTRAINT fk_itens_campus FOREIGN KEY (campus_id) REFERENCES campus(id_campus) ON DELETE SET NULL,
-    CONSTRAINT fk_itens_empresa FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE SET NULL
+CREATE TABLE campus (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    instituicao_id INT NOT NULL,
+    endereco_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_campus_instituicao FOREIGN KEY (instituicao_id) REFERENCES instituicoes(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_campus_endereco FOREIGN KEY (endereco_id) REFERENCES enderecos(id) ON DELETE RESTRICT
 );
 
--- 7) Fotos
-CREATE TABLE IF NOT EXISTS fotos (
-    id_foto SERIAL PRIMARY KEY,
-    usuario_id INT,
-    item_id INT,
+CREATE TABLE locais (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    descricao TEXT,
+    campus_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_locais_campus FOREIGN KEY (campus_id) REFERENCES campus(id) ON DELETE CASCADE
+);
+
+-- =================================================================
+-- Seção 4: Usuários e Itens
+-- =================================================================
+
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nome_completo VARCHAR(255) NOT NULL,
+    cpf CHAR(11) UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    hash_senha VARCHAR(255) NOT NULL,
+    matricula VARCHAR(50) UNIQUE,
+    numero_telefone VARCHAR(20),
+    empresa_id INT,
+    endereco_id INT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE SET NULL,
+    CONSTRAINT fk_usuarios_endereco FOREIGN KEY (endereco_id) REFERENCES enderecos(id) ON DELETE SET NULL
+);
+
+CREATE TABLE itens_perdidos (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT NOT NULL,
+    encontrado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_relator_id INT NOT NULL,
+    local_id INT NOT NULL,
+    status_item_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_itens_perdidos_usuario_relator FOREIGN KEY (usuario_relator_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_itens_perdidos_local FOREIGN KEY (local_id) REFERENCES locais(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_itens_perdidos_status FOREIGN KEY (status_item_id) REFERENCES status_item(id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_itens_perdidos_nome ON itens_perdidos(nome);
+
+CREATE TABLE itens_reivindicados (
+    id SERIAL PRIMARY KEY,
+    detalhes_reivindicacao TEXT,
+    item_id INT NOT NULL,
+    usuario_reivindicador_id INT NOT NULL,
+    usuario_achou_id INT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT fk_reivindicacoes_item FOREIGN KEY (item_id) REFERENCES itens_perdidos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reivindicacoes_usuario FOREIGN KEY (usuario_reivindicador_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reivindicacoes_aprovador FOREIGN KEY (usuario_achou_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX uk_item_usuario_ativo ON itens_reivindicados (item_id, usuario_reivindicador_id) WHERE Dta_Remocao IS NULL;
+
+
+-- =================================================================
+-- Seção 5: Fotos e Junções N:N
+-- =================================================================
+
+CREATE TABLE fotos (
+    id SERIAL PRIMARY KEY,
+    url TEXT NOT NULL,
     provedor_armazenamento VARCHAR(100) NOT NULL DEFAULT 'local',
-    nome_bucket VARCHAR(255),
-    chave_objeto TEXT,
-    url_arquivo TEXT NOT NULL,
-    nome_original VARCHAR(255),
-    largura INT,
-    altura INT,
-    perfil_usuario BOOLEAN DEFAULT FALSE,
-    foto_item BOOLEAN DEFAULT FALSE,
-    flg_inativo BOOLEAN DEFAULT FALSE,
-    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_exclusao TIMESTAMP,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_fotos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_fotos_item FOREIGN KEY (item_id) REFERENCES itens(id_item) ON DELETE CASCADE
+    chave_armazenamento TEXT,
+    nome_arquivo_original VARCHAR(255),
+    tamanho_arquivo_bytes BIGINT,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    CONSTRAINT chk_tamanho_arquivo_bytes_positivo CHECK (tamanho_arquivo_bytes >= 0)
 );
 
--- 8) Reivindicacoes
-CREATE TABLE IF NOT EXISTS reivindicacoes (
-    id_reivindicacao SERIAL PRIMARY KEY,
-    id_item INT NOT NULL,
-    id_usuario_post INT,
-    id_usuario_proprietario INT,
-    data_reivindicacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    observacao VARCHAR(512),
-    CONSTRAINT fk_reivindicacoes_item FOREIGN KEY (id_item) REFERENCES itens(id_item) ON DELETE CASCADE,
-    CONSTRAINT fk_reivindicacoes_post FOREIGN KEY (id_usuario_post) REFERENCES usuarios(id_usuario) ON DELETE SET NULL,
-    CONSTRAINT fk_reivindicacoes_prop FOREIGN KEY (id_usuario_proprietario) REFERENCES usuarios(id_usuario) ON DELETE SET NULL
+CREATE TABLE fotos_usuario (
+    usuario_id INT NOT NULL,
+    foto_id INT NOT NULL,
+    PRIMARY KEY (usuario_id, foto_id),
+    CONSTRAINT fk_fotos_usuario_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_fotos_usuario_foto FOREIGN KEY (foto_id) REFERENCES fotos(id) ON DELETE CASCADE
 );
 
-INSERT INTO aux_tipo_role (nome_tipo_role) VALUES
-('Admin'), ('Professor'), ('Aluno'), ('Instituicao Publica'), ('Instituicao Privada')
-ON CONFLICT DO NOTHING;
+CREATE TABLE fotos_item (
+    item_id INT NOT NULL,
+    foto_id INT NOT NULL,
+    PRIMARY KEY (item_id, foto_id),
+    CONSTRAINT fk_fotos_item_item FOREIGN KEY (item_id) REFERENCES itens_perdidos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_fotos_item_foto FOREIGN KEY (foto_id) REFERENCES fotos(id) ON DELETE CASCADE
+);
 
-INSERT INTO aux_status_item (descricao_status_item) VALUES
-('Ativo'), ('Reivindicado'), ('Doado')
-ON CONFLICT DO NOTHING;
+CREATE TABLE usuario_roles (
+    usuario_id INT NOT NULL,
+    role_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (usuario_id, role_id),
+    CONSTRAINT fk_usuarioroles_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuarioroles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
+CREATE TABLE usuario_campus (
+    usuario_id INT NOT NULL,
+    campus_id INT NOT NULL,
+    Dta_Criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Flg_Inativo BOOLEAN NOT NULL DEFAULT FALSE,
+    Dta_Remocao TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (usuario_id, campus_id),
+    CONSTRAINT fk_usuariocampus_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuariocampus_campus FOREIGN KEY (campus_id) REFERENCES campus(id) ON DELETE CASCADE
+);

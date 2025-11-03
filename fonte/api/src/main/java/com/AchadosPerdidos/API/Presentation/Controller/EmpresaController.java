@@ -3,6 +3,7 @@ package com.AchadosPerdidos.API.Presentation.Controller;
 import com.AchadosPerdidos.API.Application.DTOs.Empresa.EmpresaDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Empresa.EmpresaListDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IEmpresaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/empresa")
 @CrossOrigin(origins = "*")
+@Tag(name = "Empresas", description = "API para gerenciamento de empresas")
 public class EmpresaController {
 
     @Autowired

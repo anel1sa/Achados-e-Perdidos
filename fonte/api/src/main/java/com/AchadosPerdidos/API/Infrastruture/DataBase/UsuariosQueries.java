@@ -17,129 +17,132 @@ public class UsuariosQueries implements IUsuariosQueries {
 
     private final RowMapper<Usuarios> rowMapper = (rs, rowNum) -> {
         Usuarios usuarios = new Usuarios();
-        usuarios.setId_Usuario(rs.getInt("id_usuario"));
-        usuarios.setNome_Usuario(rs.getString("nome_usuario"));
-        usuarios.setCPF_Usuario(rs.getString("cpf_usuario"));
-        usuarios.setEmail_Usuario(rs.getString("email_usuario"));
-        usuarios.setSenha_Usuario(rs.getString("senha_usuario"));
-        usuarios.setMatricula_Usuario(rs.getString("matricula_usuario"));
-        usuarios.setTelefone_Usuario(rs.getString("telefone_usuario"));
-        usuarios.setData_Cadastro(rs.getTimestamp("data_cadastro").toLocalDateTime());
-        usuarios.setTipo_Role_Id(rs.getInt("tipo_role_id"));
-        usuarios.setFoto_item_id(rs.getInt("foto_item_id"));
-        usuarios.setFoto_perfil_usuario(rs.getInt("foto_perfil_usuario"));
-        usuarios.setFlg_Inativo(rs.getBoolean("flg_inativo"));
-        usuarios.setId_Instituicao(rs.getInt("id_instituicao"));
-        usuarios.setId_Empresa(rs.getInt("id_empresa"));
-        usuarios.setId_Campus(rs.getInt("id_campus"));
+        usuarios.setId(rs.getInt("id"));
+        usuarios.setNomeCompleto(rs.getString("nome_completo"));
+        usuarios.setCpf(rs.getString("cpf"));
+        usuarios.setEmail(rs.getString("email"));
+        usuarios.setHashSenha(rs.getString("hash_senha"));
+        usuarios.setMatricula(rs.getString("matricula"));
+        usuarios.setNumeroTelefone(rs.getString("numero_telefone"));
+        
+        // Tratamento correto para campos nullable
+        Integer empresaId = rs.getObject("empresa_id", Integer.class);
+        usuarios.setEmpresaId(empresaId);
+        
+        Integer enderecoId = rs.getObject("endereco_id", Integer.class);
+        usuarios.setEnderecoId(enderecoId);
+        
+        usuarios.setDtaCriacao(rs.getTimestamp("Dta_Criacao"));
+        usuarios.setFlgInativo(rs.getBoolean("Flg_Inativo"));
+        usuarios.setDtaRemocao(rs.getTimestamp("Dta_Remocao"));
         return usuarios;
     };
 
     @Override
     public List<Usuarios> findAll() {
-        String sql = "SELECT * FROM ap.usuarios ORDER BY nome_usuario";
+        String sql = "SELECT * FROM ap_achados_perdidos.usuarios ORDER BY nome_completo";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public Usuarios findById(int id) {
-        String sql = "SELECT * FROM ap.usuarios WHERE id_usuario = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.usuarios WHERE id = ?";
         List<Usuarios> usuarios = jdbcTemplate.query(sql, rowMapper, id);
         return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
     @Override
     public Usuarios findByEmail(String email) {
-        String sql = "SELECT * FROM ap.usuarios WHERE email_usuario = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.usuarios WHERE email = ?";
         List<Usuarios> usuarios = jdbcTemplate.query(sql, rowMapper, email);
         return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
     @Override
     public Usuarios findByEmailAndPassword(String email, String senha) {
-        String sql = "SELECT * FROM ap.usuarios WHERE email_usuario = ? AND senha_usuario = ?";
+        String sql = "SELECT * FROM ap_achados_perdidos.usuarios WHERE email = ? AND hash_senha = ?";
         List<Usuarios> usuarios = jdbcTemplate.query(sql, rowMapper, email, senha);
         return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
     @Override
     public Usuarios insert(Usuarios usuarios) {
-        String sql = "INSERT INTO ap.usuarios (nome_usuario, cpf_usuario, email_usuario, senha_usuario, matricula_usuario, telefone_usuario, data_cadastro, tipo_role_id, foto_item_id, foto_perfil_usuario, flg_inativo, id_instituicao, id_empresa, id_campus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ap_achados_perdidos.usuarios (nome_completo, cpf, email, hash_senha, matricula, numero_telefone, empresa_id, endereco_id, Dta_Criacao, Flg_Inativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, 
-            usuarios.getNome_Usuario(),
-            usuarios.getCPF_Usuario(),
-            usuarios.getEmail_Usuario(),
-            usuarios.getSenha_Usuario(),
-            usuarios.getMatricula_Usuario(),
-            usuarios.getTelefone_Usuario(),
-            java.sql.Timestamp.valueOf(usuarios.getData_Cadastro()),
-            usuarios.getTipo_Role_Id(),
-            usuarios.getFoto_item_id(),
-            usuarios.getFoto_perfil_usuario(),
-            usuarios.getFlg_Inativo(),
-            usuarios.getId_Instituicao(),
-            usuarios.getId_Empresa(),
-            usuarios.getId_Campus());
+            usuarios.getNomeCompleto(),
+            usuarios.getCpf(),
+            usuarios.getEmail(),
+            usuarios.getHashSenha(),
+            usuarios.getMatricula(),
+            usuarios.getNumeroTelefone(),
+            usuarios.getEmpresaId(),
+            usuarios.getEnderecoId(),
+            usuarios.getDtaCriacao(),
+            usuarios.getFlgInativo());
         
         // Buscar o registro inserido para retornar com o ID
-        String selectSql = "SELECT * FROM ap.usuarios WHERE email_usuario = ? AND data_cadastro = ? ORDER BY id_usuario DESC LIMIT 1";
+        String selectSql = "SELECT * FROM ap_achados_perdidos.usuarios WHERE email = ? AND Dta_Criacao = ? ORDER BY id DESC LIMIT 1";
         List<Usuarios> inserted = jdbcTemplate.query(selectSql, rowMapper, 
-            usuarios.getEmail_Usuario(), 
-            java.sql.Timestamp.valueOf(usuarios.getData_Cadastro()));
+            usuarios.getEmail(), 
+            usuarios.getDtaCriacao());
         
         return inserted.isEmpty() ? null : inserted.get(0);
     }
 
     @Override
     public Usuarios update(Usuarios usuarios) {
-        String sql = "UPDATE ap.usuarios SET nome_usuario = ?, cpf_usuario = ?, email_usuario = ?, senha_usuario = ?, matricula_usuario = ?, telefone_usuario = ?, tipo_role_id = ?, foto_item_id = ?, foto_perfil_usuario = ?, flg_inativo = ?, id_instituicao = ?, id_empresa = ?, id_campus = ? WHERE id_usuario = ?";
+        String sql = "UPDATE ap_achados_perdidos.usuarios SET nome_completo = ?, cpf = ?, email = ?, hash_senha = ?, matricula = ?, numero_telefone = ?, empresa_id = ?, endereco_id = ?, Flg_Inativo = ?, Dta_Remocao = ? WHERE id = ?";
         jdbcTemplate.update(sql, 
-            usuarios.getNome_Usuario(),
-            usuarios.getCPF_Usuario(),
-            usuarios.getEmail_Usuario(),
-            usuarios.getSenha_Usuario(),
-            usuarios.getMatricula_Usuario(),
-            usuarios.getTelefone_Usuario(),
-            usuarios.getTipo_Role_Id(),
-            usuarios.getFoto_item_id(),
-            usuarios.getFoto_perfil_usuario(),
-            usuarios.getFlg_Inativo(),
-            usuarios.getId_Instituicao(),
-            usuarios.getId_Empresa(),
-            usuarios.getId_Campus(),
-            usuarios.getId_Usuario());
+            usuarios.getNomeCompleto(),
+            usuarios.getCpf(),
+            usuarios.getEmail(),
+            usuarios.getHashSenha(),
+            usuarios.getMatricula(),
+            usuarios.getNumeroTelefone(),
+            usuarios.getEmpresaId(),
+            usuarios.getEnderecoId(),
+            usuarios.getFlgInativo(),
+            usuarios.getDtaRemocao(),
+            usuarios.getId());
         
-        return findById(usuarios.getId_Usuario());
+        return findById(usuarios.getId());
     }
 
     @Override
     public boolean deleteById(int id) {
-        String sql = "DELETE FROM ap.usuarios WHERE id_usuario = ?";
+        String sql = "DELETE FROM ap_achados_perdidos.usuarios WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, id);
         return rowsAffected > 0;
     }
 
     @Override
     public List<Usuarios> findActive() {
-        String sql = "SELECT * FROM ap.usuarios WHERE flg_inativo = false ORDER BY nome_usuario";
+        String sql = "SELECT * FROM ap_achados_perdidos.usuarios WHERE Flg_Inativo = false ORDER BY nome_completo";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
     public List<Usuarios> findByRole(int tipoRoleId) {
-        String sql = "SELECT * FROM ap.usuarios WHERE tipo_role_id = ? ORDER BY nome_usuario";
+        String sql = "SELECT u.* FROM ap_achados_perdidos.usuarios u " +
+                     "INNER JOIN ap_achados_perdidos.usuario_roles ur ON u.id = ur.usuario_id " +
+                     "WHERE ur.role_id = ? AND ur.Flg_Inativo = false ORDER BY u.nome_completo";
         return jdbcTemplate.query(sql, rowMapper, tipoRoleId);
     }
 
     @Override
     public List<Usuarios> findByInstitution(int instituicaoId) {
-        String sql = "SELECT * FROM ap.usuarios WHERE id_instituicao = ? ORDER BY nome_usuario";
+        String sql = "SELECT u.* FROM ap_achados_perdidos.usuarios u " +
+                     "INNER JOIN ap_achados_perdidos.usuario_campus uc ON u.id = uc.usuario_id " +
+                     "INNER JOIN ap_achados_perdidos.campus c ON uc.campus_id = c.id " +
+                     "WHERE c.instituicao_id = ? AND uc.Flg_Inativo = false ORDER BY u.nome_completo";
         return jdbcTemplate.query(sql, rowMapper, instituicaoId);
     }
 
     @Override
     public List<Usuarios> findByCampus(int campusId) {
-        String sql = "SELECT * FROM ap.usuarios WHERE id_campus = ? ORDER BY nome_usuario";
+        String sql = "SELECT u.* FROM ap_achados_perdidos.usuarios u " +
+                     "INNER JOIN ap_achados_perdidos.usuario_campus uc ON u.id = uc.usuario_id " +
+                     "WHERE uc.campus_id = ? AND uc.Flg_Inativo = false ORDER BY u.nome_completo";
         return jdbcTemplate.query(sql, rowMapper, campusId);
     }
 }

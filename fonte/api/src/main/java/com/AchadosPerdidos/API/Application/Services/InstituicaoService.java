@@ -11,7 +11,7 @@ import com.AchadosPerdidos.API.Domain.Repository.InstituicaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -38,8 +38,8 @@ public class InstituicaoService implements IInstituicaoService {
     @Override
     public InstituicaoDTO createInstituicao(InstituicaoDTO instituicaoDTO) {
         Instituicao instituicao = instituicaoModelMapper.toEntity(instituicaoDTO);
-        instituicao.setData_Cadastro(LocalDateTime.now());
-        instituicao.setFlg_Inativo(false);
+        instituicao.setDtaCriacao(new Date());
+        instituicao.setFlgInativo(false);
         
         Instituicao savedInstituicao = instituicaoRepository.save(instituicao);
         return instituicaoModelMapper.toDTO(savedInstituicao);
@@ -48,11 +48,12 @@ public class InstituicaoService implements IInstituicaoService {
     @Override
     public InstituicaoDTO createInstituicaoFromDTO(InstituicaoCreateDTO createDTO) {
         Instituicao instituicao = new Instituicao();
-        instituicao.setTipo_Instituicao(createDTO.getTipo_Instituicao());
-        instituicao.setNome_Instituicao(createDTO.getNome_Instituicao());
-        instituicao.setCNPJ_Filial(createDTO.getCNPJ_Filial());
-        instituicao.setData_Cadastro(LocalDateTime.now());
-        instituicao.setFlg_Inativo(false);
+        instituicao.setNome(createDTO.getNome());
+        instituicao.setCodigo(createDTO.getCodigo());
+        instituicao.setTipo(createDTO.getTipo());
+        instituicao.setCnpj(createDTO.getCnpj());
+        instituicao.setDtaCriacao(new Date());
+        instituicao.setFlgInativo(false);
         
         Instituicao savedInstituicao = instituicaoRepository.save(instituicao);
         return instituicaoModelMapper.toDTO(savedInstituicao);
@@ -65,9 +66,12 @@ public class InstituicaoService implements IInstituicaoService {
             return null;
         }
         
-        existingInstituicao.setTipo_Instituicao(instituicaoDTO.getTipo_Instituicao());
-        existingInstituicao.setNome_Instituicao(instituicaoDTO.getNome_Instituicao());
-        existingInstituicao.setCNPJ_Filial(instituicaoDTO.getCNPJ_Filial());
+        existingInstituicao.setNome(instituicaoDTO.getNome());
+        existingInstituicao.setCodigo(instituicaoDTO.getCodigo());
+        existingInstituicao.setTipo(instituicaoDTO.getTipo());
+        existingInstituicao.setCnpj(instituicaoDTO.getCnpj());
+        existingInstituicao.setFlgInativo(instituicaoDTO.getFlgInativo());
+        existingInstituicao.setDtaRemocao(instituicaoDTO.getDtaRemocao());
         
         Instituicao updatedInstituicao = instituicaoRepository.save(existingInstituicao);
         return instituicaoModelMapper.toDTO(updatedInstituicao);
@@ -81,14 +85,20 @@ public class InstituicaoService implements IInstituicaoService {
         }
         
         // Atualizar apenas os campos fornecidos
-        if (updateDTO.getTipo_Instituicao() != null) {
-            existingInstituicao.setTipo_Instituicao(updateDTO.getTipo_Instituicao());
+        if (updateDTO.getNome() != null) {
+            existingInstituicao.setNome(updateDTO.getNome());
         }
-        if (updateDTO.getNome_Instituicao() != null) {
-            existingInstituicao.setNome_Instituicao(updateDTO.getNome_Instituicao());
+        if (updateDTO.getCodigo() != null) {
+            existingInstituicao.setCodigo(updateDTO.getCodigo());
         }
-        if (updateDTO.getCNPJ_Filial() != null) {
-            existingInstituicao.setCNPJ_Filial(updateDTO.getCNPJ_Filial());
+        if (updateDTO.getTipo() != null) {
+            existingInstituicao.setTipo(updateDTO.getTipo());
+        }
+        if (updateDTO.getCnpj() != null) {
+            existingInstituicao.setCnpj(updateDTO.getCnpj());
+        }
+        if (updateDTO.getFlgInativo() != null) {
+            existingInstituicao.setFlgInativo(updateDTO.getFlgInativo());
         }
         
         Instituicao updatedInstituicao = instituicaoRepository.save(existingInstituicao);

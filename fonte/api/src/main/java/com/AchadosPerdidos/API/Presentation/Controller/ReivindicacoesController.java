@@ -3,6 +3,7 @@ package com.AchadosPerdidos.API.Presentation.Controller;
 import com.AchadosPerdidos.API.Application.DTOs.Reivindicacoes.ReivindicacoesDTO;
 import com.AchadosPerdidos.API.Application.DTOs.Reivindicacoes.ReivindicacoesListDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IReivindicacoesService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/reivindicacoes")
 @CrossOrigin(origins = "*")
+@Tag(name = "Reivindicações", description = "API para gerenciamento de reivindicações")
 public class ReivindicacoesController {
 
     @Autowired

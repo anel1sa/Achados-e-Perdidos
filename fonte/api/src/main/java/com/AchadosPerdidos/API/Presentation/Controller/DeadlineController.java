@@ -4,7 +4,7 @@ import com.AchadosPerdidos.API.Application.DTOs.Itens.ItensListDTO;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.IItensService;
 import com.AchadosPerdidos.API.Application.Services.Interfaces.INotificationService;
 import com.AchadosPerdidos.API.Domain.Entity.Itens;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/deadline")
 @CrossOrigin(origins = "*")
+@Tag(name = "Deadlines", description = "API para gerenciamento de prazos e doações")
 public class DeadlineController {
 
     @Autowired

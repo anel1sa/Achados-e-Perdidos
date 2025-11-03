@@ -9,7 +9,7 @@ import com.AchadosPerdidos.API.Domain.Repository.ReivindicacoesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -36,7 +36,8 @@ public class ReivindicacoesService implements IReivindicacoesService {
     @Override
     public ReivindicacoesDTO createReivindicacao(ReivindicacoesDTO reivindicacoesDTO) {
         Reivindicacoes reivindicacoes = reivindicacoesModelMapper.toEntity(reivindicacoesDTO);
-        reivindicacoes.setData_Reivindicacao(LocalDateTime.now());
+        reivindicacoes.setDtaCriacao(new Date());
+        reivindicacoes.setFlgInativo(false);
         
         Reivindicacoes savedReivindicacoes = reivindicacoesRepository.save(reivindicacoes);
         return reivindicacoesModelMapper.toDTO(savedReivindicacoes);
@@ -49,9 +50,12 @@ public class ReivindicacoesService implements IReivindicacoesService {
             return null;
         }
         
-        existingReivindicacoes.setId_Item(reivindicacoesDTO.getId_Item());
-        existingReivindicacoes.setId_Usuario_Post(reivindicacoesDTO.getId_Usuario());
-        existingReivindicacoes.setObservacao(reivindicacoesDTO.getDescricao_Reivindicacao());
+        existingReivindicacoes.setDetalhesReivindicacao(reivindicacoesDTO.getDetalhesReivindicacao());
+        existingReivindicacoes.setItemId(reivindicacoesDTO.getItemId());
+        existingReivindicacoes.setUsuarioReivindicadorId(reivindicacoesDTO.getUsuarioReivindicadorId());
+        existingReivindicacoes.setUsuarioAchouId(reivindicacoesDTO.getUsuarioAchouId());
+        existingReivindicacoes.setFlgInativo(reivindicacoesDTO.getFlgInativo());
+        existingReivindicacoes.setDtaRemocao(reivindicacoesDTO.getDtaRemocao());
         
         Reivindicacoes updatedReivindicacoes = reivindicacoesRepository.save(existingReivindicacoes);
         return reivindicacoesModelMapper.toDTO(updatedReivindicacoes);

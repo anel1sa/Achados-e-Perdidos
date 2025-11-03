@@ -17,10 +17,14 @@ public class InstituicaoModelMapper {
         }
         
         InstituicaoDTO dto = new InstituicaoDTO();
-        dto.setId_Instituicao(instituicao.getId_Instituicao());
-        dto.setTipo_Instituicao(instituicao.getTipo_Instituicao());
-        dto.setNome_Instituicao(instituicao.getNome_Instituicao());
-        dto.setCNPJ_Filial(instituicao.getCNPJ_Filial());
+        dto.setId(instituicao.getId());
+        dto.setNome(instituicao.getNome());
+        dto.setCodigo(instituicao.getCodigo());
+        dto.setTipo(instituicao.getTipo());
+        dto.setCnpj(instituicao.getCnpj());
+        dto.setDtaCriacao(instituicao.getDtaCriacao());
+        dto.setFlgInativo(instituicao.getFlgInativo());
+        dto.setDtaRemocao(instituicao.getDtaRemocao());
         
         return dto;
     }
@@ -31,10 +35,14 @@ public class InstituicaoModelMapper {
         }
         
         Instituicao instituicao = new Instituicao();
-        instituicao.setId_Instituicao(dto.getId_Instituicao());
-        instituicao.setTipo_Instituicao(dto.getTipo_Instituicao());
-        instituicao.setNome_Instituicao(dto.getNome_Instituicao());
-        instituicao.setCNPJ_Filial(dto.getCNPJ_Filial());
+        instituicao.setId(dto.getId());
+        instituicao.setNome(dto.getNome());
+        instituicao.setCodigo(dto.getCodigo());
+        instituicao.setTipo(dto.getTipo());
+        instituicao.setCnpj(dto.getCnpj());
+        instituicao.setDtaCriacao(dto.getDtaCriacao());
+        instituicao.setFlgInativo(dto.getFlgInativo());
+        instituicao.setDtaRemocao(dto.getDtaRemocao());
         
         return instituicao;
     }

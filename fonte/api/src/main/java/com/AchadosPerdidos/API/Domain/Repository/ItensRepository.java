@@ -26,7 +26,7 @@ public class ItensRepository implements IItensRepository {
 
     @Override
     public Itens save(Itens itens) {
-        if (itens.getId_Item() == 0) {
+        if (itens.getId() == null || itens.getId() == 0) {
             return itensQueries.insert(itens);
         } else {
             return itensQueries.update(itens);
