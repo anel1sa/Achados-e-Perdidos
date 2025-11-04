@@ -10,15 +10,15 @@ import lombok.*;
 public class EmpresaCreateDTO {
     
     @Schema(description = "Nome da empresa", example = "Empresa ABC Ltda", required = true)
-    private String Nome;
+    private String nome;
     
     @Schema(description = "Nome fantasia da empresa", example = "ABC", required = true)
-    private String Nome_Fantasia;
+    private String nomeFantasia;
     
     @Schema(description = "CNPJ da empresa", example = "12345678000195")
-    private String Cnpj;
+    private String cnpj;
     
     @Schema(description = "ID do endereço da empresa", example = "1")
-    private Integer Endereco_Id;
+    private Integer enderecoId;
 }
 

@@ -10,7 +10,7 @@ public interface IUsuariosService {
     UsuariosDTO getUsuarioById(int id);
     UsuariosDTO getUsuarioByEmail(String email);
     UsuariosDTO createUsuario(UsuariosDTO usuariosDTO);
-    UsuariosDTO updateUsuario(int id, UsuariosDTO usuariosDTO);
+    UsuariosUpdateDTO updateUsuario(int id, UsuariosDTO usuariosDTO);
     boolean deleteUsuario(int id);
     UsuariosListDTO getActiveUsuarios();
     UsuariosListDTO getUsuariosByRole(int tipoRoleId);

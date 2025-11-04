@@ -1,30 +1,4 @@
-# Fase de compilação
-# Multi-stage Dockerfile usando imagens Eclipse Temurin (tags amplamente disponíveis)
-# Observação: algumas variantes "openjdk" e "openjdk:*-slim" não existem para todas as versões.
-# Usar Temurin garante disponibilidade no Docker Hub.
+FROM ubuntu:latest
+LABEL authors="augus"
 
-# Stage 1: build com Maven usando Temurin Java 21
-FROM maven:3.9-eclipse-temurin-21 AS builder
-WORKDIR /workspace
-
-# Copia o pom e resolve dependências para melhor uso de cache
-COPY pom.xml ./
-RUN mvn -B dependency:resolve
-
-# Copia o restante do código e empacota
-COPY src ./src
-RUN mvn -B -DskipTests package
-
-# Stage 2: runtime leve com Temurin Java 21
-FROM eclipse-temurin:21-jre
-WORKDIR /app
-
-# Copia o JAR gerado
-COPY --from=builder /workspace/target/*.jar /app/app.jar
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
-
-
-
+ENTRYPOINT ["top", "-b"]

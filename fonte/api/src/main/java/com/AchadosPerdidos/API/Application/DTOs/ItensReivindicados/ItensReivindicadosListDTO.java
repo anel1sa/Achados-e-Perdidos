@@ -16,10 +16,10 @@ import java.util.List;
 public class ItensReivindicadosListDTO {
     
     @Schema(description = "Lista de itens reivindicados")
-    private List<ItensReivindicadosDTO> ItensReivindicados;
+    private List<ItensReivindicadosDTO> itensReivindicados;
     
     @Schema(description = "Total de reivindicações na lista")
-    private int TotalCount;
+    private int totalCount;
 
 }
 

@@ -20,13 +20,13 @@ public class ItensPerdidosModelMapper {
         dto.setId(itensPerdidos.getId());
         dto.setNome(itensPerdidos.getNome());
         dto.setDescricao(itensPerdidos.getDescricao());
-        dto.setEncontrado_Em(itensPerdidos.getEncontrado_Em());
-        dto.setUsuario_Relator_Id(itensPerdidos.getUsuario_Relator_Id());
-        dto.setLocal_Id(itensPerdidos.getLocal_Id());
-        dto.setStatus_Item_Id(itensPerdidos.getStatus_Item_Id());
-        dto.setDta_Criacao(itensPerdidos.getDta_Criacao());
-        dto.setFlg_Inativo(itensPerdidos.getFlg_Inativo());
-        dto.setDta_Remocao(itensPerdidos.getDta_Remocao());
+        dto.setEncontradoEm(itensPerdidos.getEncontrado_Em());
+        dto.setUsuarioRelatorId(itensPerdidos.getUsuario_Relator_Id());
+        dto.setLocalId(itensPerdidos.getLocal_Id());
+        dto.setStatusItemId(itensPerdidos.getStatus_Item_Id());
+        dto.setDtaCriacao(itensPerdidos.getDta_Criacao());
+        dto.setFlgInativo(itensPerdidos.getFlg_Inativo());
+        dto.setDtaRemocao(itensPerdidos.getDta_Remocao());
         
         return dto;
     }
@@ -40,13 +40,13 @@ public class ItensPerdidosModelMapper {
         itensPerdidos.setId(dto.getId());
         itensPerdidos.setNome(dto.getNome());
         itensPerdidos.setDescricao(dto.getDescricao());
-        itensPerdidos.setEncontrado_Em(dto.getEncontrado_Em());
-        itensPerdidos.setUsuario_Relator_Id(dto.getUsuario_Relator_Id());
-        itensPerdidos.setLocal_Id(dto.getLocal_Id());
-        itensPerdidos.setStatus_Item_Id(dto.getStatus_Item_Id());
-        itensPerdidos.setDta_Criacao(dto.getDta_Criacao());
-        itensPerdidos.setFlg_Inativo(dto.getFlg_Inativo());
-        itensPerdidos.setDta_Remocao(dto.getDta_Remocao());
+        itensPerdidos.setEncontrado_Em(dto.getEncontradoEm());
+        itensPerdidos.setUsuario_Relator_Id(dto.getUsuarioRelatorId());
+        itensPerdidos.setLocal_Id(dto.getLocalId());
+        itensPerdidos.setStatus_Item_Id(dto.getStatusItemId());
+        itensPerdidos.setDta_Criacao(dto.getDtaCriacao());
+        itensPerdidos.setFlg_Inativo(dto.getFlgInativo());
+        itensPerdidos.setDta_Remocao(dto.getDtaRemocao());
         
         return itensPerdidos;
     }

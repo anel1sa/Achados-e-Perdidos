@@ -13,9 +13,9 @@ import java.util.List;
 public class ItensPerdidosListDTO {
     
     @Schema(description = "Lista de itens perdidos")
-    private List<ItensPerdidosDTO> ItensPerdidos;
+    private List<ItensPerdidosDTO> itensPerdidos;
     
     @Schema(description = "Total de itens na lista")
-    private int TotalCount;
+    private int totalCount;
 }
 

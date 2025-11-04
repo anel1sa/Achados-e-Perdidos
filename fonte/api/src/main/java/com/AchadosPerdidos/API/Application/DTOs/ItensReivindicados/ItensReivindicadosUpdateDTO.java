@@ -9,12 +9,12 @@ import lombok.Getter;
 public class ItensReivindicadosUpdateDTO {
     
     @Schema(description = "Detalhes da reivindicação", example = "Este item me pertence, perdi na biblioteca")
-    private String Detalhes_Reivindicacao;
+    private String detalhesReivindicacao;
     
     @Schema(description = "ID do usuário que achou o item", example = "2")
-    private Integer Usuario_Achou_Id;
+    private Integer usuarioAchouId;
     
     @Schema(description = "Flag indicando se está inativo", example = "false")
-    private Boolean Flg_Inativo;
+    private Boolean flgInativo;
 }
 

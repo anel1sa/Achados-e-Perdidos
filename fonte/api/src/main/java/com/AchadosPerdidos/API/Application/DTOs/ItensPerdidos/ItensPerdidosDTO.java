@@ -16,34 +16,34 @@ import java.time.LocalDateTime;
 public class ItensPerdidosDTO {
     
     @Schema(description = "ID único do item", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
-    private int Id;
+    private int id;
     
     @Schema(description = "Nome do item", example = "Chave do Laboratório")
-    private String Nome;
+    private String nome;
     
     @Schema(description = "Descrição detalhada do item", example = "Chave do laboratório de informática, cor prata")
-    private String Descricao;
+    private String descricao;
     
     @Schema(description = "Data e hora em que o item foi encontrado", example = "2024-01-01T10:30:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime Encontrado_Em;
+    private LocalDateTime encontradoEm;
     
     @Schema(description = "ID do usuário que relatou o item", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
-    private int Usuario_Relator_Id;
+    private int usuarioRelatorId;
     
     @Schema(description = "ID do local onde o item foi encontrado", example = "2")
-    private int Local_Id;
+    private int localId;
     
     @Schema(description = "ID do status do item", example = "1")
-    private int Status_Item_Id;
+    private int statusItemId;
     
     @Schema(description = "Data de criação", example = "2024-01-01T00:00:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime Dta_Criacao;
+    private LocalDateTime dtaCriacao;
     
     @Schema(description = "Flag indicando se está inativo", example = "false")
-    private Boolean Flg_Inativo;
+    private Boolean flgInativo;
     
     @Schema(description = "Data de remoção", example = "null", accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime Dta_Remocao;
+    private LocalDateTime dtaRemocao;
 
 }
 

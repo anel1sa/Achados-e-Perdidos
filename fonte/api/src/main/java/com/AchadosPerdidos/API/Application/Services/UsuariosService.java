@@ -44,6 +44,10 @@ public class UsuariosService implements IUsuariosService {
     @Override
     public UsuariosDTO createUsuario(UsuariosDTO usuariosDTO) {
         Usuarios usuarios = usuariosModelMapper.toEntity(usuariosDTO);
+        if(UsuariosDTO.empresaid == 0 || UsuariosDTO.EmpresaId == null)
+        {
+
+        }
         usuarios.setDtaCriacao(new Date());
         usuarios.setFlgInativo(false);
         
@@ -52,7 +56,7 @@ public class UsuariosService implements IUsuariosService {
     }
 
     @Override
-    public UsuariosDTO updateUsuario(int id, UsuariosDTO usuariosDTO) {
+    public UsuariosUpdateDTO updateUsuario(int id, UsuariosUpdateDTO usuariosDTO) {
         Usuarios existingUsuarios = usuariosRepository.findById(id);
         if (existingUsuarios == null) {
             return null;

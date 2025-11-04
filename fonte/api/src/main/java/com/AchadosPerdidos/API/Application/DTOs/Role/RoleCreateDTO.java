@@ -6,16 +6,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class RoleCreateDTO {
     
     @Schema(description = "Nome da role", example = "Admin", required = true)
-    private String Nome;
+    private String nome;
     
     @Schema(description = "Descrição da role", example = "Administrador do sistema")
-    private String Descricao;
+    private String descricao;
 
     // Getters e Setters
-    public String getNome() { return Nome; }
-    public void setNome(String nome) { Nome = nome; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public String getDescricao() { return Descricao; }
-    public void setDescricao(String descricao) { Descricao = descricao; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 }
 

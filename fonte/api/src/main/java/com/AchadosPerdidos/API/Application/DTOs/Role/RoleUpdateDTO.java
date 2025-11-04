@@ -6,22 +6,22 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class RoleUpdateDTO {
     
     @Schema(description = "Nome da role", example = "Admin")
-    private String Nome;
+    private String nome;
     
     @Schema(description = "Descrição da role", example = "Administrador do sistema")
-    private String Descricao;
+    private String descricao;
     
     @Schema(description = "Flag indicando se está inativo", example = "false")
-    private Boolean Flg_Inativo;
+    private Boolean flgInativo;
 
     // Getters e Setters
-    public String getNome() { return Nome; }
-    public void setNome(String nome) { Nome = nome; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public String getDescricao() { return Descricao; }
-    public void setDescricao(String descricao) { Descricao = descricao; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public Boolean getFlg_Inativo() { return Flg_Inativo; }
-    public void setFlg_Inativo(Boolean flg_Inativo) { Flg_Inativo = flg_Inativo; }
+    public Boolean getFlgInativo() { return flgInativo; }
+    public void setFlgInativo(Boolean flgInativo) { this.flgInativo = flgInativo; }
 }
 

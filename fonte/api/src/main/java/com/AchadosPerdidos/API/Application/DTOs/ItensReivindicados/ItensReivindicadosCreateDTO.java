@@ -12,13 +12,13 @@ import lombok.Setter;
 public class ItensReivindicadosCreateDTO {
     
     @Schema(description = "Detalhes da reivindicação", example = "Este item me pertence, perdi na biblioteca", required = true)
-    private String Detalhes_Reivindicacao;
+    private String detalhesReivindicacao;
     
     @Schema(description = "ID do item reivindicado", example = "1", required = true)
-    private int Item_Id;
+    private int itemId;
     
     @Schema(description = "ID do usuário que fez a reivindicação", example = "1", required = true)
-    private int Usuario_Reivindicador_Id;
+    private int usuarioReivindicadorId;
 
 }
 

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
-@Tag(name = "Usuários", description = "API para gerenciamento de usuários")
+@Tag(name = "Usuários", description = "Rota para gerenciamento de usuários")
 public class UsuariosController {
 
     @Autowired
@@ -32,16 +32,6 @@ public class UsuariosController {
     @GetMapping("/{id}")
     public ResponseEntity<UsuariosDTO> getUsuarioById(@PathVariable int id) {
         UsuariosDTO usuario = usuariosService.getUsuarioById(id);
-        if (usuario != null) {
-            return ResponseEntity.ok(usuario);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<UsuariosDTO> getUsuarioByEmail(@PathVariable String email) {
-        UsuariosDTO usuario = usuariosService.getUsuarioByEmail(email);
         if (usuario != null) {
             return ResponseEntity.ok(usuario);
         } else {
@@ -76,40 +66,6 @@ public class UsuariosController {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/active")
-    public ResponseEntity<UsuariosListDTO> getActiveUsuarios() {
-        UsuariosListDTO activeUsuarios = usuariosService.getActiveUsuarios();
-        return ResponseEntity.ok(activeUsuarios);
-    }
-
-    @GetMapping("/role/{tipoRoleId}")
-    public ResponseEntity<UsuariosListDTO> getUsuariosByRole(@PathVariable int tipoRoleId) {
-        UsuariosListDTO usuarios = usuariosService.getUsuariosByRole(tipoRoleId);
-        return ResponseEntity.ok(usuarios);
-    }
-
-    @GetMapping("/institution/{instituicaoId}")
-    public ResponseEntity<UsuariosListDTO> getUsuariosByInstitution(@PathVariable int instituicaoId) {
-        UsuariosListDTO usuarios = usuariosService.getUsuariosByInstitution(instituicaoId);
-        return ResponseEntity.ok(usuarios);
-    }
-
-    @GetMapping("/campus/{campusId}")
-    public ResponseEntity<UsuariosListDTO> getUsuariosByCampus(@PathVariable int campusId) {
-        UsuariosListDTO usuarios = usuariosService.getUsuariosByCampus(campusId);
-        return ResponseEntity.ok(usuarios);
-    }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<UsuariosDTO> authenticateUsuario(@RequestParam String email, @RequestParam String senha) {
-        UsuariosDTO usuario = usuariosService.authenticateUsuario(email, senha);
-        if (usuario != null) {
-            return ResponseEntity.ok(usuario);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }
