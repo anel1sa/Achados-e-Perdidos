@@ -1,113 +1,194 @@
 import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+// Config
+import 'core/config/env_config.dart';
+import 'core/config/app_settings_controller.dart';
+import 'core/theme/app_theme.dart';
+import 'core/cache/cache_service.dart';
 
 // Pages
-import 'cadastro_page.dart';
-import 'achados_page.dart';
-import 'cadastro_item_achado_page.dart';
-import 'cadastro_item_perdido_page.dart';
-import 'item_achado.dart';
-import 'chat_page.dart';
-import 'perdidos_page.dart';
-import 'perfil_page.dart';
-import 'configuracoes_page.dart';
+import 'presentation/pages/login_page.dart';
+import 'presentation/pages/cadastro_page.dart';
+import 'presentation/pages/achados_page.dart';
+import 'presentation/pages/cadastro_item_achado_page.dart';
+import 'presentation/pages/cadastro_item_perdido_page.dart';
+import 'presentation/pages/item_achado.dart';
+import 'presentation/pages/chat_page.dart';
+import 'presentation/pages/perdidos_page.dart';
+import 'presentation/pages/perfil_page.dart';
+import 'presentation/pages/configuracoes_page.dart';
+import 'presentation/pages/notificacoes_page.dart';
 
-// Services
-import 'services/usuario_service.dart';
+// Models
+import 'data/DTOs/usuario_dto.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inicializar cache ANTES de tudo
+  await CacheService.init();
+
+  final settingsController = AppSettingsController();
+  await settingsController.load();
   await _initializeApplication();
 
-  runApp(const MyApp());
+  runApp(MyApp(settingsController: settingsController));
 }
 
 /// Inicializa os serviços necessários da aplicação
 Future<void> _initializeApplication() async {
-  final usuarioService = UsuarioService();
-  await usuarioService.inicializarUsuariosCadastrados();
+  // Carregar variáveis de ambiente
+  await EnvConfig.init();
+  
+  // Validar configuração
+  if (!EnvConfig.validate()) {
+    throw Exception('❌ Erro: Variáveis de ambiente não configuradas corretamente');
+  }
+  
+  // Inicializar OneSignal para Push Notifications
+  await _initializeOneSignal();
+  
+  print('✅ App inicializado');
+  print('📡 API: ${EnvConfig.apiBaseUrl}');
+}
+
+/// Inicializa OneSignal para Push Notifications
+Future<void> _initializeOneSignal() async {
+  try {
+    final appId = EnvConfig.oneSignalAppId;
+    if (appId.isEmpty) {
+      print('⚠️ ONESIGNAL_APP_ID não configurado. Push notifications desabilitadas.');
+      return;
+    }
+    
+    // Inicializar OneSignal
+    OneSignal.initialize(appId);
+    
+    // Solicitar permissão de notificações
+    OneSignal.Notifications.requestPermission(true);
+    
+    // Configurar handlers de notificações
+    try {
+      OneSignal.Notifications.addClickListener((event) {
+        print('📬 Notificação clicada: ${event.notification.body}');
+        // Aqui você pode navegar para a tela apropriada baseado nos dados da notificação
+        if (event.notification.additionalData != null) {
+          final data = event.notification.additionalData!;
+          final type = data['type'];
+          if (type == 'CHAT') {
+            // Navegar para chat se necessário
+            print('💬 Notificação de chat: ${data['messageId']}');
+          }
+        }
+      });
+    } catch (e) {
+      print('⚠️ Erro ao configurar listener de notificações: $e');
+      // Continuar mesmo se o listener falhar
+    }
+    
+    print('✅ OneSignal inicializado com sucesso');
+  } catch (e) {
+    print('❌ Erro ao inicializar OneSignal: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.settingsController});
 
   static const String _appTitle = 'Achados e Perdidos';
   static const Color _primaryColor = Colors.green;
+  final AppSettingsController settingsController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _appTitle,
-      theme: _buildAppTheme(),
-      initialRoute: AppRoutes.login,
-      routes: _buildRoutes(),
+    return AnimatedBuilder(
+      animation: settingsController,
+      builder: (context, _) {
+        return AppSettingsScope(
+          controller: settingsController,
+          child: MaterialApp(
+            title: _appTitle,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: settingsController.themeMode,
+            locale: settingsController.locale,
+            supportedLocales: const [
+              Locale('pt', 'BR'),
+              Locale('en', 'US'),
+              Locale('es', 'ES'),
+            ],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            builder: (context, child) {
+              final mediaQuery = MediaQuery.of(context);
+              final theme = Theme.of(context);
+              return AnimatedTheme(
+                data: theme,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: MediaQuery(
+                  data: mediaQuery.copyWith(
+                    textScaleFactor: settingsController.textScaleFactor,
+                  ),
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              );
+            },
+            initialRoute: AppRoutes.login,
+            routes: _buildRoutes(),
+          ),
+        );
+      },
     );
   }
 
-  ThemeData _buildAppTheme() {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: _primaryColor),
-    );
-  }
+  // Tema agora vem de AppTheme
 
   Map<String, WidgetBuilder> _buildRoutes() {
     return {
       AppRoutes.login: (context) => const LoginPage(),
-      AppRoutes.achados: (context) => _buildAchadosPage(context),
-      AppRoutes.perdidos: (context) => _buildPerdidosPage(context),
-      AppRoutes.cadastroItem: (context) => _buildCadastroItemPage(context),
-      AppRoutes.cadastroItemPerdido: (context) =>
-          _buildCadastroItemPerdidoPage(context),
-      AppRoutes.detalhesItem: (context) => _buildDetalhesItemPage(context),
-      AppRoutes.chat: (context) => _buildChatPage(context),
-      AppRoutes.perfil: (context) => _buildPerfilPage(context),
-      AppRoutes.configuracoes: (context) => _buildConfiguracoesPage(context),
+      AppRoutes.achados: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return AchadosPage(usuarioLogado: usuario);
+      },
+      AppRoutes.perdidos: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return PerdidosPage(usuarioLogado: usuario);
+      },
+      AppRoutes.cadastroItem: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return CadastroItemAchadoPage(usuarioLogado: usuario);
+      },
+      AppRoutes.cadastroItemPerdido: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return CadastroItemPerdidoPage(usuarioLogado: usuario);
+      },
+      AppRoutes.detalhesItem: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return ItemAchadoPage(item: args?['item'], usuarioLogado: args?['usuario']);
+      },
+      AppRoutes.chat: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return ChatPage(usuarioLogado: usuario);
+      },
+      AppRoutes.perfil: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return PerfilPage(usuarioLogado: usuario);
+      },
+      AppRoutes.configuracoes: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return ConfiguracoesPage(usuarioLogado: usuario);
+      },
+      AppRoutes.notificacoes: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return NotificacoesPage(usuarioLogado: usuario);
+      },
     };
-  }
-
-  Widget _buildAchadosPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return AchadosPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildPerdidosPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return PerdidosPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildCadastroItemPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return CadastroItemAchadoPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildCadastroItemPerdidoPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return CadastroItemPerdidoPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildDetalhesItemPage(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    return ItemAchadoPage(item: args?['item'], usuarioLogado: args?['usuario']);
-  }
-
-  Widget _buildChatPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return ChatPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildPerfilPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return PerfilPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildConfiguracoesPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return ConfiguracoesPage(usuarioLogado: usuario);
-  }
-
-  UsuarioModel _getUsuarioFromRoute(BuildContext context) {
-    return ModalRoute.of(context)?.settings.arguments as UsuarioModel;
   }
 }
 
@@ -122,282 +203,6 @@ class AppRoutes {
   static const String chat = '/chat';
   static const String perfil = '/perfil';
   static const String configuracoes = '/configuracoes';
+  static const String notificacoes = '/notificacoes';
 }
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  // Constants
-  static const double _logoRadius = 60.0;
-  static const double _fieldWidth = 240.0;
-  static const double _buttonHeight = 44.0;
-  static const String _logoAssetPath = 'assets/logo.png';
-  static const Color _primaryButtonColor = Color(0xFF17603A);
-
-  // Services
-  final UsuarioService _usuarioService = UsuarioService();
-
-  // Controllers
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _senhaController = TextEditingController();
-
-  // State
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _senhaController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _realizarLogin() async {
-    if (!_validarCampos()) return;
-
-    _setLoadingState(true);
-
-    try {
-      final usuario = await _usuarioService.login(
-        _emailController.text.trim(),
-        _senhaController.text.trim(),
-      );
-
-      _setLoadingState(false);
-
-      if (usuario != null) {
-        await _navegarParaPaginaPrincipal(usuario);
-      } else {
-        _setErrorMessage('Email ou senha inválidos');
-      }
-    } catch (e) {
-      _setLoadingState(false);
-      _setErrorMessage('Erro ao fazer login: $e');
-    }
-  }
-
-  bool _validarCampos() {
-    if (_emailController.text.trim().isEmpty ||
-        _senhaController.text.trim().isEmpty) {
-      _setErrorMessage('Por favor, preencha o email e a senha');
-      return false;
-    }
-    return true;
-  }
-
-  void _setLoadingState(bool loading) {
-    setState(() {
-      _isLoading = loading;
-      if (loading) _errorMessage = null;
-    });
-  }
-
-  void _setErrorMessage(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-  }
-
-  Future<void> _navegarParaPaginaPrincipal(UsuarioModel usuario) async {
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AchadosPage(usuarioLogado: usuario),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildLogo(),
-              _buildTitle(),
-              const SizedBox(height: 24),
-              _buildErrorMessage(),
-              _buildEmailField(),
-              _buildPasswordField(),
-              _buildForgotPasswordLink(),
-              _buildLoginButton(),
-              _buildRegisterButton(),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLogo() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 32.0, bottom: 16.0),
-      child: CircleAvatar(
-        radius: _logoRadius,
-        child: ClipOval(
-          child: Image.asset(
-            _logoAssetPath,
-            width: 150,
-            height: 150,
-            fit: BoxFit.contain,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return const Column(
-      children: [
-        SizedBox(height: 8),
-        Text(
-          'Achados e Perdidos',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w400),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorMessage() {
-    if (_errorMessage == null) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: Text(
-        _errorMessage!,
-        style: const TextStyle(color: Colors.red),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
-      child: SizedBox(
-        width: _fieldWidth,
-        child: TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.person_outline),
-            hintText: 'Email',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 12,
-              horizontal: 16,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
-      child: SizedBox(
-        width: _fieldWidth,
-        child: TextField(
-          controller: _senhaController,
-          obscureText: true,
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.lock_outline),
-            hintText: 'Senha',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 12,
-              horizontal: 16,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildForgotPasswordLink() {
-    return Padding(
-      padding: const EdgeInsets.only(right: 50.0, top: 2.0),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: TextButton(
-          onPressed: () {}, // TODO: Implementar recuperação de senha
-          child: const Text(
-            'Esqueci a senha',
-            style: TextStyle(fontSize: 12, color: Colors.blue),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
-      child: SizedBox(
-        width: _fieldWidth,
-        height: _buttonHeight,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : ElevatedButton(
-                onPressed: _realizarLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryButtonColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Entrar',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildRegisterButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
-      child: SizedBox(
-        width: _fieldWidth,
-        height: _buttonHeight,
-        child: ElevatedButton(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CadastroPage()),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _primaryButtonColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'Cadastrar',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
