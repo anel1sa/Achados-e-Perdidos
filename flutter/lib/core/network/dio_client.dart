@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
 import '../constants/storage_keys.dart';
 import '../error/exceptions.dart';
+import '../cache/cache_service.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -164,9 +165,15 @@ class DioClient {
 
         switch (statusCode) {
           case 401:
-            // Token expirado ou inválido - limpa storage e força login
+            // Token expirado ou inválido - limpa storage e cache, força login
             await _secureStorage.delete(key: StorageKeys.accessToken);
             await _secureStorage.delete(key: StorageKeys.userId);
+            // Limpar cache ao fazer logout/expirar sessão
+            try {
+              await CacheService.clearAll();
+            } catch (e) {
+              // Ignorar erros na limpeza de cache
+            }
             return handler.reject(
               DioException(
                 requestOptions: error.requestOptions,

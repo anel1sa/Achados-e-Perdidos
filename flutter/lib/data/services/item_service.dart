@@ -5,6 +5,7 @@ import '../DTOs/item_dto.dart';
 import '../DTOs/item_perdido_dto.dart';
 import '../DTOs/item_achado_dto.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/cache/cache_service.dart';
 
 /// Service para gerenciamento de itens
 /// Conecta os datasources às páginas
@@ -22,45 +23,93 @@ class ItemService {
     return dioClient.dio;
   }
 
-  /// Busca todos os itens
+  /// Busca todos os itens (com cache de 7 minutos)
   Future<List<ItemDTO>> getAllItens() async {
-    return await _dataSource.getAll();
+    return await CacheService.getItems<ItemDTO>(
+      key: 'all_items',
+      fetchFromApi: () => _dataSource.getAll(),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 7),
+    );
   }
 
-  /// Busca itens ativos
+  /// Busca itens ativos (com cache de 7 minutos)
   Future<List<ItemDTO>> getItensAtivos() async {
-    return await _dataSource.getAllActive();
+    return await CacheService.getItems<ItemDTO>(
+      key: 'active_items',
+      fetchFromApi: () => _dataSource.getAllActive(),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 7),
+    );
   }
 
-  /// Busca item por ID
+  /// Busca item por ID (com cache de 10 minutos)
   Future<ItemDTO> getItemById(int id) async {
-    return await _dataSource.getById(id);
+    return await CacheService.get<ItemDTO>(
+      key: 'item_$id',
+      boxName: 'items_cache',
+      fetchFromApi: () => _dataSource.getById(id),
+      ttl: const Duration(minutes: 10),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+    ) ?? await _dataSource.getById(id);
   }
 
-  /// Busca itens por campus
+  /// Busca itens por campus (com cache de 7 minutos)
   Future<List<ItemDTO>> getItensByCampus(int campusId) async {
-    return await _dataSource.getByCampus(campusId);
+    return await CacheService.getItems<ItemDTO>(
+      key: 'items_campus_$campusId',
+      fetchFromApi: () => _dataSource.getByCampus(campusId),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 7),
+    );
   }
 
-
-  /// Busca itens PERDIDOS
+  /// Busca itens PERDIDOS (com cache de 5 minutos)
   Future<List<ItemDTO>> getItensPerdidos() async {
-    return await _dataSource.getItensPerdidos();
+    return await CacheService.getItems<ItemDTO>(
+      key: 'items_perdidos',
+      fetchFromApi: () => _dataSource.getItensPerdidos(),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 5),
+    );
   }
 
-  /// Busca itens ACHADOS
+  /// Busca itens ACHADOS (com cache de 5 minutos)
   Future<List<ItemDTO>> getItensAchados() async {
-    return await _dataSource.getItensAchados();
+    return await CacheService.getItems<ItemDTO>(
+      key: 'items_achados',
+      fetchFromApi: () => _dataSource.getItensAchados(),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 5),
+    );
   }
 
-  /// Busca itens DOADOS
+  /// Busca itens DOADOS (com cache de 10 minutos)
   Future<List<ItemDTO>> getItensDoados() async {
-    return await _dataSource.getItensDoados();
+    return await CacheService.getItems<ItemDTO>(
+      key: 'items_doados',
+      fetchFromApi: () => _dataSource.getItensDoados(),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 10),
+    );
   }
 
-  /// Busca itens por usuário
+  /// Busca itens por usuário (com cache de 7 minutos)
   Future<List<ItemDTO>> getItensByUser(int userId) async {
-    return await _dataSource.getByUser(userId);
+    return await CacheService.getItems<ItemDTO>(
+      key: 'items_user_$userId',
+      fetchFromApi: () => _dataSource.getByUser(userId),
+      fromJson: (json) => ItemDTO.fromJson(json),
+      toJson: (item) => item.toJson(),
+      ttl: const Duration(minutes: 7),
+    );
   }
 
   /// Busca itens por empresa
@@ -73,37 +122,54 @@ class ItemService {
     return await _dataSource.search(term);
   }
 
-  /// Cria um novo item
+  /// Cria um novo item (invalida cache de listas)
   Future<ItemDTO> createItem(CreateItemDTO dto) async {
-    return await _dataSource.create(dto);
+    final item = await _dataSource.create(dto);
+    // Invalidar caches relacionados
+    await CacheService.invalidateItems('all_items');
+    await CacheService.invalidateItems('active_items');
+    return item;
   }
 
-  /// Cria um item PERDIDO (usa endpoint especializado)
-  /// Se fotoPaths for fornecido, usa multipart/form-data, senão usa JSON
+  /// Cria um item PERDIDO (invalida cache)
   Future<ItemDTO> createItemPerdido(
     ItemPerdidoCreateDTO dto, {
     List<String>? fotoPaths,
   }) async {
-    return await _dataSource.createItemPerdido(dto, fotoPaths: fotoPaths);
+    final item = await _dataSource.createItemPerdido(dto, fotoPaths: fotoPaths);
+    await CacheService.invalidateItems('items_perdidos');
+    await CacheService.invalidateItems('all_items');
+    await CacheService.invalidateItems('active_items');
+    return item;
   }
 
-  /// Cria um item ACHADO (usa endpoint especializado)
-  /// SEMPRE usa multipart/form-data (foto OBRIGATÓRIA)
+  /// Cria um item ACHADO (invalida cache)
   Future<ItemDTO> createItemAchado(
     ItemAchadoCreateDTO dto, {
     required List<String> fotoPaths,
   }) async {
-    return await _dataSource.createItemAchado(dto, fotoPaths: fotoPaths);
+    final item = await _dataSource.createItemAchado(dto, fotoPaths: fotoPaths);
+    await CacheService.invalidateItems('items_achados');
+    await CacheService.invalidateItems('all_items');
+    await CacheService.invalidateItems('active_items');
+    return item;
   }
 
-  /// Atualiza um item
+  /// Atualiza um item (invalida cache do item específico e listas)
   Future<ItemDTO> updateItem(int id, ItemUpdateDTO dto) async {
-    return await _dataSource.update(id, dto);
+    final item = await _dataSource.update(id, dto);
+    await CacheService.invalidateItems('item_$id');
+    await CacheService.invalidateItems('all_items');
+    await CacheService.invalidateItems('active_items');
+    return item;
   }
 
-  /// Deleta um item
+  /// Deleta um item (invalida cache)
   Future<void> deleteItem(int id) async {
-    return await _dataSource.delete(id);
+    await _dataSource.delete(id);
+    await CacheService.invalidateItems('item_$id');
+    await CacheService.invalidateItems('all_items');
+    await CacheService.invalidateItems('active_items');
   }
 }
 

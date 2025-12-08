@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 // Services
 import '../../data/services/item_service.dart';
 import '../../data/services/usuario_service.dart';
-import '../../data/services/reivindicacao_service.dart';
-import '../../data/datasources/reivindicacao_remote_datasource.dart';
 
 // Widgets
 import '../widgets/common/bottom_navigation_achados.dart';
 import '../widgets/item/item_widgets.dart';
-import '../widgets/dialogs/dialogs.dart';
 
 // Models
 import '../../data/DTOs/item_dto.dart';
 import '../../data/DTOs/usuario_dto.dart';
-import '../../data/DTOs/reivindicacao_dto.dart';
 
 class DetalhesItemPage extends StatefulWidget {
   final ItemDTO item;
@@ -30,11 +25,6 @@ class DetalhesItemPage extends StatefulWidget {
 class _DetalhesItemPageState extends State<DetalhesItemPage> {
   late String _nomeUsuario;
   late String _iniciaisUsuario;
-  final _reivindicacaoService = ReivindicacaoService(
-    ReivindicacaoRemoteDataSource(client: http.Client()),
-  );
-  bool _jaReivindicou = false;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -48,41 +38,19 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
         _iniciaisUsuario = nomes[0].substring(0, nomes[0].length > 1 ? 2 : 1);
       }
       _iniciaisUsuario = _iniciaisUsuario.toUpperCase();
-      _verificarReivindicacao();
     } else {
       _nomeUsuario = 'Usuário';
       _iniciaisUsuario = 'U';
     }
   }
 
-  Future<void> _verificarReivindicacao() async {
-    if (widget.usuarioLogado == null) return;
-    
-    setState(() => _isLoading = true);
-    try {
-      final jaReivindicou = await _reivindicacaoService.usuarioJaReivindicou(
-        widget.item.id,
-        widget.usuarioLogado!.id,
-      );
-      if (mounted) {
-        setState(() => _jaReivindicou = jaReivindicou);
-      }
-    } catch (e) {
-      // Falha silenciosa, não bloqueia UI
-      debugPrint('Erro ao verificar reivindicação: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF17603A),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Row(
           children: [
             CircleAvatar(
@@ -90,8 +58,8 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: Text(
                 _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -100,8 +68,8 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
             const SizedBox(width: 8),
             Text(
               'Olá, $_nomeUsuario! :)',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).appBarTheme.foregroundColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -109,12 +77,18 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Theme.of(context).appBarTheme.foregroundColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: Icon(
+              Icons.settings, 
+              color: Theme.of(context).appBarTheme.foregroundColor,
+            ),
             onSelected: (String value) {
               switch (value) {
                 case 'perfil':
@@ -229,11 +203,7 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
             const SizedBox(height: 32),
 
             // Botões de Ação
-            ReivindicacaoButton(
-              jaReivindicou: _jaReivindicou,
-              isLoading: _isLoading,
-              onPressed: _mostrarFormularioReivindicacao,
-            ),
+            // Botão de reivindicação removido - funcionalidade não está mais disponível
             
             const SizedBox(height: 16),
 
@@ -242,7 +212,8 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
             const SizedBox(height: 24),
 
             // Pergunta "Este item é seu?" (mantida para compatibilidade)
-            if (!_jaReivindicou && !_isLoading)
+            // Botão de reivindicação removido
+            if (false)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -268,7 +239,7 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: TextButton(
-                        onPressed: _mostrarFormularioReivindicacao,
+                        onPressed: () {}, // Funcionalidade removida
                         child: const Text(
                           'Sim',
                           style: TextStyle(
@@ -292,46 +263,14 @@ class _DetalhesItemPageState extends State<DetalhesItemPage> {
     );
   }
 
+  // Funcionalidades de reivindicação removidas - rotas da API não estão mais disponíveis
   void _mostrarFormularioReivindicacao() {
-    ReivindicacaoDialog.show(context, _enviarReivindicacao);
+    // Removido
   }
 
+  // Funcionalidade de reivindicação removida
   Future<void> _enviarReivindicacao(String descricao) async {
-    if (widget.usuarioLogado == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final dto = ReivindicacaoCreateDTO(
-        itemId: widget.item.id,
-        descricao: descricao.isEmpty ? null : descricao,
-      );
-
-      await _reivindicacaoService.create(dto);
-
-      if (mounted) {
-        setState(() {
-          _jaReivindicou = true;
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reivindicação enviada com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao enviar reivindicação: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    // Removido - rotas da API não estão mais disponíveis
   }
 
   void _abrirChat() {

@@ -4,9 +4,11 @@ import '../../data/DTOs/usuario_dto.dart';
 import '../../data/DTOs/notificacao_dto.dart';
 import '../../data/services/notificacao_service.dart';
 import '../../data/services/chat_service.dart';
+import '../../data/services/usuario_service.dart';
 import '../../core/constants/storage_keys.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/common/bottom_navigation_achados.dart';
+import 'chat_page.dart';
 
 /// Página de notificações do sistema
 class NotificacoesPage extends StatefulWidget {
@@ -25,6 +27,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
   List<NotificacaoDTO> _notificacoes = [];
   final NotificacaoService _notificacaoService = NotificacaoService();
   final ChatService _chatService = ChatService();
+  final UsuarioService _usuarioService = UsuarioService();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   String? _userId;
 
@@ -88,16 +91,27 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       final mensagensNaoLidas = await _chatService.getUnreadMessages(_userId!);
       
       // Converter mensagens não lidas em notificações
-      final notificacoesChat = mensagensNaoLidas.map((mensagem) {
+      // Filtrar apenas mensagens realmente não lidas
+      final notificacoesChat = mensagensNaoLidas
+          .where((mensagem) => !mensagem.lida) // Garantir que apenas não lidas sejam incluídas
+          .map((mensagem) {
+        // Adicionar dados adicionais para navegação
+        final dadosAdicionais = {
+          'type': 'CHAT',
+          'remetenteId': mensagem.idUsuarioRemetente.toString(),
+          'chatId': mensagem.conversaId,
+        };
+        
         return NotificacaoDTO.fromChatMessage({
           'id': mensagem.id,
           'menssagem': mensagem.conteudo,
           'data_Hora_Menssagem': mensagem.dataEnvio.toIso8601String(),
-          'status': mensagem.lida ? 'LIDA' : 'ENVIADA',
+          'status': 'ENVIADA', // Sempre ENVIADA pois já filtramos apenas não lidas
           'tipo': 'CHAT',
           'id_Usuario_Remetente': mensagem.idUsuarioRemetente,
           'id_Usuario_Destino': mensagem.idUsuarioDestino,
           'id_Chat': mensagem.conversaId,
+          'dadosAdicionais': dadosAdicionais,
         });
       }).toList();
       
@@ -177,7 +191,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF17603A),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Row(
           children: [
             CircleAvatar(
@@ -185,18 +199,18 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: Text(
                 _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Notificações',
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).appBarTheme.foregroundColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -204,16 +218,21 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Theme.of(context).appBarTheme.foregroundColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (_notificacoes.any((n) => !n.lida))
             TextButton(
               onPressed: _marcarTodasComoLidas,
-              child: const Text(
+              child: Text(
                 'Marcar todas',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).appBarTheme.foregroundColor,
+                ),
               ),
             ),
         ],
@@ -242,6 +261,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +269,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
           Icon(
             Icons.notifications_none,
             size: 80,
-            color: Colors.grey.shade400,
+            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -257,7 +277,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -286,11 +306,13 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
       child: InkWell(
         onTap: () => _abrirNotificacao(notificacao),
         borderRadius: BorderRadius.circular(12),
-        child: Container(
+          child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: notificacao.lida ? Colors.white : Colors.blue.shade50,
+            color: notificacao.lida 
+                ? Theme.of(context).colorScheme.surface
+                : Theme.of(context).colorScheme.primaryContainer,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +341,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                               fontWeight: notificacao.lida
                                   ? FontWeight.w500
                                   : FontWeight.bold,
-                              color: Colors.black87,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -327,8 +349,8 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.blue,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -339,7 +361,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                       notificacao.mensagem,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -349,7 +371,7 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
                       _formatarData(notificacao.data),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade500,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -366,20 +388,16 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     if (!notificacao.lida && _userId != null) {
       _notificacaoService.marcarComoLida(notificacao.id).then((_) {
         setState(() {
-          // Atualizar na lista
-          final index = _notificacoes.indexWhere((n) => n.id == notificacao.id);
-          if (index != -1) {
-            _notificacoes[index].lida = true;
-          }
+          // Remover notificação da lista após marcar como lida
+          _notificacoes.removeWhere((n) => n.id == notificacao.id);
         });
+        // Recarregar lista para sincronizar com backend
+        _carregarNotificacoes();
       }).catchError((e) {
         print('❌ Erro ao marcar notificação como lida: $e');
-        // Mesmo se falhar, marcar como lida localmente
+        // Mesmo se falhar, remover da lista localmente
         setState(() {
-          final index = _notificacoes.indexWhere((n) => n.id == notificacao.id);
-          if (index != -1) {
-            _notificacoes[index].lida = true;
-          }
+          _notificacoes.removeWhere((n) => n.id == notificacao.id);
         });
       });
     }
@@ -388,17 +406,85 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     if (notificacao.dadosAdicionais != null) {
       final type = notificacao.dadosAdicionais!['type'] as String?;
       if (type == 'CHAT') {
-        final remetenteId = notificacao.dadosAdicionais!['remetenteId']?.toString();
-        if (remetenteId != null) {
-          // TODO: Navegar para chat
-          AppSnackBar.showInfo(context, 'Abrindo chat...');
-        }
+        _abrirChat(notificacao);
       } else if (type == 'NOVO_ITEM') {
         final itemId = notificacao.dadosAdicionais!['itemId']?.toString();
         if (itemId != null) {
           // TODO: Navegar para detalhes do item
           AppSnackBar.showInfo(context, 'Abrindo item...');
         }
+      }
+    } else if (notificacao.tipo == 'CHAT') {
+      // Se não tiver dados adicionais mas for tipo CHAT, tentar extrair do ID
+      _abrirChat(notificacao);
+    }
+  }
+
+  Future<void> _abrirChat(NotificacaoDTO notificacao) async {
+    if (_userId == null || widget.usuarioLogado == null) return;
+    
+    try {
+      // Extrair remetente ID dos dados adicionais ou da notificação
+      String? remetenteId;
+      String? chatId;
+      
+      if (notificacao.dadosAdicionais != null) {
+        remetenteId = notificacao.dadosAdicionais!['remetenteId']?.toString();
+        chatId = notificacao.dadosAdicionais!['chatId']?.toString();
+      }
+      
+      // Se não tiver remetenteId, tentar extrair do ID da mensagem
+      if (remetenteId == null) {
+        // A notificação pode ter o remetente no ID ou precisamos buscar
+        AppSnackBar.showError(context, 'Não foi possível identificar o remetente');
+        return;
+      }
+      
+      // Buscar informações do remetente
+      final remetente = await _usuarioService.getUsuarioById(int.parse(remetenteId));
+      
+      // Gerar iniciais
+      final nomes = remetente.nome.split(' ').where((n) => n.isNotEmpty).toList();
+      String iniciais;
+      if (nomes.isEmpty) {
+        iniciais = 'U';
+      } else if (nomes.length > 1) {
+        iniciais = (nomes[0][0] + nomes[1][0]).toUpperCase();
+      } else {
+        final nome = nomes[0];
+        iniciais = nome.substring(0, nome.length > 1 ? 2 : 1).toUpperCase();
+      }
+      
+      // Criar ConversaInfo
+      final conversaInfo = ConversaInfo(
+        userId: remetenteId,
+        nome: remetente.nome,
+        iniciais: iniciais,
+        ultimaMensagem: notificacao.mensagem,
+        horario: _formatarData(notificacao.data),
+        naoLidas: 0, // Já será marcada como lida
+      );
+      
+      // Navegar para o chat
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => IndividualChatPage(
+              conversaInfo: conversaInfo,
+              usuarioLogado: widget.usuarioLogado,
+              currentUserId: _userId!,
+            ),
+          ),
+        ).then((_) {
+          // Recarregar notificações ao voltar
+          _carregarNotificacoes();
+        });
+      }
+    } catch (e) {
+      print('❌ Erro ao abrir chat: $e');
+      if (mounted) {
+        AppSnackBar.showError(context, 'Erro ao abrir conversa');
       }
     }
   }
@@ -407,19 +493,14 @@ class _NotificacoesPageState extends State<NotificacoesPage> {
     if (_userId == null) return;
     
     _notificacaoService.marcarTodasComoLidas(_userId!).then((_) {
-      setState(() {
-        for (var notificacao in _notificacoes) {
-          notificacao.lida = true;
-        }
-      });
+      // Recarregar lista para remover notificações lidas
+      _carregarNotificacoes();
       AppSnackBar.showSuccess(context, 'Todas as notificações foram marcadas como lidas');
     }).catchError((e) {
       print('❌ Erro ao marcar notificações como lidas: $e');
-      // Mesmo se falhar, marcar como lidas localmente
+      // Mesmo se falhar, limpar lista localmente
       setState(() {
-        for (var notificacao in _notificacoes) {
-          notificacao.lida = true;
-        }
+        _notificacoes.clear();
       });
       AppSnackBar.showSuccess(context, 'Notificações marcadas como lidas localmente');
     });

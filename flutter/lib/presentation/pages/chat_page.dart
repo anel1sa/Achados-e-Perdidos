@@ -5,13 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../../data/services/chat_service.dart';
 import '../../data/services/usuario_service.dart';
-import '../../data/services/reivindicacao_service.dart';
-import '../../data/services/item_devolvido_service.dart';
-import '../../data/datasources/reivindicacao_remote_datasource.dart';
-import '../../data/datasources/item_devolvido_remote_datasource.dart';
 import '../../data/DTOs/chat_dto.dart';
-import '../../data/DTOs/reivindicacao_dto.dart';
-import '../../data/DTOs/item_devolvido_dto.dart';
 import '../../core/constants/storage_keys.dart';
 import '../../core/error/exceptions.dart';
 import '../../data/DTOs/usuario_dto.dart';
@@ -358,13 +352,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    final theme = Theme.of(context);
+    return Center(
       child: Text(
         'Nenhuma conversa ainda.\nQuando alguém responder sobre seus itens,\nas mensagens aparecerão aqui!',
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 16,
-          color: Colors.grey,
+          color: theme.colorScheme.onSurfaceVariant,
           height: 1.5,
         ),
       ),
@@ -388,21 +383,34 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageCard(ConversaInfo conversa) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : Colors.white;
+    final avatarBgColor = isDark
+        ? theme.colorScheme.surface
+        : theme.scaffoldBackgroundColor;
+    final avatarTextColor = theme.colorScheme.primary;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF17603A),
+        color: cardColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
           radius: 24,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: avatarBgColor,
           child: Text(
             conversa.iniciais,
-            style: const TextStyle(
-              color: Color(0xFF17603A),
+            style: TextStyle(
+              color: avatarTextColor,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -413,8 +421,8 @@ class _ChatPageState extends State<ChatPage> {
             Expanded(
               child: Text(
                 conversa.nome,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: textColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -423,7 +431,10 @@ class _ChatPageState extends State<ChatPage> {
             const Spacer(),
             Text(
               conversa.horario,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              style: TextStyle(
+                color: textColor.withOpacity(0.8), 
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -436,18 +447,21 @@ class _ChatPageState extends State<ChatPage> {
                   conversa.ultimaMensagem,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(
+                    color: textColor.withOpacity(0.9), 
+                    fontSize: 14,
+                  ),
                 ),
               ),
               if (conversa.naoLidas > 0) ...[
                 const SizedBox(width: 8),
                 CircleAvatar(
                   radius: 10,
-                  backgroundColor: Colors.red,
+                  backgroundColor: theme.colorScheme.error,
                   child: Text(
                     conversa.naoLidas > 9 ? '9+' : conversa.naoLidas.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.colorScheme.onError,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -528,38 +542,17 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   final _secureStorage = const FlutterSecureStorage();
   final _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
-  late final ReivindicacaoService _reivindicacaoService;
-  late final ItemDevolvidoService _itemDevolvidoService;
 
   bool _isLoading = true;
   List<ChatMessageModel> _messages = [];
   String? _conversaId; // Mudado de int? para String? pois id_Chat é String no formato "chat_{userId1}_{userId2}"
-  
-  // Estado dos botões contextuais
-  bool _jaReivindicou = false;
-  bool _jaDevolvido = false;
-  bool _loadingActions = false;
 
   @override
   void initState() {
     super.initState();
     
-    // Inicializar services
-    final httpClient = http.Client();
-    _reivindicacaoService = ReivindicacaoService(
-      ReivindicacaoRemoteDataSource(client: httpClient),
-    );
-    _itemDevolvidoService = ItemDevolvidoService(
-      ItemDevolvidoRemoteDataSource(client: httpClient),
-    );
-    
     _loadMessages();
     _connectWebSocket();
-    
-    // Verificar estado de reivindicação/devolução se há itemId
-    if (widget.itemId != null) {
-      _verificarEstadoItem();
-    }
     
     // Enviar mensagem inicial se fornecida
     if (widget.mensagemInicial != null) {
@@ -576,35 +569,6 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     }
   }
 
-  /// Verifica se item já foi reivindicado ou devolvido
-  Future<void> _verificarEstadoItem() async {
-    if (widget.itemId == null) return;
-    
-    setState(() => _loadingActions = true);
-    try {
-      final jaReivindicou = await _reivindicacaoService.usuarioJaReivindicou(
-        widget.itemId!,
-        int.parse(widget.currentUserId),
-      );
-      
-      final jaDevolvido = await _itemDevolvidoService.itemJaDevolvido(
-        widget.itemId!,
-      );
-      
-      if (mounted) {
-        setState(() {
-          _jaReivindicou = jaReivindicou;
-          _jaDevolvido = jaDevolvido;
-          _loadingActions = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Erro ao verificar estado do item: $e');
-      if (mounted) {
-        setState(() => _loadingActions = false);
-      }
-    }
-  }
 
   @override
   void dispose() {
@@ -868,8 +832,9 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -882,15 +847,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           
           Expanded(child: _buildMessageList()),
           
-          // Botões de ação contextual (se houver itemId)
-          if (widget.itemId != null && !_jaDevolvido)
-            ChatActionButtons(
-              jaReivindicou: _jaReivindicou,
-              jaDevolvido: _jaDevolvido,
-              isLoading: _loadingActions,
-              onReivindicar: _mostrarFormularioReivindicacao,
-              onConfirmarDevolucao: _mostrarFormularioDevolucao,
-            ),
+          // Botões de ação contextual removidos - funcionalidades de reivindicação e devolução não estão mais disponíveis
           
           _buildInputArea(),
         ],
@@ -899,17 +856,32 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final appBarColor = isDark
+        ? theme.colorScheme.surface
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurface
+        : Colors.white;
+    final avatarBgColor = isDark
+        ? theme.colorScheme.primary
+        : theme.scaffoldBackgroundColor;
+    final avatarTextColor = isDark
+        ? Colors.white
+        : theme.colorScheme.primary;
+    
     return AppBar(
-      backgroundColor: const Color(0xFF17603A),
+      backgroundColor: appBarColor,
       title: Row(
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: avatarBgColor,
             child: Text(
               widget.conversaInfo.iniciais,
-              style: const TextStyle(
-                color: Color(0xFF17603A),
+              style: TextStyle(
+                color: avatarTextColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -918,8 +890,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           const SizedBox(width: 8),
           Text(
             widget.conversaInfo.nome,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -927,7 +899,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         ],
       ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: Icon(Icons.arrow_back, color: textColor),
         onPressed: () => Navigator.pop(context),
       ),
     );
@@ -1003,8 +975,23 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   }
 
   Widget _buildMessageBubble(ChatMessageModel message) {
+    final theme = Theme.of(context);
     final isMe = message.idUsuarioRemetente == widget.currentUserId;
     final time = _formatTime(message.dataEnvio);
+    final isDark = theme.brightness == Brightness.dark;
+    final bubbleColor = isMe 
+        ? theme.colorScheme.primary
+        : (isDark 
+            ? theme.colorScheme.surfaceVariant
+            : Colors.white);
+    final textColor = isMe
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
+    final avatarColor = theme.colorScheme.primary;
+    final avatarTextColor = theme.colorScheme.onPrimary;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.1);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -1015,11 +1002,11 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           if (!isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFF17603A),
+              backgroundColor: avatarColor,
               child: Text(
                 widget.conversaInfo.iniciais,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: avatarTextColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -1038,7 +1025,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: isMe ? const Color(0xFF17603A) : Colors.white,
+                    color: bubbleColor,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -1049,7 +1036,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: shadowColor,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
                       ),
@@ -1058,7 +1045,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                   child: Text(
                     message.conteudo,
                     style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
+                      color: textColor,
                       fontSize: 16,
                     ),
                   ),
@@ -1066,7 +1053,10 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                 const SizedBox(height: 4),
                 Text(
                   time,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant, 
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -1075,11 +1065,11 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFF17603A),
+              backgroundColor: avatarColor,
               child: Text(
                 widget.usuarioLogado?.nome.split(' ')[0][0].toUpperCase() ?? 'U',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: avatarTextColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -1092,13 +1082,29 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
   }
 
   Widget _buildInputArea() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inputBgColor = isDark
+        ? theme.colorScheme.surface
+        : Colors.white;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.05);
+    // Adicionar padding bottom considerando a área segura do sistema
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 16 + bottomPadding, // Adiciona padding extra acima das ações do sistema
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: inputBgColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: shadowColor,
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1109,11 +1115,28 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           Expanded(
             child: TextField(
               controller: _messageController,
+              style: TextStyle(color: theme.colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: 'Digite sua mensagem...',
+                hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                filled: true,
+                fillColor: isDark
+                    ? theme.colorScheme.surfaceVariant
+                    : theme.colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: theme.colorScheme.outline),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: theme.colorScheme.outline),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary, 
+                    width: 2,
+                  ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -1128,9 +1151,12 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
           const SizedBox(width: 8),
           FloatingActionButton(
             onPressed: _sendMessage,
-            backgroundColor: const Color(0xFF17603A),
+            backgroundColor: theme.colorScheme.primary,
             mini: true,
-            child: const Icon(Icons.send, color: Colors.white),
+            child: Icon(
+              Icons.send, 
+              color: theme.colorScheme.onPrimary,
+            ),
           ),
         ],
       ),
@@ -1143,28 +1169,40 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   /// Card de contexto do item
   Widget _buildItemContextCard() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primaryContainer;
+    final borderColor = isDark
+        ? theme.colorScheme.outline
+        : theme.colorScheme.primary.withOpacity(0.3);
+    final iconColor = theme.colorScheme.primary;
+    final titleColor = theme.colorScheme.onSurfaceVariant;
+    final itemNameColor = theme.colorScheme.onSurface;
+    
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.blue.shade700),
+          Icon(Icons.info_outline, color: iconColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Conversa sobre:',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black54,
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1173,7 +1211,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
+                    color: itemNameColor,
                   ),
                 ),
               ],
@@ -1186,204 +1224,55 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
 
   /// Botões de ação contextual
   Widget _buildActionButtons() {
-    if (_loadingActions) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: const Center(
-          child: SizedBox(
-            height: 24,
-            width: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      );
-    }
+    // Funcionalidades de reivindicação e devolução removidas
+    return const SizedBox.shrink();
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final containerColor = isDark
+        ? theme.colorScheme.surface
+        : Colors.white;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.05);
+    final successColor = isDark
+        ? theme.colorScheme.primaryContainer
+        : Colors.green.shade50;
+    final successBorderColor = isDark
+        ? theme.colorScheme.primary
+        : Colors.green.shade300;
+    final successIconColor = isDark
+        ? theme.colorScheme.primary
+        : Colors.green.shade700;
+    final successTextColor = isDark
+        ? theme.colorScheme.onPrimaryContainer
+        : Colors.green.shade900;
+    final infoColor = isDark
+        ? theme.colorScheme.primaryContainer
+        : Colors.blue.shade50;
+    final infoBorderColor = isDark
+        ? theme.colorScheme.primary
+        : Colors.blue.shade300;
+    final infoIconColor = isDark
+        ? theme.colorScheme.primary
+        : Colors.blue.shade700;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: containerColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: shadowColor,
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Botão Reivindicar (se ainda não reivindicou)
-          if (!_jaReivindicou && !_jaDevolvido)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _mostrarFormularioReivindicacao,
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Reivindicar Este Item'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF17603A),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-
-          // Status Reivindicado
-          if (_jaReivindicou && !_jaDevolvido)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade300),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green.shade700, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Item reivindicado',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Botão Confirmar Devolução (se reivindicou e não devolveu)
-          if (_jaReivindicou && !_jaDevolvido) ...[
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _mostrarFormularioDevolucao,
-                icon: const Icon(Icons.assignment_turned_in_outlined),
-                label: const Text('Confirmar Devolução'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
-
-          // Status Devolvido
-          if (_jaDevolvido)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade300),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.done_all, color: Colors.blue.shade700, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Item devolvido com sucesso!',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.blue.shade900,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
+      child: const SizedBox.shrink(), // Funcionalidades de reivindicação e devolução removidas
     );
   }
 
-  /// Formulário de reivindicação
-  void _mostrarFormularioReivindicacao() {
-    ReivindicacaoDialog.show(context, _enviarReivindicacao);
-  }
-
-  /// Envia reivindicação
-  Future<void> _enviarReivindicacao(String justificativa) async {
-    setState(() => _loadingActions = true);
-    try {
-      final dto = ReivindicacaoCreateDTO(
-        itemId: widget.itemId!,
-        descricao: justificativa,
-      );
-
-      await _reivindicacaoService.create(dto);
-
-      if (mounted) {
-        setState(() {
-          _jaReivindicou = true;
-          _loadingActions = false;
-        });
-
-        AppSnackBar.showSuccess(
-          context,
-          'Reivindicação enviada com sucesso!',
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _loadingActions = false);
-        AppSnackBar.showError(
-          context,
-          'Erro ao enviar reivindicação: $e',
-        );
-      }
-    }
-  }
-
-  /// Formulário de devolução
-  void _mostrarFormularioDevolucao() {
-    DevolucaoDialog.show(context, _confirmarDevolucao);
-  }
-
-  /// Confirma devolução
-  Future<void> _confirmarDevolucao(String detalhes) async {
-    setState(() => _loadingActions = true);
-    try {
-      final dto = ItemDevolvidoCreateDTO(
-        itemId: widget.itemId!,
-        detalhesDevolucao: detalhes,
-      );
-
-      await _itemDevolvidoService.create(dto);
-
-      if (mounted) {
-        setState(() {
-          _jaDevolvido = true;
-          _loadingActions = false;
-        });
-
-        AppSnackBar.showSuccess(
-          context,
-          'Devolução confirmada com sucesso!',
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _loadingActions = false);
-        AppSnackBar.showError(context, 'Erro ao confirmar devolução: $e');
-      }
-    }
-  }
+  // Funcionalidades de reivindicação e devolução removidas - rotas da API não estão mais disponíveis
 }
 

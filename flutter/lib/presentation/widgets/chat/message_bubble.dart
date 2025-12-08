@@ -17,6 +17,22 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bubbleColor = isMe 
+        ? theme.colorScheme.primary
+        : (isDark 
+            ? theme.colorScheme.surfaceVariant
+            : Colors.white);
+    final textColor = isMe
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
+    final avatarColor = theme.colorScheme.primary;
+    final avatarTextColor = theme.colorScheme.onPrimary;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.1);
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -26,11 +42,11 @@ class MessageBubble extends StatelessWidget {
           if (!isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFF17603A),
+              backgroundColor: avatarColor,
               child: Text(
                 iniciaisRemetente,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: avatarTextColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -49,7 +65,7 @@ class MessageBubble extends StatelessWidget {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: isMe ? const Color(0xFF17603A) : Colors.white,
+                    color: bubbleColor,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -60,7 +76,7 @@ class MessageBubble extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: shadowColor,
                         blurRadius: 3,
                         offset: const Offset(0, 1),
                       ),
@@ -69,7 +85,7 @@ class MessageBubble extends StatelessWidget {
                   child: Text(
                     conteudo,
                     style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
+                      color: textColor,
                       fontSize: 16,
                     ),
                   ),
@@ -77,7 +93,10 @@ class MessageBubble extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   horario,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant, 
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -86,11 +105,11 @@ class MessageBubble extends StatelessWidget {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFF17603A),
+              backgroundColor: avatarColor,
               child: Text(
                 iniciaisRemetente,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: avatarTextColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),

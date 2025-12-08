@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../datasources/chat_remote_datasource.dart';
 import '../DTOs/chat_dto.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/cache/cache_service.dart';
 
 /// Service para gerenciamento de chat
 /// Conecta os datasources às páginas
@@ -20,9 +21,13 @@ class ChatService {
     return dioClient.dio;
   }
 
-  /// Envia mensagem privada
+  /// Envia mensagem privada (invalida cache de conversas)
   Future<ChatMessageModel> sendMessage(SendChatMessageDTO dto, String destinatarioId, String remetenteId) async {
-    return await _dataSource.sendMessageRest(dto, destinatarioId, remetenteId);
+    final message = await _dataSource.sendMessageRest(dto, destinatarioId, remetenteId);
+    // Invalidar cache de conversas de ambos os usuários
+    await CacheService.invalidateChatConversations(remetenteId);
+    await CacheService.invalidateChatConversations(destinatarioId);
+    return message;
   }
 
   /// Envia mensagem privada (alternativa)
@@ -111,9 +116,14 @@ class ChatService {
   /// Verifica se está conectado
   bool get isConnected => _dataSource.isConnected;
 
-  /// Lista todas as conversas do usuário
+  /// Lista todas as conversas do usuário (com cache de 24 horas)
   Future<List<ChatSummaryDTO>> getUserChats(String userId) async {
-    return await _dataSource.getUserChats(userId);
+    return await CacheService.getChatConversations<ChatSummaryDTO>(
+      userId: userId,
+      fetchFromApi: () => _dataSource.getUserChats(userId),
+      fromJson: (json) => ChatSummaryDTO.fromJson(json),
+      toJson: (chat) => chat.toJson(),
+    );
   }
 
   /// Lista mensagens não lidas do usuário

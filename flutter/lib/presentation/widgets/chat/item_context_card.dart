@@ -13,28 +13,40 @@ class ItemContextCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primaryContainer;
+    final borderColor = isDark
+        ? theme.colorScheme.outline
+        : theme.colorScheme.primary.withOpacity(0.3);
+    final iconColor = theme.colorScheme.primary;
+    final titleColor = theme.colorScheme.onSurfaceVariant;
+    final itemNameColor = theme.colorScheme.onSurface;
+    
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.blue.shade700),
+          Icon(Icons.info_outline, color: iconColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Conversa sobre:',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black54,
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -43,7 +55,7 @@ class ItemContextCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
+                    color: itemNameColor,
                   ),
                 ),
               ],

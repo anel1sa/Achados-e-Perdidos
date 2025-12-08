@@ -22,6 +22,7 @@ class SearchBarWithFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
@@ -32,52 +33,70 @@ class SearchBarWithFilter extends StatelessWidget {
               child: TextField(
                 controller: searchController,
                 onChanged: onSearchChanged,
-                decoration: const InputDecoration(
+                style: TextStyle(color: theme.colorScheme.onSurface),
+                decoration: InputDecoration(
                   hintText: 'Pesquisar',
+                  hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    borderSide: BorderSide(color: Color(0xFF17603A)),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
-                  contentPadding: EdgeInsets.symmetric(
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    borderSide: BorderSide(color: theme.colorScheme.outline),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 14,
                   ),
                   isDense: true,
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          _buildCampusFilter(),
+          _buildCampusFilter(context),
           if (onAddItem != null) ...[
             const SizedBox(width: 8),
-            _buildAddButton(),
+            _buildAddButton(context),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: 48,
       height: 48,
-      decoration: const BoxDecoration(
-        color: Color(0xFF17603A),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: const Icon(Icons.add, color: Colors.white, size: 28),
+        icon: Icon(
+          Icons.add, 
+          color: theme.colorScheme.onPrimary, 
+          size: 28,
+        ),
         onPressed: onAddItem,
         padding: EdgeInsets.zero,
       ),
     );
   }
 
-  Widget _buildCampusFilter() {
+  Widget _buildCampusFilter(BuildContext context) {
+    final theme = Theme.of(context);
     return PopupMenuButton<CampusDTO>(
       onSelected: onCampusSelected,
-      color: const Color(0xFF17603A),
+      color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       offset: const Offset(0, 48),
       itemBuilder: (context) => campi.map((campus) {
@@ -85,15 +104,18 @@ class SearchBarWithFilter extends StatelessWidget {
           value: campus,
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on_outlined,
-                color: Colors.white,
+                color: theme.colorScheme.primary,
                 size: 22,
               ),
               const SizedBox(width: 10),
               Text(
                 campus.nome,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface, 
+                  fontSize: 16,
+                ),
               ),
             ],
           ),
@@ -102,7 +124,7 @@ class SearchBarWithFilter extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF17603A),
+          color: theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -110,10 +132,13 @@ class SearchBarWithFilter extends StatelessWidget {
           children: [
             Text(
               campusSelecionado?.nome ?? 'Todos',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: theme.colorScheme.onPrimary),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.filter_list, color: Colors.white),
+            Icon(
+              Icons.filter_list, 
+              color: theme.colorScheme.onPrimary,
+            ),
           ],
         ),
       ),

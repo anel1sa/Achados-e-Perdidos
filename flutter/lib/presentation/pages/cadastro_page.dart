@@ -3,6 +3,7 @@ import '../../data/services/usuario_service.dart';
 import '../../data/DTOs/campus_dto.dart';
 import '../../data/DTOs/usuario_dto.dart';
 import '../../core/error/exceptions.dart';
+import '../../core/utils/error_utils.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_button.dart';
@@ -198,7 +199,7 @@ class _CadastroPageState extends State<CadastroPage>
       if (mounted) {
         AppSnackBar.showError(
           context,
-          'Erro ao cadastrar: ${_tratarErroCadastro(e.toString())}',
+          'Erro ao cadastrar: ${ErrorUtils.tratarErroCadastro(e.toString())}',
         );
       }
     } finally {
@@ -298,7 +299,7 @@ class _CadastroPageState extends State<CadastroPage>
       if (mounted) {
         AppSnackBar.showError(
           context,
-          'Erro ao cadastrar: ${_tratarErroCadastro(e.toString())}',
+          'Erro ao cadastrar: ${ErrorUtils.tratarErroCadastro(e.toString())}',
         );
       }
     } finally {
@@ -306,20 +307,6 @@ class _CadastroPageState extends State<CadastroPage>
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  /// Trata mensagens de erro para exibição amigável
-  String _tratarErroCadastro(String erro) {
-    if (erro.contains('Email já cadastrado') ||
-        erro.contains('email') ||
-        erro.contains('409')) {
-      return 'Este email já está cadastrado';
-    } else if (erro.contains('400')) {
-      return 'Dados inválidos. Verifique os campos';
-    } else if (erro.contains('timeout') || erro.contains('conexão')) {
-      return 'Erro de conexão. Verifique sua internet';
-    }
-    return 'Erro ao realizar cadastro';
   }
 
   @override
@@ -331,14 +318,17 @@ class _CadastroPageState extends State<CadastroPage>
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: theme.colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF17603A),
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF17603A),
+          labelColor: theme.colorScheme.primary,
+          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+          indicatorColor: theme.colorScheme.primary,
           tabs: const [
             Tab(text: 'Aluno'),
             Tab(text: 'Servidor'),
@@ -383,11 +373,13 @@ class _CadastroPageState extends State<CadastroPage>
   }
 
   Widget _buildTitle() {
-    return const Text(
+    final theme = Theme.of(context);
+    return Text(
       'Faça seu cadastro',
       style: TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 24,
+        color: theme.colorScheme.onSurface,
       ),
     );
   }
@@ -541,6 +533,7 @@ class _CadastroPageState extends State<CadastroPage>
   }
 
   Widget _buildCampusField(bool isAluno) {
+    final theme = Theme.of(context);
     return SizedBox(
       width: 240.0,
       child: DropdownButtonFormField<int>(
@@ -549,24 +542,24 @@ class _CadastroPageState extends State<CadastroPage>
             : _campusIdSelecionadoServidor,
         decoration: InputDecoration(
           labelText: 'Campus',
-          prefixIcon: const Icon(Icons.location_city, color: Color(0xFF17603A)),
+          prefixIcon: Icon(Icons.location_city, color: theme.colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF17603A)),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF17603A), width: 2),
+            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
           ),
           contentPadding:
               const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         ),
-        dropdownColor: const Color(0xFF17603A),
-        style: const TextStyle(color: Colors.black, fontSize: 16),
-        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF17603A)),
+        dropdownColor: theme.colorScheme.surface,
+        style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 16),
+        icon: Icon(Icons.arrow_drop_down, color: theme.colorScheme.primary),
         isExpanded: true,
         menuMaxHeight: 220,
         borderRadius: BorderRadius.circular(16),
@@ -575,7 +568,10 @@ class _CadastroPageState extends State<CadastroPage>
             value: campus.id,
             child: Text(
               campus.nome,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface, 
+                fontSize: 16,
+              ),
             ),
           );
         }).toList(),
@@ -583,7 +579,10 @@ class _CadastroPageState extends State<CadastroPage>
           return _campi.map((campus) {
             return Text(
               campus.nome,
-              style: const TextStyle(color: Colors.black, fontSize: 16),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface, 
+                fontSize: 16,
+              ),
             );
           }).toList();
         },
@@ -671,16 +670,20 @@ class _CadastroPageState extends State<CadastroPage>
   }
 
   Widget _buildLoginLink() {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('Já possui conta? '),
+        Text(
+          'Já possui conta? ',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
+          child: Text(
             'Fazer login',
             style: TextStyle(
-              color: Colors.blue,
+              color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),

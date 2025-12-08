@@ -5,6 +5,7 @@ import '../../data/services/usuario_service.dart';
 import '../../data/services/device_token_service.dart';
 import '../../data/DTOs/usuario_dto.dart';
 import '../../core/constants/storage_keys.dart';
+import '../../core/utils/error_utils.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_button.dart';
@@ -83,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         AppSnackBar.showError(
           context,
-          'Erro ao fazer login: ${_tratarErroLogin(e.toString())}',
+          'Erro ao fazer login: ${ErrorUtils.tratarErroLogin(e.toString())}',
         );
       }
     } finally {
@@ -101,20 +102,6 @@ class _LoginPageState extends State<LoginPage> {
         'Login com Google está em desenvolvimento',
       );
     }
-  }
-
-  /// Trata mensagens de erro para exibição amigável
-  String _tratarErroLogin(String erro) {
-    if (erro.contains('403') || erro.contains('Forbidden')) {
-      return 'Email ou senha incorretos';
-    } else if (erro.contains('404')) {
-      return 'Usuário não encontrado';
-    } else if (erro.contains('401')) {
-      return 'Credenciais inválidas';
-    } else if (erro.contains('timeout') || erro.contains('conexão')) {
-      return 'Erro de conexão. Verifique sua internet';
-    }
-    return 'Erro ao fazer login';
   }
 
   /// Registra device token para push notifications
@@ -233,11 +220,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildTitle() {
-    return const Text(
+    final theme = Theme.of(context);
+    return Text(
       'Achados e Perdidos',
       style: TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 24,
+        color: theme.colorScheme.onSurface,
       ),
     );
   }
@@ -279,6 +268,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildForgotPasswordLink() {
+    final theme = Theme.of(context);
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
@@ -290,9 +280,9 @@ class _LoginPageState extends State<LoginPage> {
               'Funcionalidade em desenvolvimento',
             );
           },
-          child: const Text(
+          child: Text(
             'Esqueceu a senha?',
-            style: TextStyle(color: Colors.blue),
+            style: TextStyle(color: theme.colorScheme.primary),
           ),
         ),
       ),
@@ -308,20 +298,31 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildDivider() {
+    final theme = Theme.of(context);
     return Row(
       children: [
-        const Expanded(child: Divider(thickness: 1)),
+        Expanded(
+          child: Divider(
+            thickness: 1,
+            color: theme.colorScheme.outline,
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'OU',
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const Expanded(child: Divider(thickness: 1)),
+        Expanded(
+          child: Divider(
+            thickness: 1,
+            color: theme.colorScheme.outline,
+          ),
+        ),
       ],
     );
   }
@@ -335,16 +336,20 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildSignUpLink() {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('Não possui conta? '),
+        Text(
+          'Não possui conta? ',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         TextButton(
           onPressed: _navegarParaCadastro,
-          child: const Text(
+          child: Text(
             'Cadastre-se',
             style: TextStyle(
-              color: Colors.blue,
+              color: theme.colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),

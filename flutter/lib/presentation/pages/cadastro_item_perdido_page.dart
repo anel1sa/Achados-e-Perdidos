@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../../data/services/usuario_service.dart';
 import '../../data/services/item_service.dart';
 import '../../data/DTOs/usuario_dto.dart';
-import '../../data/DTOs/item_dto.dart';
 import '../../data/DTOs/item_perdido_dto.dart';
 import '../widgets/app_snackbar.dart';
+import '../widgets/common/app_bar_with_menu.dart';
+import '../widgets/common/image_grid_picker.dart';
+import '../widgets/common/app_bottom_navigation.dart';
 
 class CadastroItemPerdidoPage extends StatefulWidget {
   final UsuarioDTO? usuarioLogado;
@@ -27,29 +28,6 @@ class _CadastroItemPerdidoPageState extends State<CadastroItemPerdidoPage> {
 
   bool _isLoading = false;
   final List<File> _imagensSelecionadas = [];
-  bool _uploading = false;
-  double _uploadProgress = 0.0;
-
-  late String _nomeUsuario;
-  late String _iniciaisUsuario;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.usuarioLogado != null) {
-      _nomeUsuario = widget.usuarioLogado!.nome.split(' ')[0];
-      final nomes = widget.usuarioLogado!.nome.split(' ');
-      if (nomes.length > 1) {
-        _iniciaisUsuario = nomes[0][0] + nomes[1][0];
-      } else {
-        _iniciaisUsuario = nomes[0].substring(0, nomes[0].length > 1 ? 2 : 1);
-      }
-      _iniciaisUsuario = _iniciaisUsuario.toUpperCase();
-    } else {
-      _nomeUsuario = 'Usuário';
-      _iniciaisUsuario = 'U';
-    }
-  }
 
 
   @override
@@ -70,57 +48,22 @@ class _CadastroItemPerdidoPageState extends State<CadastroItemPerdidoPage> {
           _imagensSelecionadas.addAll(
             images.map((image) => File(image.path)).toList(),
           );
-          _uploading = true;
-          _uploadProgress = 0.0;
         });
-
-        // Simula o progresso de upload
-        await _simularUpload();
-      } else {
-        // Usuário cancelou a seleção
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Seleção de imagem cancelada'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
       }
     } catch (e) {
-      // Erro ao acessar galeria
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao acessar galeria: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackBar.showError(context, 'Erro ao acessar galeria: $e');
       }
     }
   }
 
-  Future<void> _simularUpload() async {
-    for (int i = 0; i <= 100; i += 5) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      setState(() {
-        _uploadProgress = i / 100;
-      });
-    }
-    setState(() {
-      _uploading = false;
-    });
-  }
-
-  Future<void> _removerImagem() async {
+  void _removerImagem() {
     setState(() {
       _imagensSelecionadas.clear();
-      _uploading = false;
-      _uploadProgress = 0.0;
     });
   }
 
-  Future<void> _removerImagemIndividual(int index) async {
+  void _removerImagemIndividual(int index) {
     setState(() {
       _imagensSelecionadas.removeAt(index);
     });
@@ -239,131 +182,9 @@ class _CadastroItemPerdidoPageState extends State<CadastroItemPerdidoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF17603A),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: Text(
-                _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Olá, $_nomeUsuario! :)',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            offset: const Offset(0, 50),
-            onSelected: (String value) {
-              switch (value) {
-                case 'perfil':
-                  Navigator.pushNamed(
-                    context,
-                    '/perfil',
-                    arguments: widget.usuarioLogado,
-                  );
-                  break;
-                case 'configuracoes':
-                  Navigator.pushNamed(
-                    context,
-                    '/configuracoes',
-                    arguments: widget.usuarioLogado,
-                  );
-                  break;
-                case 'ajuda':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ajuda em desenvolvimento')),
-                  );
-                  break;
-                case 'sobre':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sobre nós em desenvolvimento'),
-                    ),
-                  );
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'perfil',
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Perfil',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'configuracoes',
-                child: Row(
-                  children: [
-                    Icon(Icons.settings_outlined, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Configurações',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'ajuda',
-                child: Row(
-                  children: [
-                    Icon(Icons.help_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Ajuda',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'sobre',
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Color(0xFF17603A)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Sobre nós',
-                      style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+      appBar: AppBarWithMenu(
+        usuario: widget.usuarioLogado,
+        showBackButton: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -387,148 +208,13 @@ class _CadastroItemPerdidoPageState extends State<CadastroItemPerdidoPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 16),
-              // Botão de upload (sempre visível)
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _selecionarImagem,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF17603A),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    _imagensSelecionadas.isEmpty
-                        ? 'Selecionar Imagens'
-                        : 'Adicionar Mais Imagens',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+              ImageGridPicker(
+                images: _imagensSelecionadas,
+                onAddImage: _selecionarImagem,
+                onRemoveAll: _removerImagem,
+                onRemoveImage: _removerImagemIndividual,
+                addButtonText: 'Selecionar Imagens',
               ),
-              const SizedBox(height: 16),
-
-              // Exibe as imagens selecionadas
-              if (_imagensSelecionadas.isNotEmpty) ...[
-                Text(
-                  '${_imagensSelecionadas.length} imagem(ns) selecionada(s)',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Grid de imagens
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: _imagensSelecionadas.length,
-                  itemBuilder: (context, index) {
-                    return Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              _imagensSelecionadas[index],
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        // Botão de remover imagem individual
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap: () => _removerImagemIndividual(index),
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Barra de progresso do upload
-                if (_uploading) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: LinearProgressIndicator(
-                          value: _uploadProgress,
-                          backgroundColor: Colors.grey.shade300,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            _uploadProgress < 1.0
-                                ? Colors.orange
-                                : Colors.green,
-                          ),
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _uploadProgress < 1.0
-                            ? Icons.upload
-                            : Icons.check_circle,
-                        color: _uploadProgress < 1.0
-                            ? Colors.orange
-                            : Colors.green,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${(_uploadProgress * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _uploadProgress < 1.0
-                          ? Colors.orange
-                          : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ] else ...[
-                  // Botão para remover todas as imagens
-                  TextButton(
-                    onPressed: _removerImagem,
-                    child: const Text(
-                      'Remover todas as imagens',
-                      style: TextStyle(color: Colors.red, fontSize: 14),
-                    ),
-                  ),
-                ],
-              ],
               const SizedBox(height: 8),
               SizedBox(
                 height: 48,
@@ -557,57 +243,15 @@ class _CadastroItemPerdidoPageState extends State<CadastroItemPerdidoPage> {
           ),
         ),
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 1, // Perdidos tab ativo
-          backgroundColor: const Color(0xFF17603A),
-          elevation: 8,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/achados',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/perdidos',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/chat',
-                  arguments: widget.usuarioLogado,
-                );
-                break;
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Achados'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_search),
-              label: 'Perdidos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              label: 'Chat',
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: widget.usuarioLogado != null
+          ? AppBottomNavigation(
+              usuario: widget.usuarioLogado!,
+              currentIndex: 1,
+            )
+          : null,
     );
   }
 }
+
+
 

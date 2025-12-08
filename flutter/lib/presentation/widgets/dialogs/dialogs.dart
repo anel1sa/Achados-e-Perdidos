@@ -1,3 +1,2 @@
 // Dialog Widgets
-export 'reivindicacao_dialog.dart';
-export 'devolucao_dialog.dart';
+// Reivindicação e devolução removidas - rotas da API não estão mais disponíveis

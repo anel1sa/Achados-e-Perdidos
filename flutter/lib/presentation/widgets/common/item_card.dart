@@ -18,6 +18,15 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark 
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : Colors.white;
+    
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -29,18 +38,27 @@ class ItemCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF17603A),
+          color: cardColor,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [_buildItemContent(), _buildItemFooter()],
+          children: [_buildItemContent(context, textColor), _buildItemFooter(context, textColor)],
         ),
       ),
     );
   }
 
-  Widget _buildItemContent() {
+  Widget _buildItemContent(BuildContext context, Color textColor) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final iconBgColor = isDark
+        ? theme.colorScheme.surface
+        : Colors.white;
+    final iconColor = isDark
+        ? theme.colorScheme.primary
+        : theme.colorScheme.primary;
+    
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -52,7 +70,7 @@ class ItemCard extends StatelessWidget {
                   height: 60,
                   width: 60,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: iconBgColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ClipRRect(
@@ -61,17 +79,17 @@ class ItemCard extends StatelessWidget {
                       imageUrl: item.fotos![0].url,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: Colors.grey.shade200,
-                        child: const Center(
+                        color: theme.colorScheme.surfaceVariant,
+                        child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF17603A)),
+                            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
                           ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade200,
-                        child: Icon(icone, size: 28, color: const Color(0xFF17603A)),
+                        color: theme.colorScheme.surfaceVariant,
+                        child: Icon(icone, size: 28, color: iconColor),
                       ),
                     ),
                   ),
@@ -80,10 +98,10 @@ class ItemCard extends StatelessWidget {
                   height: 60,
                   width: 60,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: iconBgColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icone, size: 28, color: const Color(0xFF17603A)),
+                  child: Icon(icone, size: 28, color: iconColor),
                 ),
           const SizedBox(width: 12),
           Expanded(
@@ -92,8 +110,8 @@ class ItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.nome,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: textColor,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -101,7 +119,7 @@ class ItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.descricao ?? 'Sem descrição',
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                  style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.9)),
                 ),
               ],
             ),
@@ -111,20 +129,32 @@ class ItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildItemFooter() {
+  Widget _buildItemFooter(BuildContext context, Color textColor) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final footerColor = isDark
+        ? theme.colorScheme.surface
+        : theme.colorScheme.primary;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF17603A),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: footerColor,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(8),
           bottomRight: Radius.circular(8),
         ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.person_outline, size: 14, color: Colors.white70),
+          Icon(
+            Icons.person_outline, 
+            size: 14, 
+            color: isDark 
+                ? theme.colorScheme.onSurfaceVariant
+                : textColor.withOpacity(0.8),
+          ),
           const SizedBox(width: 4),
           Text(
             // Priorizar usuarioRelatorNome (nome do dono do post)
@@ -132,7 +162,12 @@ class ItemCard extends StatelessWidget {
             // Caso contrário, mostrar "Usuário"
             item.usuarioRelatorNome ?? 
                 (item.usuarioRelatorId == usuario.id ? usuario.nome : "Usuário"),
-            style: const TextStyle(fontSize: 12, color: Colors.white70),
+            style: TextStyle(
+              fontSize: 12, 
+              color: isDark 
+                  ? theme.colorScheme.onSurfaceVariant
+                  : textColor.withOpacity(0.8),
+            ),
           ),
         ],
       ),

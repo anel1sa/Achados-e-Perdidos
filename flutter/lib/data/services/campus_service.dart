@@ -4,6 +4,7 @@ import '../datasources/campus_remote_datasource.dart';
 import '../DTOs/campus_dto.dart';
 import '../DTOs/campus_dto.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/cache/cache_service.dart';
 
 /// Service para gerenciamento de campus
 /// Conecta os datasources às páginas
@@ -21,39 +22,71 @@ class CampusService {
     return dioClient.dio;
   }
 
-  /// Busca todos os campus
+  /// Busca todos os campus (com cache de 30 minutos)
   Future<List<CampusDTO>> getAllCampus() async {
-    return await _dataSource.getAll();
+    return await CacheService.getCampus<CampusDTO>(
+      key: 'all_campus',
+      fetchFromApi: () => _dataSource.getAll(),
+      fromJson: (json) => CampusDTO.fromJson(json),
+      toJson: (campus) => campus.toJson(),
+    );
   }
 
-  /// Busca campus ativos
+  /// Busca campus ativos (com cache de 30 minutos)
   Future<List<CampusDTO>> getCampusAtivos() async {
-    return await _dataSource.getAllActive();
+    return await CacheService.getCampus<CampusDTO>(
+      key: 'active_campus',
+      fetchFromApi: () => _dataSource.getAllActive(),
+      fromJson: (json) => CampusDTO.fromJson(json),
+      toJson: (campus) => campus.toJson(),
+    );
   }
 
-  /// Busca campus por ID
+  /// Busca campus por ID (com cache de 30 minutos)
   Future<CampusDTO> getCampusById(int id) async {
-    return await _dataSource.getById(id);
+    return await CacheService.get<CampusDTO>(
+      key: 'campus_$id',
+      boxName: 'campus_cache',
+      fetchFromApi: () => _dataSource.getById(id),
+      ttl: const Duration(minutes: 30),
+      fromJson: (json) => CampusDTO.fromJson(json),
+      toJson: (campus) => campus.toJson(),
+    ) ?? await _dataSource.getById(id);
   }
 
-  /// Busca campus por instituição
+  /// Busca campus por instituição (com cache de 30 minutos)
   Future<List<CampusDTO>> getCampusByInstituicao(int instituicaoId) async {
-    return await _dataSource.getByInstituicao(instituicaoId);
+    return await CacheService.getCampus<CampusDTO>(
+      key: 'campus_instituicao_$instituicaoId',
+      fetchFromApi: () => _dataSource.getByInstituicao(instituicaoId),
+      fromJson: (json) => CampusDTO.fromJson(json),
+      toJson: (campus) => campus.toJson(),
+    );
   }
 
-  /// Cria um novo campus
+  /// Cria um novo campus (invalida cache)
   Future<CampusDTO> createCampus(CampusCreateDTO dto) async {
-    return await _dataSource.create(dto);
+    final campus = await _dataSource.create(dto);
+    await CacheService.invalidateCampus('all_campus');
+    await CacheService.invalidateCampus('active_campus');
+    return campus;
   }
 
-  /// Atualiza um campus
+  /// Atualiza um campus (invalida cache)
   Future<CampusDTO> updateCampus(int id, CampusUpdateDTO dto) async {
-    return await _dataSource.update(id, dto);
+    final campus = await _dataSource.update(id, dto);
+    await CacheService.invalidateCampus('campus_$id');
+    await CacheService.invalidateCampus('all_campus');
+    await CacheService.invalidateCampus('active_campus');
+    return campus;
   }
 
-  /// Deleta um campus
+  /// Deleta um campus (invalida cache)
   Future<void> deleteCampus(int id) async {
-    return await _dataSource.delete(id);
+    await _dataSource.delete(id);
+    await CacheService.invalidateCampus('campus_$id');
+    await CacheService.invalidateCampus('all_campus');
+    await CacheService.invalidateCampus('active_campus');
   }
 }
 

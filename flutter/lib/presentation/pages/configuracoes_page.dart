@@ -46,16 +46,16 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF17603A),
+            backgroundColor: theme.appBarTheme.backgroundColor,
         title: Row(
           children: [
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.white,
+              backgroundColor: theme.scaffoldBackgroundColor,
               child: Text(
                 _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -64,8 +64,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             const SizedBox(width: 8),
             Text(
               'Olá, ${_nomeUsuario.split(' ')[0]}! :)',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: theme.appBarTheme.foregroundColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -73,13 +73,19 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: theme.appBarTheme.foregroundColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           // Ícone de notificações
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            icon: Icon(
+              Icons.notifications_outlined, 
+              color: theme.appBarTheme.foregroundColor,
+            ),
             onPressed: () {
               Navigator.pushNamed(
                 context,
@@ -90,8 +96,11 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             tooltip: 'Notificações',
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            color: Colors.white,
+            icon: Icon(
+              Icons.settings, 
+              color: theme.appBarTheme.foregroundColor,
+            ),
+            color: theme.colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -235,7 +244,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
         ),
         child: BottomNavigationBar(
           currentIndex: 0, // Índice válido
-          backgroundColor: const Color(0xFF17603A),
+          backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,
           elevation: 8,
           type: BottomNavigationBarType.fixed,
           onTap: (index) {
@@ -266,8 +275,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
               label: "Chat",
             ),
           ],
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
+          selectedItemColor: theme.bottomNavigationBarTheme.selectedItemColor,
+          unselectedItemColor: theme.bottomNavigationBarTheme.unselectedItemColor,
         ),
       ),
         );
@@ -293,10 +302,19 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     IconData icon,
     VoidCallback onTap,
   ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final rowColor = isDark
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : Colors.white;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF17603A),
+        color: rowColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
@@ -306,25 +324,28 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           child: Row(
             children: [
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(icon, color: textColor, size: 20),
               const SizedBox(width: 16),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
               const Spacer(),
               Text(
                 value,
-                style: const TextStyle(fontSize: 14, color: Colors.white70),
+                style: TextStyle(
+                  fontSize: 14, 
+                  color: textColor.withOpacity(0.8),
+                ),
               ),
               const SizedBox(width: 8),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white70,
+                color: textColor.withOpacity(0.8),
                 size: 16,
               ),
             ],
@@ -340,10 +361,19 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     ValueChanged<bool> onChanged, {
     bool enabled = true,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final rowColor = isDark
+        ? theme.colorScheme.surfaceVariant
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : Colors.white;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF17603A),
+        color: rowColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
@@ -355,17 +385,29 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: enabled ? Colors.white : Colors.white70,
+                color: enabled 
+                    ? textColor 
+                    : textColor.withOpacity(0.6),
               ),
             ),
             const Spacer(),
             Switch(
               value: value,
               onChanged: enabled ? onChanged : null,
-              thumbColor: WidgetStateProperty.all(Colors.white),
-              activeTrackColor: Colors.white.withValues(alpha: 0.3),
-              inactiveThumbColor: Colors.white70,
-              inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+              thumbColor: WidgetStateProperty.all(
+                isDark 
+                    ? theme.colorScheme.primary
+                    : Colors.white,
+              ),
+              activeTrackColor: isDark
+                  ? theme.colorScheme.primary.withOpacity(0.5)
+                  : Colors.white.withValues(alpha: 0.3),
+              inactiveThumbColor: isDark
+                  ? theme.colorScheme.onSurfaceVariant
+                  : Colors.white70,
+              inactiveTrackColor: isDark
+                  ? theme.colorScheme.surface
+                  : Colors.white.withValues(alpha: 0.2),
             ),
           ],
         ),
@@ -377,27 +419,61 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final currentMode = settings.themeModeString;
         return AlertDialog(
-          title: const Text('Modo escuro'),
+          title: const Text('Tema do aplicativo'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<bool>(
-                title: const Text('Ativado'),
-                value: true,
-                groupValue: settings.isDarkMode,
-                onChanged: (bool? value) {
-                  settings.toggleDarkMode(value ?? false);
-                  Navigator.pop(context);
+              RadioListTile<String>(
+                title: const Row(
+                  children: [
+                    Icon(Icons.light_mode, size: 20),
+                    SizedBox(width: 8),
+                    Text('Claro'),
+                  ],
+                ),
+                value: 'light',
+                groupValue: currentMode,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    settings.setThemeMode(value);
+                    Navigator.pop(context);
+                  }
                 },
               ),
-              RadioListTile<bool>(
-                title: const Text('Desativado'),
-                value: false,
-                groupValue: settings.isDarkMode,
-                onChanged: (bool? value) {
-                  settings.toggleDarkMode(value ?? false);
-                  Navigator.pop(context);
+              RadioListTile<String>(
+                title: const Row(
+                  children: [
+                    Icon(Icons.dark_mode, size: 20),
+                    SizedBox(width: 8),
+                    Text('Escuro'),
+                  ],
+                ),
+                value: 'dark',
+                groupValue: currentMode,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    settings.setThemeMode(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: const Row(
+                  children: [
+                    Icon(Icons.brightness_auto, size: 20),
+                    SizedBox(width: 8),
+                    Text('Seguir sistema'),
+                  ],
+                ),
+                value: 'system',
+                groupValue: currentMode,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    settings.setThemeMode(value);
+                    Navigator.pop(context);
+                  }
                 },
               ),
             ],

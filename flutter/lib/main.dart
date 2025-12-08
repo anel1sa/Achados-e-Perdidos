@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // Config
 import 'core/config/env_config.dart';
 import 'core/config/app_settings_controller.dart';
+import 'core/theme/app_theme.dart';
+import 'core/cache/cache_service.dart';
 
 // Pages
 import 'presentation/pages/login_page.dart';
@@ -24,6 +26,9 @@ import 'data/DTOs/usuario_dto.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar cache ANTES de tudo
+  await CacheService.init();
 
   final settingsController = AppSettingsController();
   await settingsController.load();
@@ -105,8 +110,8 @@ class MyApp extends StatelessWidget {
           controller: settingsController,
           child: MaterialApp(
             title: _appTitle,
-            theme: _buildAppTheme(Brightness.light),
-            darkTheme: _buildAppTheme(Brightness.dark),
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
             themeMode: settingsController.themeMode,
             locale: settingsController.locale,
             supportedLocales: const [
@@ -121,11 +126,17 @@ class MyApp extends StatelessWidget {
             ],
             builder: (context, child) {
               final mediaQuery = MediaQuery.of(context);
-              return MediaQuery(
-                data: mediaQuery.copyWith(
-                  textScaleFactor: settingsController.textScaleFactor,
+              final theme = Theme.of(context);
+              return AnimatedTheme(
+                data: theme,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: MediaQuery(
+                  data: mediaQuery.copyWith(
+                    textScaleFactor: settingsController.textScaleFactor,
+                  ),
+                  child: child ?? const SizedBox.shrink(),
                 ),
-                child: child ?? const SizedBox.shrink(),
               );
             },
             initialRoute: AppRoutes.login,
@@ -136,82 +147,48 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  ThemeData _buildAppTheme(Brightness brightness) {
-    return ThemeData(
-      brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _primaryColor,
-        brightness: brightness,
-      ),
-      scaffoldBackgroundColor:
-          brightness == Brightness.dark ? Colors.black : Colors.white,
-    );
-  }
+  // Tema agora vem de AppTheme
 
   Map<String, WidgetBuilder> _buildRoutes() {
     return {
       AppRoutes.login: (context) => const LoginPage(),
-      AppRoutes.achados: (context) => _buildAchadosPage(context),
-      AppRoutes.perdidos: (context) => _buildPerdidosPage(context),
-      AppRoutes.cadastroItem: (context) => _buildCadastroItemPage(context),
-      AppRoutes.cadastroItemPerdido: (context) =>
-          _buildCadastroItemPerdidoPage(context),
-      AppRoutes.detalhesItem: (context) => _buildDetalhesItemPage(context),
-      AppRoutes.chat: (context) => _buildChatPage(context),
-      AppRoutes.perfil: (context) => _buildPerfilPage(context),
-      AppRoutes.configuracoes: (context) => _buildConfiguracoesPage(context),
-      AppRoutes.notificacoes: (context) => _buildNotificacoesPage(context),
+      AppRoutes.achados: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return AchadosPage(usuarioLogado: usuario);
+      },
+      AppRoutes.perdidos: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return PerdidosPage(usuarioLogado: usuario);
+      },
+      AppRoutes.cadastroItem: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return CadastroItemAchadoPage(usuarioLogado: usuario);
+      },
+      AppRoutes.cadastroItemPerdido: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return CadastroItemPerdidoPage(usuarioLogado: usuario);
+      },
+      AppRoutes.detalhesItem: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return ItemAchadoPage(item: args?['item'], usuarioLogado: args?['usuario']);
+      },
+      AppRoutes.chat: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return ChatPage(usuarioLogado: usuario);
+      },
+      AppRoutes.perfil: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return PerfilPage(usuarioLogado: usuario);
+      },
+      AppRoutes.configuracoes: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return ConfiguracoesPage(usuarioLogado: usuario);
+      },
+      AppRoutes.notificacoes: (context) {
+        final usuario = ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
+        return NotificacoesPage(usuarioLogado: usuario);
+      },
     };
-  }
-
-  Widget _buildAchadosPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return AchadosPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildPerdidosPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return PerdidosPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildCadastroItemPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return CadastroItemAchadoPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildCadastroItemPerdidoPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return CadastroItemPerdidoPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildDetalhesItemPage(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    return ItemAchadoPage(item: args?['item'], usuarioLogado: args?['usuario']);
-  }
-
-  Widget _buildChatPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return ChatPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildPerfilPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return PerfilPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildConfiguracoesPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return ConfiguracoesPage(usuarioLogado: usuario);
-  }
-
-  Widget _buildNotificacoesPage(BuildContext context) {
-    final usuario = _getUsuarioFromRoute(context);
-    return NotificacoesPage(usuarioLogado: usuario);
-  }
-
-  UsuarioDTO _getUsuarioFromRoute(BuildContext context) {
-    return ModalRoute.of(context)?.settings.arguments as UsuarioDTO;
   }
 }
 

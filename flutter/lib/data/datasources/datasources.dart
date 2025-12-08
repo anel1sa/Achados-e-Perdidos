@@ -7,5 +7,5 @@ export 'campus_remote_datasource.dart';
 export 'chat_remote_datasource.dart';
 export 'deadline_remote_datasource.dart';
 export 'device_token_remote_datasource.dart';
-export 'reivindicacao_remote_datasource.dart';
-export 'item_devolvido_remote_datasource.dart';
+export 'foto_remote_datasource.dart';
+export 'notificacao_remote_datasource.dart';

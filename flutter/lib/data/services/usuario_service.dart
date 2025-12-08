@@ -5,6 +5,7 @@ import '../DTOs/usuario_dto.dart';
 import '../DTOs/campus_dto.dart';
 import '../DTOs/usuario_dto.dart';
 import '../../core/network/dio_client.dart';
+import '../../core/cache/cache_service.dart';
 import 'campus_service.dart';
 
 /// Service para gerenciamento de usuários
@@ -35,9 +36,14 @@ class UsuarioService {
     return await _dataSource.getAllActive();
   }
 
-  /// Busca usuário por ID
+  /// Busca usuário por ID (com cache até logout)
   Future<UsuarioDTO> getUsuarioById(int id) async {
-    return await _dataSource.getById(id);
+    return await CacheService.getUserProfile<UsuarioDTO>(
+      userId: id.toString(),
+      fetchFromApi: () => _dataSource.getById(id),
+      fromJson: (json) => UsuarioDTO.fromJson(json),
+      toJson: (user) => user.toJson(),
+    ) ?? await _dataSource.getById(id);
   }
 
   /// Busca usuário por email
@@ -50,9 +56,11 @@ class UsuarioService {
     return await _dataSource.create(dto);
   }
 
-  /// Atualiza um usuário
+  /// Atualiza um usuário (invalida cache do perfil)
   Future<UsuarioDTO> updateUsuario(int id, UsuarioUpdateDTO dto) async {
-    return await _dataSource.update(id, dto);
+    final user = await _dataSource.update(id, dto);
+    await CacheService.invalidateUserProfile(id.toString());
+    return user;
   }
 
   /// Altera a senha do usuário

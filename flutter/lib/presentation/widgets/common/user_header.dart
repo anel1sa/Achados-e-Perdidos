@@ -16,9 +16,18 @@ class UserHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final headerColor = isDark 
+        ? theme.colorScheme.surface
+        : theme.colorScheme.primary;
+    final textColor = isDark
+        ? theme.colorScheme.onSurface
+        : Colors.white;
+    
     return Container(
       padding: const EdgeInsets.only(top: 40, bottom: 8, left: 16, right: 16),
-      color: const Color(0xFF17603A),
+      color: headerColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -26,11 +35,15 @@ class UserHeader extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.white,
+                backgroundColor: isDark
+                    ? theme.colorScheme.primary
+                    : Colors.white,
                 child: Text(
                   iniciaisUsuario,
-                  style: const TextStyle(
-                    color: Color(0xFF17603A),
+                  style: TextStyle(
+                    color: isDark
+                        ? Colors.white
+                        : theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -38,42 +51,27 @@ class UserHeader extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 "Olá, $nomeUsuario! :)",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
             ],
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Ícone de notificações
               IconButton(
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.notifications_outlined, color: Colors.white),
-                    // Badge de notificações não lidas (pode ser implementado depois)
-                    // Positioned(
-                    //   right: 0,
-                    //   top: 0,
-                    //   child: Container(
-                    //     width: 8,
-                    //     height: 8,
-                    //     decoration: const BoxDecoration(
-                    //       color: Colors.red,
-                    //       shape: BoxShape.circle,
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
-                ),
+                icon: Icon(Icons.notifications_outlined, color: textColor, size: 24),
+                iconSize: 24,
                 onPressed: () {
                   Navigator.pushNamed(context, '/notificacoes', arguments: usuario);
                 },
                 tooltip: 'Notificações',
               ),
-              _buildSettingsMenu(context),
+              _buildSettingsMenu(context, theme, textColor),
             ],
           ),
         ],
@@ -81,12 +79,15 @@ class UserHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsMenu(BuildContext context) {
+  Widget _buildSettingsMenu(BuildContext context, ThemeData theme, Color iconColor) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.settings, color: Colors.white),
-      color: Colors.white,
+      icon: Icon(Icons.settings, color: iconColor, size: 24),
+      iconSize: 24,
+      color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       offset: const Offset(0, 50),
+      tooltip: 'Configurações',
+      padding: EdgeInsets.zero,
       onSelected: (String value) {
         switch (value) {
           case 'perfil':
@@ -107,60 +108,65 @@ class UserHeader extends StatelessWidget {
             break;
         }
       },
-      itemBuilder: (BuildContext context) => [
-        const PopupMenuItem<String>(
-          value: 'perfil',
-          child: Row(
-            children: [
-              Icon(Icons.person_outline, color: Color(0xFF17603A)),
-              SizedBox(width: 12),
-              Text(
-                'Perfil',
-                style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-              ),
-            ],
+      itemBuilder: (BuildContext context) {
+        final textColor = theme.colorScheme.onSurface;
+        final menuIconColor = theme.colorScheme.primary;
+        
+        return [
+          PopupMenuItem<String>(
+            value: 'perfil',
+            child: Row(
+              children: [
+                Icon(Icons.person_outline, color: menuIconColor, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Perfil',
+                  style: TextStyle(color: textColor, fontSize: 16),
+                ),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'configuracoes',
-          child: Row(
-            children: [
-              Icon(Icons.settings_outlined, color: Color(0xFF17603A)),
-              SizedBox(width: 12),
-              Text(
-                'Configurações',
-                style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-              ),
-            ],
+          PopupMenuItem<String>(
+            value: 'configuracoes',
+            child: Row(
+              children: [
+                Icon(Icons.settings_outlined, color: menuIconColor, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Configurações',
+                  style: TextStyle(color: textColor, fontSize: 16),
+                ),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'ajuda',
-          child: Row(
-            children: [
-              Icon(Icons.help_outline, color: Color(0xFF17603A)),
-              SizedBox(width: 12),
-              Text(
-                'Ajuda',
-                style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-              ),
-            ],
+          PopupMenuItem<String>(
+            value: 'ajuda',
+            child: Row(
+              children: [
+                Icon(Icons.help_outline, color: menuIconColor, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Ajuda',
+                  style: TextStyle(color: textColor, fontSize: 16),
+                ),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem<String>(
-          value: 'sobre',
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, color: Color(0xFF17603A)),
-              SizedBox(width: 12),
-              Text(
-                'Sobre nós',
-                style: TextStyle(color: Color(0xFF17603A), fontSize: 16),
-              ),
-            ],
+          PopupMenuItem<String>(
+            value: 'sobre',
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: menuIconColor, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Sobre nós',
+                  style: TextStyle(color: textColor, fontSize: 16),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ];
+      },
     );
   }
 }

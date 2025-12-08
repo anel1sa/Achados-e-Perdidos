@@ -39,12 +39,39 @@ class NotificacaoRemoteDataSource {
   }
 
   /// Marca notificação como lida
-  /// PUT /api/chat/messages/{messageId}/read
+  /// PUT /api/chat/mark-read
+  /// Requer buscar a mensagem primeiro para obter todos os dados necessários
   Future<void> marcarComoLida(String messageId) async {
     try {
-      await _dio.put(
-        '${ApiConstants.chatMessages}/$messageId/read',
-      );
+      // Primeiro, buscar a mensagem para obter todos os dados necessários
+      final response = await _dio.get(ApiConstants.chatMessageById(messageId));
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final messageData = response.data as Map<String, dynamic>;
+        
+        // Criar ChatMessageModel para facilitar o acesso aos dados
+        final message = ChatMessageModel.fromJson(messageData);
+        
+        // Agora marcar como lida usando o endpoint correto com todos os dados
+        await _dio.put(
+          ApiConstants.chatMarkRead,
+          data: {
+            'id': message.id,
+            'id_Usuario_Remetente': message.idUsuarioRemetente,
+            'id_Usuario_Destino': message.idUsuarioDestino,
+            'data_Hora_Menssagem': message.dataEnvio.toIso8601String(),
+            'id_Chat': message.conversaId ?? '',
+            'menssagem': message.conteudo,
+            'tipo': 'CHAT',
+            'status': 'LIDA', // Marcar como lida
+          },
+        );
+      } else {
+        throw ServerException(
+          message: 'Mensagem não encontrada',
+          statusCode: response.statusCode,
+        );
+      }
     } on DioException catch (e) {
       if (e.error is ServerException) rethrow;
       throw ServerException(
@@ -59,7 +86,7 @@ class NotificacaoRemoteDataSource {
   Future<void> marcarTodasComoLidas(String userId) async {
     try {
       await _dio.put(
-        '${ApiConstants.chatMessages}/read-all/$userId',
+        ApiConstants.chatMessagesReadAll(userId),
       );
     } on DioException catch (e) {
       if (e.error is ServerException) rethrow;

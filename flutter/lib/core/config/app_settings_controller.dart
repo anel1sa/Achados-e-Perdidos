@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Controla e persiste as preferências de configuração do app.
 class AppSettingsController extends ChangeNotifier {
-  static const _prefsDarkMode = 'settings.dark_mode';
+  static const _prefsThemeMode = 'settings.theme_mode'; // 'light', 'dark', 'system'
   static const _prefsFontSize = 'settings.font_size';
   static const _prefsLanguage = 'settings.language';
   static const _prefsNotificationsEnabled = 'settings.notifications.enabled';
@@ -11,7 +11,7 @@ class AppSettingsController extends ChangeNotifier {
   static const _prefsNewItemsNotifications = 'settings.notifications.items';
   static const _prefsUpdatesNotifications = 'settings.notifications.updates';
 
-  bool _darkMode = false;
+  String _themeMode = 'system'; // 'light', 'dark', 'system'
   int _fontSize = 18;
   String _languageCode = 'pt';
   bool _notificationsEnabled = true;
@@ -21,8 +21,27 @@ class AppSettingsController extends ChangeNotifier {
 
   SharedPreferences? _prefs;
 
-  bool get isDarkMode => _darkMode;
-  ThemeMode get themeMode => _darkMode ? ThemeMode.dark : ThemeMode.light;
+  bool get isDarkMode {
+    if (_themeMode == 'system') {
+      // Retorna baseado no sistema (será tratado pelo ThemeMode.system)
+      return false; // Placeholder, o ThemeMode.system cuida disso
+    }
+    return _themeMode == 'dark';
+  }
+
+  ThemeMode get themeMode {
+    switch (_themeMode) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  String get themeModeString => _themeMode;
   int get fontSize => _fontSize;
   double get textScaleFactor => _fontSize / 18;
   Locale get locale => switch (_languageCode) {
@@ -44,7 +63,7 @@ class AppSettingsController extends ChangeNotifier {
 
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
-    _darkMode = _prefs?.getBool(_prefsDarkMode) ?? _darkMode;
+    _themeMode = _prefs?.getString(_prefsThemeMode) ?? _themeMode;
     _fontSize = _prefs?.getInt(_prefsFontSize) ?? _fontSize;
     _languageCode = _prefs?.getString(_prefsLanguage) ?? _languageCode;
     _notificationsEnabled =
@@ -60,10 +79,18 @@ class AppSettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleDarkMode(bool value) async {
-    _darkMode = value;
-    await _prefs?.setBool(_prefsDarkMode, value);
+  Future<void> setThemeMode(String mode) async {
+    if (mode != 'light' && mode != 'dark' && mode != 'system') {
+      return;
+    }
+    _themeMode = mode;
+    await _prefs?.setString(_prefsThemeMode, mode);
     notifyListeners();
+  }
+
+  /// Método de compatibilidade para manter código antigo funcionando
+  Future<void> toggleDarkMode(bool value) async {
+    await setThemeMode(value ? 'dark' : 'light');
   }
 
   Future<void> updateFontSize(int size) async {

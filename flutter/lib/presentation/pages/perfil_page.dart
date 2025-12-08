@@ -319,7 +319,7 @@ class _PerfilPageState extends State<PerfilPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF17603A),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Row(
           children: [
             CircleAvatar(
@@ -327,8 +327,8 @@ class _PerfilPageState extends State<PerfilPage> {
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: Text(
                 _iniciaisUsuario,
-                style: const TextStyle(
-                  color: Color(0xFF17603A),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -337,8 +337,8 @@ class _PerfilPageState extends State<PerfilPage> {
             const SizedBox(width: 8),
             Text(
               'Olá, ${_nomeUsuario.split(' ')[0]}! :)',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).appBarTheme.foregroundColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -346,13 +346,19 @@ class _PerfilPageState extends State<PerfilPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Theme.of(context).appBarTheme.foregroundColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           // Ícone de notificações
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+            icon: Icon(
+              Icons.notifications_outlined, 
+              color: Theme.of(context).appBarTheme.foregroundColor,
+            ),
             onPressed: () {
               Navigator.pushNamed(
                 context,
@@ -363,8 +369,11 @@ class _PerfilPageState extends State<PerfilPage> {
             tooltip: 'Notificações',
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            color: Colors.white,
+            icon: Icon(
+              Icons.settings, 
+              color: Theme.of(context).appBarTheme.foregroundColor,
+            ),
+            color: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
